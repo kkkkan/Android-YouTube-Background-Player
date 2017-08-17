@@ -49,6 +49,7 @@ public class YouTubeSqlDb {
     private Videos recentlyWatchedVideos;
     private Videos favoriteVideos;
 
+    /*db自体は何度YouTubeDBクラスのインスタンスを作っても共通*/
     private static YouTubeSqlDb ourInstance = new YouTubeSqlDb();
 
     public static YouTubeSqlDb getInstance() {
@@ -59,10 +60,14 @@ public class YouTubeSqlDb {
     }
 
     public void init(Context context) {
+        /*dbHelperを初期化*/
         dbHelper = new YouTubeDbHelper(context);
+        /*.getWritableDatabeseすることでdb.SQLexe()可能になる→DBの中にお気に入り、プレイリスト、最近見たもののテーブル作成してる*/
         dbHelper.getWritableDatabase();
 
+        /*playlistsを新しいプレイリストにする*/
         playlists = new Playlists();
+        /*最近見たビデオ、お気に入りビデオをrecentlyWatch等に代入*/
         recentlyWatchedVideos = new Videos(RECENTLY_WATCHED_TABLE_NAME);
         favoriteVideos = new Videos(FAVORITES_TABLE_NAME);
     }
@@ -88,8 +93,11 @@ public class YouTubeSqlDb {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
+            /*お気に入りリスト作成*/
             db.execSQL(YouTubeVideoEntry.DATABASE_FAVORITES_TABLE_CREATE);
+            /*最近見たものリスト作成*/
             db.execSQL(YouTubeVideoEntry.DATABASE_RECENTLY_WATCHED_TABLE_CREATE);
+            /*プレイリスト作成*/
             db.execSQL(YouTubePlaylistEntry.DATABASE_TABLE_CREATE);
         }
 
@@ -125,6 +133,7 @@ public class YouTubeSqlDb {
          * @return
          */
         public boolean create(YouTubeVideo video) {
+            /*指定したビデオがあったらfalse*/
             if(checkIfExists(video.getId())){
                 return false;
             }

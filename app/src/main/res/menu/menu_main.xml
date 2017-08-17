@@ -29,4 +29,10 @@
         android:title="@string/action_color_picker"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/log_in"
+        android:orderInCategory="100"
+        android:title="log in"
+        app:showAsAction="never" />
+
 </menu>

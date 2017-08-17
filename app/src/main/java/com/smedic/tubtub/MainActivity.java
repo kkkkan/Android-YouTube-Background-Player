@@ -24,8 +24,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.MatrixCursor;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
@@ -49,11 +51,27 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.OnColorSelectedListener;
 import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
+import com.google.android.gms.auth.GoogleAuthException;
+import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.auth.UserRecoverableAuthException;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.AccountPicker;
+import com.google.android.gms.common.Scopes;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.YouTubeScopes;
+import com.google.api.services.youtube.model.ChannelListResponse;
 import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.fragments.FavoritesFragment;
 import com.smedic.tubtub.fragments.PlaylistsFragment;
@@ -67,7 +85,9 @@ import com.smedic.tubtub.utils.Config;
 import com.smedic.tubtub.utils.NetworkConf;
 import com.smedic.tubtub.youtube.SuggestionsLoader;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -76,13 +96,17 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 import static com.google.api.client.http.HttpMethods.HEAD;
 import static com.smedic.tubtub.R.layout.suggestions;
+import static com.smedic.tubtub.utils.Auth.SCOPES;
 import static com.smedic.tubtub.youtube.YouTubeSingleton.getCredential;
+import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentials;
 
 /**
  * Activity that manages fragments and action bar
  */
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
         OnItemSelected, OnFavoritesSelected {
+    public static Handler mainHandler=new Handler();
+    public  final Context mainContext=this;
 
     private static final String TAG = "SMEDIC MAIN ACTIVITY";
     private Toolbar toolbar;
@@ -96,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
+    static final int REQUEST_CODE_TOKEN_AUTH=1006;
 
     private int initialColor = 0xffff0040;
     private int initialColors[] = new int[2];
@@ -123,8 +148,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        /*アクションバーに戻るボタンをつけない*/
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 
+        /*viewPageで保持するfragmentを三枚に設定*/
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         viewPager.setOffscreenPageLimit(3);
         setupViewPager(viewPager);
@@ -153,13 +180,19 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @AfterPermissionGranted(PERMISSIONS)
     private void requestPermissions() {
         String[] perms = {Manifest.permission.GET_ACCOUNTS, Manifest.permission.READ_PHONE_STATE};
+        /*permissionがあれば*/
         if (EasyPermissions.hasPermissions(this, perms)) {
             // Already have permission, do the thing
+            /*ビルド環境が低かったりするとスルーされてきてしまうのでここでもう一度チェック？*/
             if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
+                /*自アプリのみ書き込み可能で開いてアカウントネームを拾ってくる*/
                 String accountName = getPreferences(Context.MODE_PRIVATE).getString(PREF_ACCOUNT_NAME, null);
+                /*アカウントひとつだけあったら*/
                 if (accountName != null) {
+                    /*アカウントをセット*/
                     getCredential().setSelectedAccountName(accountName);
                 } else {
+                    /*無ければコールバックありでアカウントを選ばせる*/
                     // Start a dialog from which the user can choose an account
                     startActivityForResult(
                             getCredential().newChooseAccountIntent(),
@@ -187,16 +220,67 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             if (resultCode == RESULT_OK && data != null && data.getExtras() != null) {
                 String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
                 if (accountName != null) {
+                    Log.d("kandabashi","onActivityResult account");
+                    /*SharedPreference:アプリの設定データをデバイス内に保存するための仕組み。*/
                     SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putString(PREF_ACCOUNT_NAME, accountName);
                     editor.apply();
                     getCredential().setSelectedAccountName(accountName);
+
+
+
+                    /*ログインする*/
+                    AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
+                        @Override
+                        protected String doInBackground(Void... params) {
+                            String token = null;
+                            try {
+
+                                token = GoogleAuthUtil.getToken(
+                                        MainActivity.this,
+                                        getCredential().getSelectedAccountName(),
+                                        "oauth2:" +  " "  +"https://www.googleapis.com/auth/youtube" +" "+"https://www.googleapis.com/auth/youtube.readonly"+" "+"https://www.googleapis.com/auth/youtube.upload"+" "+"https://www.googleapis.com/auth/youtubepartner-channel-audit");
+                                mainHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(mainContext,"ログイン成功:\n"+getCredential().getSelectedAccountName(),Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            } catch (IOException transientEx) {
+                                // Network or server error, try later
+                                Log.e("kandabashi" , transientEx.toString());
+                            } catch (UserRecoverableAuthException e) {
+                                // Recover (with e.getIntent())
+                                Log.e("kandabashi", e.toString());
+                                Intent recover = e.getIntent();
+                                startActivityForResult(recover, REQUEST_CODE_TOKEN_AUTH);
+                            } catch (GoogleAuthException authEx) {
+                                // The call is not ever expected to succeed
+                                // assuming you have already verified that
+                                // Google Play services is installed.
+                                Log.e("kandabashi", getCredential().getSelectedAccountName()+":"+authEx.toString());
+                            }
+                            return token;
+                        }
+
+                        @Override
+                        protected void onPostExecute(String token) {
+                            Log.i(TAG, "Access token retrieved:" + token);
+                        }
+
+                    };
+                    task.execute();
                 }
             }
+        }else if(requestCode== REQUEST_CODE_TOKEN_AUTH){
+            startActivityForResult(
+                    getCredential().newChooseAccountIntent(),
+                    REQUEST_ACCOUNT_PICKER);
         }
     }
 
+    /*許可ダイアログの結果を受ける*/
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[], @NonNull int[] grantResults) {
@@ -227,6 +311,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
 
+            /*スムーズスクロールありでfragmenを2に変更*/
             viewPager.setCurrentItem(2, true); //switch to search fragment
 
             if (searchFragment != null) {
@@ -259,10 +344,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         favoritesFragment = FavoritesFragment.newInstance();
         PlaylistsFragment playlistsFragment = PlaylistsFragment.newInstance();
 
-        adapter.addFragment(favoritesFragment, null);
-        adapter.addFragment(recentlyPlayedFragment, null);
-        adapter.addFragment(searchFragment, null);
-        adapter.addFragment(playlistsFragment, null);
+        adapter.addFragment(favoritesFragment, null);/*0*/
+        adapter.addFragment(recentlyPlayedFragment, null);/*1*/
+        adapter.addFragment(searchFragment, null);/*2*/
+        adapter.addFragment(playlistsFragment, null);/*3*/
         viewPager.setAdapter(adapter);
     }
 
@@ -276,19 +361,25 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Log.d(TAG, "onPermissionsDenied: ");
     }
 
+    /*●●ここを動画再生の動作にすればいい？●●*/
     @Override
     public void onVideoSelected(YouTubeVideo video) {
         if (!networkConf.isNetworkAvailable()) {
             networkConf.createNetErrorDialog();
             return;
         }
+        /*BackgroundAudioService classへ向けたintent*/
         Intent serviceIntent = new Intent(this, BackgroundAudioService.class);
+        /*再生をセット？*/
         serviceIntent.setAction(BackgroundAudioService.ACTION_PLAY);
+        /*ビデオ単体をセット*/
         serviceIntent.putExtra(Config.YOUTUBE_TYPE, ItemType.YOUTUBE_MEDIA_TYPE_VIDEO);
+        /*引数になってる目当てのビデオをintentに詰める*/
         serviceIntent.putExtra(Config.YOUTUBE_TYPE_VIDEO, video);
         startService(serviceIntent);
     }
 
+    /*プレイリストをintentに詰めて送るやつ*/
     @Override
     public void onPlaylistSelected(List<YouTubeVideo> playlist, int position) {
         if (!networkConf.isNetworkAvailable()) {
@@ -303,6 +394,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         startService(serviceIntent);
     }
 
+    /*お気に入りfragmentにビデオを追加したり削除したり*/
     @Override
     public void onFavoritesSelected(YouTubeVideo video, boolean isChecked) {
         if (isChecked) {
@@ -312,6 +404,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
+    /*fragment追加？*/
     /**
      * Class which provides adapter for fragment pager
      */
@@ -345,6 +438,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     }
 
+
+    /**/
     /**
      * Options menu in action bar
      *
@@ -354,8 +449,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        /*メニューバー追加*/
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
+        /*探すボタンで検索できるよう機能の実装*/
         MenuItem searchItem = menu.findItem(R.id.action_search);
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 
@@ -364,6 +461,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         }
 
+        /*第一引数：context,第二引数:レイアウトid、三：Cursur,四：カラム名（配列）、五：viewid,六：flag*/
         //suggestions
         final CursorAdapter suggestionAdapter = new SimpleCursorAdapter(this,
                 suggestions,
@@ -373,14 +471,19 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 0);
         final List<String> suggestions = new ArrayList<>();
 
+        /*setSuggestionsAdaper:独自のadapterをセットする*/
         searchView.setSuggestionsAdapter(suggestionAdapter);
 
+
+        /*リスナー設定クリックされたら*/
         searchView.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
+            /*suggestionをスクロールしたとき？*/
             @Override
             public boolean onSuggestionSelect(int position) {
                 return false;
             }
 
+            /*スクロールを選んだ時検索*/
             @Override
             public boolean onSuggestionClick(int position) {
                 searchView.setQuery(suggestions.get(position), false);
@@ -394,16 +497,19 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
         });
 
+        /*検索窓の文字が変わるたび呼び出される？*/
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 return false; //if true, no new intent is started
             }
 
+            /*検索ワードが変わったら*/
             @Override
             public boolean onQueryTextChange(final String query) {
                 // check network connection. If not available, do not query.
                 // this also disables onSuggestionClick triggering
+                /*二文字以上入力されてたら*/
                 if (query.length() > 2) { //make suggestions after 3rd letter
                     if (networkConf.isNetworkAvailable()) {
 
@@ -519,10 +625,21 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     .showColorEdit(true)
                     .build()
                     .show();
-        }
+        }else if(id==R.id.log_in){
+            String[] perms = {Manifest.permission.GET_ACCOUNTS, Manifest.permission.READ_PHONE_STATE};
+            if (!EasyPermissions.hasPermissions(this, perms)) {
+                EasyPermissions.requestPermissions(this, "YouTubeアカウントにlog inするには連絡先と電話の許可が必要です。\n許可してから再度log inし直してください。",
+                        PERMISSIONS, perms);
+            }else{
+                startActivityForResult(
+                        getCredential().newChooseAccountIntent(),
+                        REQUEST_ACCOUNT_PICKER);
+            }
+            }
 
         return super.onOptionsItemSelected(item);
     }
+
 
     /**
      * Loads app theme color saved in preferences

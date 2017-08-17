@@ -7,6 +7,7 @@ import android.content.Context;
  * Created by smedic on 5.3.17..
  */
 
+/*アプリコンテキスト取得のためのクラス*/
 public class YTApplication extends Application {
 
     private static Context mContext;

@@ -16,6 +16,8 @@
 package com.smedic.tubtub.fragments;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -27,6 +29,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.Channel;
+import com.google.api.services.youtube.model.ChannelListResponse;
+import com.google.api.services.youtube.model.Playlist;
+import com.google.api.services.youtube.model.PlaylistListResponse;
 import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.R;
 import com.smedic.tubtub.adapters.PlaylistsAdapter;
@@ -39,9 +47,13 @@ import com.smedic.tubtub.utils.Config;
 import com.smedic.tubtub.youtube.YouTubePlaylistVideosLoader;
 import com.smedic.tubtub.youtube.YouTubePlaylistsLoader;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+
+import static com.smedic.tubtub.youtube.YouTubeSingleton.getCredential;
 
 /**
  * Class that handles list of the playlists acquired from YouTube
@@ -124,11 +136,14 @@ public class PlaylistsFragment extends BaseFragment implements
         getLoaderManager().restartLoader(2, null, new LoaderManager.LoaderCallbacks<List<YouTubePlaylist>>() {
             @Override
             public Loader<List<YouTubePlaylist>> onCreateLoader(final int id, final Bundle args) {
+                Log.d("kandabashi", "onCreateLoader");
                 return new YouTubePlaylistsLoader(context);
             }
 
+
             @Override
             public void onLoadFinished(Loader<List<YouTubePlaylist>> loader, List<YouTubePlaylist> data) {
+                Log.d("kandabashi","onLoadFinished");
                 if (data == null) {
                     swipeToRefresh.setRefreshing(false);
                     return;
@@ -161,14 +176,17 @@ public class PlaylistsFragment extends BaseFragment implements
     }
 
     private void acquirePlaylistVideos(final String playlistId) {
+        Log.d("kandabashi","acquirePlaylistVideos");
         getLoaderManager().restartLoader(3, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
             @Override
             public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
+                Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:"+playlistId);
                 return new YouTubePlaylistVideosLoader(context, playlistId);
             }
 
             @Override
             public void onLoadFinished(Loader<List<YouTubeVideo>> loader, List<YouTubeVideo> data) {
+                Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onLoadFinished");
                 if (data == null || data.isEmpty()) {
                     return;
                 }
@@ -177,6 +195,7 @@ public class PlaylistsFragment extends BaseFragment implements
 
             @Override
             public void onLoaderReset(Loader<List<YouTubeVideo>> loader) {
+                Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onLoaderReset");
                 playlists.clear();
                 playlists.addAll(Collections.<YouTubePlaylist>emptyList());
             }
@@ -189,6 +208,7 @@ public class PlaylistsFragment extends BaseFragment implements
      * @param playlistId
      */
     private void removePlaylist(final String playlistId) {
+        Log.d("kandabashi","removePlaylist");
         YouTubeSqlDb.getInstance().playlists().delete(playlistId);
 
         for (YouTubePlaylist playlist : playlists) {
@@ -208,6 +228,7 @@ public class PlaylistsFragment extends BaseFragment implements
      * @return
      */
     private String extractUserName(String emailAddress) {
+        Log.d("kandabsahi","extraUserName");
         if (emailAddress != null) {
             String[] parts = emailAddress.split("@");
             if (parts.length > 0) {
@@ -232,6 +253,9 @@ public class PlaylistsFragment extends BaseFragment implements
     @Override
     public void onItemClick(YouTubePlaylist youTubePlaylist) {
         //results are in onVideosReceived callback method
+        String id=youTubePlaylist.getId();
+        Log.d("kandabashi","PlaylistsFragment-onItemClicked-id:"+id);
         acquirePlaylistVideos(youTubePlaylist.getId());
     }
+
 }

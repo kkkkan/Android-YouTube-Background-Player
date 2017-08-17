@@ -6,8 +6,11 @@ import android.util.Log;
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.Channel;
+import com.google.api.services.youtube.model.ChannelListResponse;
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
+import com.google.api.services.youtube.model.PlaylistListResponse;
 import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.smedic.tubtub.model.YouTubeVideo;
@@ -22,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static com.smedic.tubtub.youtube.YouTubeSingleton.getInstance;
+import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentials;
 
 /**
  * Created by smedic on 5.3.17..
@@ -30,7 +34,7 @@ import static com.smedic.tubtub.youtube.YouTubeSingleton.getInstance;
 public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVideo>> {
 
     private final static String TAG = "SMEDIC";
-    private YouTube youtube = getInstance().getYouTube();
+    private YouTube youtube = getInstance().getYouTubeWithCredentials();//getYouTube();
     private String playlistId;
 
     public YouTubePlaylistVideosLoader(Context context, String playlistId) {
@@ -41,23 +45,27 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
     @Override
     public List<YouTubeVideo> loadInBackground() {
 
+        Log.d("kandabashi","YTPVL-loadInBackground-1");
         List<PlaylistItem> playlistItemList = new ArrayList<>();
         List<YouTubeVideo> playlistItems = new ArrayList<>();
         String nextToken = "";
         // Retrieve the playlist of the channel's uploaded videos.
         YouTube.PlaylistItems.List playlistItemRequest;
+        Log.d("kandabashi","YTPVL-loadInBackground-2");
         try {
             playlistItemRequest = youtube.playlistItems().list("id,contentDetails,snippet");
             playlistItemRequest.setPlaylistId(playlistId);
-            playlistItemRequest.setKey(Config.YOUTUBE_API_KEY);
+            Log.d("kandabashi","YTPVL-loadInBackground-id:"+playlistId);
+            //playlistItemRequest.setKey("ee");
             playlistItemRequest.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
-            playlistItemRequest.setFields("items(contentDetails/videoId,snippet/title," +
-                    "snippet/thumbnails/default/url),nextPageToken");
+            playlistItemRequest.setFields("items(contentDetails/videoId,snippet/title,snippet/thumbnails/default/url),nextPageToken");
             // Call API one or more times to retrieve all items in the list. As long as API
             // response returns a nextPageToken, there are still more items to retrieve.
-            //do {
-            //playlistItemRequest.setPageToken(nextToken);
+           // do {
+           // playlistItemRequest.setPageToken(nextToken);
+            Log.d("kandabashi","YTPVL-loadInBackground-3");
             PlaylistItemListResponse playlistItemResult = playlistItemRequest.execute();
+            Log.d("kandabashi","YTPVL-loadInBackground-4");
             playlistItemList.addAll(playlistItemResult.getItems());
             //nextToken = playlistItemResult.getNextPageToken();
             //} while (nextToken != null);
@@ -80,13 +88,15 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
             return Collections.emptyList();
         }
 
+        Log.d("kandabashi","YTPVL-loadInBackground-5");
         //videos to get duration
         YouTube.Videos.List videosList = null;
+        Log.d("kandabashi","YTPVL-loadInBackground-6");
         try {
             videosList = youtube.videos().list("id,contentDetails");
-            videosList.setKey(Config.YOUTUBE_API_KEY);
+            //videosList.setKey("ee");
             videosList.setFields("items(contentDetails/duration)");
-
+            Log.d("kandabashi","YTPVL-loadInBackground-7");
             //save all ids from searchList list in order to find video list
             StringBuilder contentDetails = new StringBuilder();
 
@@ -97,40 +107,67 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
                     contentDetails.append(",");
                 ii++;
             }
+            Log.d("kandabashi","YTPVL-loadInBackground-8");
             //find video list
             videosList.setId(contentDetails.toString());
+            Log.d("kandabashi","YTPVL-loadInBackground-9");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         VideoListResponse resp = null;
         try {
+            Log.d("kandabashi","YTPVL-loadInBackground-10");
             resp = videosList.execute();
+            Log.d("kandabashi","YTPVL-loadInBackground-11");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        Log.d("kandabashi","YTPVL-loadInBackground-12");
         List<Video> videoResults = resp.getItems();
         Iterator<PlaylistItem> pit = playlistItemList.iterator();
         Iterator<Video> vit = videoResults.iterator();
+        Log.d("kandabashi","YTPVL-loadInBackground-13");
         while (pit.hasNext()) {
+            Log.d("kandabashi","YTPVL-loadInBackground-14");
             PlaylistItem playlistItem = pit.next();
+            Log.d("kandabashi","YTPVL-loadInBackground-15");
             Video videoItem = vit.next();
 
+            Log.d("kandabashi","YTPVL-loadInBackground-16");
             YouTubeVideo youTubeVideo = new YouTubeVideo();
+            Log.d("kandabashi","YTPVL-loadInBackground-17");
             youTubeVideo.setId(playlistItem.getContentDetails().getVideoId());
+            Log.d("kandabashi","YTPVL-loadInBackground-18");
             youTubeVideo.setTitle(playlistItem.getSnippet().getTitle());
+            Log.d("kandabashi","YTPVL-loadInBackground-19");
+            playlistItem.getSnippet();
+            Log.d("kandabashi","YTPVL-loadInBackground-19-1");
+            playlistItem.getSnippet().getThumbnails();
+            Log.d("kandabashi","YTPVL-loadInBackground-19-2");
+            playlistItem.getSnippet().getThumbnails().getDefault();
+            Log.d("kandabashi","YTPVL-loadInBackground-19-3");
+            playlistItem.getSnippet().getThumbnails().getDefault().getUrl();
+            Log.d("kandabashi","YTPVL-loadInBackground-19-4");
             youTubeVideo.setThumbnailURL(playlistItem.getSnippet().getThumbnails().getDefault().getUrl());
+            Log.d("kandabashi","YTPVL-loadInBackground-20");
             //video info
             if (videoItem != null) {
+                Log.d("kandabashi","YTPVL-loadInBackground-21");
                 String isoTime = videoItem.getContentDetails().getDuration();
+                Log.d("kandabashi","YTPVL-loadInBackground-22");
                 String time = Utils.convertISO8601DurationToNormalTime(isoTime);
+                Log.d("kandabashi","YTPVL-loadInBackground-23");
                 youTubeVideo.setDuration(time);
+                Log.d("kandabashi","YTPVL-loadInBackground-24");
             } else {
+                Log.d("kandabashi","YTPVL-loadInBackground-14");
                 youTubeVideo.setDuration("NA");
             }
             playlistItems.add(youTubeVideo);
         }
+        Log.d("kandabashi","YTPVL-loadInBackground-25");
         return playlistItems;
     }
 
