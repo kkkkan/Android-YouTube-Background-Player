@@ -126,7 +126,7 @@ import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentia
  * Activity that manages fragments and action bar
  */
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
-        OnItemSelected, OnFavoritesSelected,SearchFragment.onMovieChangeListner,SurfaceHolder.Callback, MediaController.MediaPlayerControl {
+        OnItemSelected, OnFavoritesSelected,SurfaceHolder.Callback, MediaController.MediaPlayerControl,MediaPlayer.OnPreparedListener {
     public static Handler mainHandler=new Handler();
 
     public Context getMainContext() {
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     public final String YouTubeFragment="YouTubeFragment";
 
-    private String movieUrl;
+    private String movieUrl;//="https://r1---sn-5n5ip-ioql.googlevideo.com/videoplayback?itag=22&expire=1503298855&sparams=dur%2Cei%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire&mt=1503277186&mime=video%2Fmp4&ratebypass=yes&initcwndbps=2911250&ipbits=0&mv=m&dur=64.876&source=youtube&ms=au&lmt=1471825215662803&requiressl=yes&ip=61.213.93.242&ei=xzCaWcGeAsyWqQHtzaLwBQ&pl=20&mn=sn-5n5ip-ioql&mm=31&signature=7CC145CDBCB8334AA3F4996D5BB1334B6B64A907.8DDD32894794D7E190D82EC37E3B9621F60DA368&key=yt6&id=o-AB_KiypeA7HDuR_94Q9yJPHTcLMDqeYlyOFbRHSB1-uR";
     private SurfaceHolder mHolder;
     private SurfaceView mPreview;
     private MediaPlayer mMediaPlayer = null;
@@ -268,36 +268,45 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Log.d("kandabashi", "surfaceCreated");
         /*mediaplayer関係*/
         // URLの先にある動画を再生する
-        Uri mediaPath = Uri.parse("https://r2---sn-5n5ip-ioql.googlevideo.com/videoplayback?dur=179.258&itag=22&pl=20&ip=61.213.93.242&key=yt6&mt=1503274550&ms=au&source=youtube&mv=m&id=o-AFscPxausAVy59Ia7Pn_f2HR13bk6l_aE4985VSbQkCc&expire=1503296260&mm=31&mn=sn-5n5ip-ioql&mime=video%2Fmp4&signature=87E786D6024E2745B6BB1F94FD7D037D4E679871.E1F25CF5432AF486F3EAE1EF4D540230D9DB01F7&lmt=1503053602061290&ratebypass=yes&ipbits=0&requiressl=yes&ei=pCaaWayaHZyJgAPg2bDAAQ&initcwndbps=2857500&sparams=dur%2Cei%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire0"/*movieUrl*/);
-        try {
-            Log.d("kandabashi", "surfaceCreated-1");
-            mMediaPlayer=new MediaPlayer();
-            Log.d("kandabashi", "surfaceCreated-2");
-            mMediaPlayer.setDataSource(this, mediaPath);
-            Log.d("kandabashi", "surfaceCreated-3");
-            mPreview=(SurfaceView)findViewById(R.id.surface);
-            mHolder=mPreview.getHolder();
-            Log.d("kandabashi", "surfaceCreated-3.5");
-            mMediaPlayer.setDisplay(mHolder/*paramSurfaceHolder*/);
-            //mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            Log.d("kandabashi", "surfaceCreated-4");
-            mMediaPlayer.prepare();
-            Log.d("kandabashi", "surfaceCreated-5");
-            mMediaPlayer.start();
-        } catch (IllegalArgumentException e) {
-            Log.d("kakndabashi","surfaceCreated-IllegalArgumentException"+e.getMessage());
-            e.printStackTrace();
-        } catch (IllegalStateException e) {
-            Log.d("kakndabashi","surfaceCreated-IllegalStateException"+e.getMessage());
-            e.printStackTrace();
-        } catch (IOException e) {
-            Log.d("kakndabashi","surfaceCreated-IOException"+e.getMessage());
-            e.printStackTrace();
-        }
+        if(movieUrl!=null) {
+            Uri mediaPath = Uri.parse(/*"https://r1---sn-5n5ip-ioql.googlevideo.com/videoplayback?itag=22&expire=1503298855&sparams=dur%2Cei%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire&mt=1503277186&mime=video%2Fmp4&ratebypass=yes&initcwndbps=2911250&ipbits=0&mv=m&dur=64.876&source=youtube&ms=au&lmt=1471825215662803&requiressl=yes&ip=61.213.93.242&ei=xzCaWcGeAsyWqQHtzaLwBQ&pl=20&mn=sn-5n5ip-ioql&mm=31&signature=7CC145CDBCB8334AA3F4996D5BB1334B6B64A907.8DDD32894794D7E190D82EC37E3B9621F60DA368&key=yt6&id=o-AB_KiypeA7HDuR_94Q9yJPHTcLMDqeYlyOFbRHSB1-uR"*/movieUrl);
+
+            try {
+
+                Log.d("kandabashi", "surfaceCreated-1");
+                // mMediaPlayer=new MediaPlayer();
+                Log.d("kandabashi", "surfaceCreated-2");
+                mMediaPlayer.setDataSource(this, mediaPath);
+                Log.d("kandabashi", "surfaceCreated-3");
+                //  mPreview=(SurfaceView)findViewById(R.id.surface);
+                //mHolder=mPreview.getHolder();
+                Log.d("kandabashi", "surfaceCreated-3.5");
+                mMediaPlayer.setDisplay(/*mHolder*/paramSurfaceHolder);
+                //mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+             /*prepareに時間かかることを想定し直接startせずにLister使う*/
+                mMediaPlayer.setOnPreparedListener(this);
+                Log.d("kandabashi", "surfaceCreated-4");
+
+                mMediaPlayer.prepare();
+                Log.d("kandabashi", "surfaceCreated-5");
+                //mMediaPlayer.start();
+            } catch (IllegalArgumentException e) {
+                Log.d("kakndabashi", "surfaceCreated-IllegalArgumentException" + e.getMessage());
+                e.printStackTrace();
+            } catch (IllegalStateException e) {
+                Log.d("kakndabashi", "surfaceCreated-IllegalStateException" + e.getMessage());
+                e.printStackTrace();
+            } catch (IOException e) {
+                Log.d("kakndabashi", "surfaceCreated-IOException" + e.getMessage());
+                e.printStackTrace();
+            }
       /*mediaplayer関係ここまで*/
+        }
 
     }
-
+    public void onPrepared(MediaPlayer player) {
+        player.start();
+    }
     @Override
     public void surfaceChanged(SurfaceHolder paramSurfaceHolder, int paramInt1,
                                int paramInt2, int paramInt3) {
@@ -309,11 +318,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Log.d("kandabashi", "surfaceDestroyed");
         //mMediaPlayer.setDisplay(null);
 
-        if (mMediaPlayer != null) {
+        /*if (mMediaPlayer != null) {
             mMediaPlayer.stop();
             mMediaPlayer.release();
             mMediaPlayer = null;
-        }
+        }*/
     }
 
     // ここから先はMediaController向け --------------------------
@@ -571,21 +580,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     /*再生中の動画を変更するためのメゾッド*/
-    public void movieChange(String videoId){
-        /*Log.d("kandabashi","MainActivity-movieChange");
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(YouTubeFragment);
-        if(fragment!=null&&fragment instanceof YouTubeFragment){
-            ( (YouTubeFragment)fragment).setVideoId(videoId);
 
-            Fragment youtubeFragment = new YouTubeFragment();
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            //第一引数：ViewGroupのid 第二引数：Fragmentを継承したクラスのインスタンス 第三引数：タグ
-            ft.replace(R.id.fragment, youtubeFragment, YouTubeFragment);
-            ft.addToBackStack(null);
-            ft.commit();
-
-        }*/
-    }
     /*品質を考えてる?*/
     /*
     private YtFile getBestStream(SparseArray<YtFile> ytFiles) {
@@ -645,6 +640,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     String downloadUrl = ytFiles.get(itag).getUrl();
                     setMovieUrl(downloadUrl);
                     Log.d("kandabashi","URL:"+downloadUrl);
+                    /*resetとかここでやらないとダメ（非同期処理だから外でやると追いつかない）*/
+                    setMovieUrl(downloadUrl);
+                    mMediaPlayer.reset();
+                    surfaceCreated(mHolder);
                 }
                 //deviceBandwidthSampler.stopSampling();
                 //YtFile ytFile = getBestStream(ytFiles);
@@ -667,7 +666,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
 
-
+        //mMediaPlayer.reset();
         Log.d("kandabashi","onVideoSelected");
        /* try {
             String ytInfoUrl = "http://www.youtube.com/get_video_info?video_id=" + video.getId() + "&eurl="
@@ -677,7 +676,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
             Log.d("kandabashi","MainActivity-onVideoSelected-error:"+e.getMessage());
         }*/
-       surfaceCreated(mHolder);
+      // surfaceCreated(mHolder);
         /*BackgroundAudioService classへ向けたintent*/
      //   Intent serviceIntent = new Intent(this, BackgroundAudioService.class);
         /*再生をセット？*/

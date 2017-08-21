@@ -9,7 +9,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-
+    <uses-sdk
+        android:minSdkVersion="16"
+        android:targetSdkVersion="25" />
     <application
         android:name=".YTApplication"
         android:allowBackup="false"

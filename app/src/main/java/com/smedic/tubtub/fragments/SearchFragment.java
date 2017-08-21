@@ -165,9 +165,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         onFavoritesSelected.onFavoritesSelected(video, isChecked); // pass event to MainActivity
     }
 
-    public interface onMovieChangeListner{
-        public void movieChange(String videoId);
-    }
+
 
     @Override
     public void onItemClick(YouTubeVideo video) {
