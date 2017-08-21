@@ -35,4 +35,7 @@
     <string name="choose_colors">Choose background and text color</string>
     <string name="cancel">cancel</string>
     <string name="failed_playback">Playback failed!</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

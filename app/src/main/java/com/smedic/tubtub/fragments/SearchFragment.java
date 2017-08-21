@@ -15,19 +15,24 @@
  */
 package com.smedic.tubtub.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.R;
+import com.smedic.tubtub.YouTubeFragment;
 import com.smedic.tubtub.adapters.VideosAdapter;
 import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
@@ -160,10 +165,22 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         onFavoritesSelected.onFavoritesSelected(video, isChecked); // pass event to MainActivity
     }
 
+    public interface onMovieChangeListner{
+        public void movieChange(String videoId);
+    }
+
     @Override
     public void onItemClick(YouTubeVideo video) {
         YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
+       // Activity activity=getActivity();
+       /* if(activity instanceof onMovieChangeListner){
+            ((MainActivity)activity).movieChange(video.getId());
+        }*/
+      /* MainActivity mainActivity=(MainActivity)activity;
+        mainActivity.setMovieUrl( Config.YOUTUBE_BASE_URL + video.getId());
+        mainActivity.surfaceCreated(mainActivity.getmHolder());*/
         //itemSelected.onVideoSelected(video);
-        itemSelected.onPlaylistSelected(searchResultsList, searchResultsList.indexOf(video));
+        itemSelected.onVideoSelected(video);
+        //itemSelected.onPlaylistSelected(searchResultsList, searchResultsList.indexOf(video));
     }
 }

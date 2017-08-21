@@ -111,7 +111,7 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
             mainHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(new MainActivity().mainContext,"もう一度ログインしなおしてください。",Toast.LENGTH_LONG).show();
+                    Toast.makeText(new MainActivity().getMainContext(),"もう一度ログインしなおしてください。",Toast.LENGTH_LONG).show();
                 }
             });
             cancelLoad();
