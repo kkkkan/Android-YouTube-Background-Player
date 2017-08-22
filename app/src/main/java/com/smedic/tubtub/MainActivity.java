@@ -58,8 +58,10 @@ import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.MediaController;
@@ -203,23 +205,30 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mMediaController = new MediaController(this);
         mMediaController.setMediaPlayer(this);
         mMediaController.setAnchorView(mPreview);
+
+        /*mMediaController表示のためのtouchlistener*/
+        mPreview.setOnTouchListener(new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.d("kandabashi","onTouch");
+                boolean r=v instanceof SurfaceView;
+                boolean y=mMediaPlayer != null;
+                Log.d("kandabashi",String.valueOf(r)+String.valueOf(y));
+                if (event.getAction()==MotionEvent.ACTION_DOWN && v instanceof SurfaceView && mMediaPlayer != null) {
+                    if (!mMediaController.isShowing()) {
+                        mMediaController.show();
+                    } else {
+                        mMediaController.hide();
+                    }
+                }
+                return true;
+            }
+        });
+
+
  /*Mediaplayer関係ここまで*/
 
 
-
-/*
-        Fragment youtubeFragment = new YouTubeFragment();
-        // Compatibility packageを使うとFragmentActivityを継承するので
-        // Fragment.Activity.getFragmentManager()は使えないので
-        // 代わりにFragmentActivity.getSupportFragmentManager()を使う
-
-        // FragmentTransaction ft = getFragmentManager().beginTransaction();
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-
-
-        //第一引数：ViewGroupのid 第二引数：Fragmentを継承したクラスのインスタンス 第三引数：タグ
-        ft.add(R.id.fragment, youtubeFragment, YouTubeFragment).commit();
-*/
         YouTubeSqlDb.getInstance().init(this);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -253,7 +262,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         // バックグラウンド再生を許可する
         requestVisibleBehind(true);
     }
-
+    @Override
+ public void onPause(){
+    super.onPause();
+        Log.d("kandabashi","onPause");
+ }
     public boolean onDestroy(MediaPlayer mp, int what, int extra) {
         Log.d("kandabashi" ,"onDestroy");
         if (mp != null) {
@@ -263,6 +276,21 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         return false;
     }
 
+public void onStart(){
+    super.onStart();
+    Log.d("kandabashi","onStart");
+
+}
+public void onRestart(){
+    super.onRestart();
+    Log.d("kandabashi","onRestart");
+}
+
+public void onStop(){
+    super.onStop();
+    Log.d("kandabashi","onStop");
+}
+
     @Override
     public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
         Log.d("kandabashi", "surfaceCreated");
@@ -270,7 +298,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         // URLの先にある動画を再生する
         if(movieUrl!=null) {
             Uri mediaPath = Uri.parse(/*"https://r1---sn-5n5ip-ioql.googlevideo.com/videoplayback?itag=22&expire=1503298855&sparams=dur%2Cei%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire&mt=1503277186&mime=video%2Fmp4&ratebypass=yes&initcwndbps=2911250&ipbits=0&mv=m&dur=64.876&source=youtube&ms=au&lmt=1471825215662803&requiressl=yes&ip=61.213.93.242&ei=xzCaWcGeAsyWqQHtzaLwBQ&pl=20&mn=sn-5n5ip-ioql&mm=31&signature=7CC145CDBCB8334AA3F4996D5BB1334B6B64A907.8DDD32894794D7E190D82EC37E3B9621F60DA368&key=yt6&id=o-AB_KiypeA7HDuR_94Q9yJPHTcLMDqeYlyOFbRHSB1-uR"*/movieUrl);
-
             try {
 
                 Log.d("kandabashi", "surfaceCreated-1");
@@ -305,6 +332,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     }
     public void onPrepared(MediaPlayer player) {
+        Log.d("kandabashi","onPrepared");
         player.start();
     }
     @Override
@@ -314,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder paramSurfaceHolder) {
+   public void surfaceDestroyed(SurfaceHolder paramSurfaceHolder) {
         Log.d("kandabashi", "surfaceDestroyed");
         //mMediaPlayer.setDisplay(null);
 
@@ -326,18 +354,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     // ここから先はMediaController向け --------------------------
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        Log.d(TAG, "KeyCode:"+ event.getKeyCode());
-        if (event.getKeyCode() != KeyEvent.KEYCODE_BACK) {
-            if (!mMediaController.isShowing()){
-                mMediaController.show();
-            } else {
-                mMediaController.hide();
-            }
-        }
-        return super.dispatchKeyEvent(event);
-    }
+
     @Override
     public void start() {
         mMediaPlayer.start();
@@ -579,52 +596,21 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Log.d(TAG, "onPermissionsDenied: ");
     }
 
-    /*再生中の動画を変更するためのメゾッド*/
 
-    /*品質を考えてる?*/
-    /*
-    private YtFile getBestStream(SparseArray<YtFile> ytFiles) {
-        ConnectionQuality connectionQuality = ConnectionQuality.MODERATE;
-        connectionQuality = ConnectionClassManager.getInstance().getCurrentBandwidthQuality();
-        int[] itags = new int[]{251, 141, 140, 17};
 
-        if (connectionQuality != null && connectionQuality != ConnectionQuality.UNKNOWN) {
-            switch (connectionQuality) {
-                case POOR:
-                    itags = new int[]{17, 140, 251, 141};
-                    break;
-                case MODERATE:
-                    itags = new int[]{251, 141, 140, 17};
-                    break;
-                case GOOD:
-                case EXCELLENT:
-                    itags = new int[]{141, 251, 140, 17};
-                    break;
-            }
-        }
-
-        if (ytFiles.get(itags[0]) != null) {
-            return ytFiles.get(itags[0]);
-        } else if (ytFiles.get(itags[1]) != null) {
-            return ytFiles.get(itags[1]);
-        } else if (ytFiles.get(itags[2]) != null) {
-            return ytFiles.get(itags[2]);
-        }
-        return ytFiles.get(itags[3]);
-    }
-    DeviceBandwidthSampler deviceBandwidthSampler = DeviceBandwidthSampler.getInstance();*/
-
-    /*●●ここを動画再生の動作にすればいい？●●*/
+    /*プレイリストをintentに詰めて送るやつ*/
     @Override
-    public void onVideoSelected(final YouTubeVideo video) {
-
+    public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
         if (!networkConf.isNetworkAvailable()) {
             networkConf.createNetErrorDialog();
             return;
         }
 
+        final List<YouTubeVideo> playList=playlist;
+        final YouTubeVideo video = ((ArrayList<YouTubeVideo>) playlist).get(position);
+        final int currentSongIndex = position;
+
         String youtubeLink=Config.YOUTUBE_BASE_URL+video.getId();
-        //deviceBandwidthSampler.startSampling();
         new YouTubeExtractor(this) {
             @Override
             protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
@@ -635,74 +621,86 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if (ytFiles != null) {
-                    int itag = 22;
-                    String downloadUrl = ytFiles.get(itag).getUrl();
-                    setMovieUrl(downloadUrl);
-                    Log.d("kandabashi","URL:"+downloadUrl);
-                    /*resetとかここでやらないとダメ（非同期処理だから外でやると追いつかない）*/
-                    setMovieUrl(downloadUrl);
-                    mMediaPlayer.reset();
-                    surfaceCreated(mHolder);
-                }
-                //deviceBandwidthSampler.stopSampling();
-                //YtFile ytFile = getBestStream(ytFiles);
-                /*try {
-                    if (mMediaPlayer != null) {
-                        mMediaPlayer.reset();
-                        mMediaPlayer.setDataSource(ytFile.getUrl());
-                        //mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                        mMediaPlayer.setDisplay(mHolder);
-                        mMediaPlayer.prepare();
-                        mMediaPlayer.start();
 
-                        Toast.makeText(YTApplication.getAppContext(), video.getTitle(), Toast.LENGTH_SHORT).show();
+
+                /*形式を変えて360p（ノーマル画質）で試す。アプリを軽くするため高画質は非対応にした。これ以上落とすと音声が含まれなくなっちゃう。*/
+                int[] itag={18,134,243};
+                if (ytFiles != null) {
+                    int tag=0;
+                    for(int i:itag){
+                        if(ytFiles.get(i)!=null){
+                            tag=i;
+                            break;
+                        }
                     }
-                } catch (IOException io) {
-                    io.printStackTrace();
-                }*/
+
+                    if(tag!=0) {
+                        /*最近見たリストに追加*/
+                        YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
+                        Log.d("kandabashi","ytFile-not-null-tag:"+String.valueOf(tag));
+                        String downloadUrl = ytFiles.get(tag).getUrl();
+                        setMovieUrl(downloadUrl);
+                        Log.d("kandabashi", "URL:" + downloadUrl);
+                    /*resetとかここでやらないとダメ（非同期処理だから外でやると追いつかない）*/
+                    /*ポーズから戻ったときのためMovieUrlも変えとく*/
+                        setMovieUrl(downloadUrl);
+                        mMediaPlayer.reset();
+                        surfaceCreated(mHolder);
+                    }else if(currentSongIndex+1<playList.size()){
+                        Log.d("kandabashi","ytFile-null-next:"+video.getId());
+                        Toast.makeText(mainContext,"このビデオは読み込めません。次のビデオを再生します。",Toast.LENGTH_LONG).show();
+                        onPlaylistSelected( playList, currentSongIndex+1);
+                    }else{
+                        Log.d("kandabashi","ytFile-null-finish:"+video.getId());
+                        Toast.makeText(mainContext,"このビデオは読み込めません。再生を終了します。",Toast.LENGTH_LONG).show();
+
+                    }
+
+                }
+
             }
         }.execute(youtubeLink);
 
 
+        /*終了後次の曲に行くためのリスナー*/
+        /*再帰呼び出しになってしまってる？*/
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener(){
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                if(currentSongIndex+1<playList.size()) {
+                    onPlaylistSelected(playList, (currentSongIndex + 1));
+                }else{
 
-        //mMediaPlayer.reset();
-        Log.d("kandabashi","onVideoSelected");
-       /* try {
-            String ytInfoUrl = "http://www.youtube.com/get_video_info?video_id=" + video.getId() + "&eurl="
-                    + URLEncoder.encode("https://youtube.googleapis.com/v/" + video.getId(), "UTF-8");
-            setMovieUrl(/*Config.YOUTUBE_BASE_URL + video.getId()*//*ytInfoUrl);*/
-        /*}catch (Exception e){
+                    //mMediaPlayer.reset();
+                }
+            }
+        });
 
-            Log.d("kandabashi","MainActivity-onVideoSelected-error:"+e.getMessage());
-        }*/
-      // surfaceCreated(mHolder);
-        /*BackgroundAudioService classへ向けたintent*/
-     //   Intent serviceIntent = new Intent(this, BackgroundAudioService.class);
-        /*再生をセット？*/
-       // serviceIntent.setAction(BackgroundAudioService.ACTION_PLAY);
-        /*ビデオ単体をセット*/
-      //  serviceIntent.putExtra(Config.YOUTUBE_TYPE, ItemType.YOUTUBE_MEDIA_TYPE_VIDEO);
-        /*引数になってる目当てのビデオをintentに詰める*/
-       // serviceIntent.putExtra(Config.YOUTUBE_TYPE_VIDEO, video);
+        /*戻るボタン・進むボタン*/
+        mMediaController.setPrevNextListeners(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //next button clicked
+                if(currentSongIndex+1<playList.size()) {
+                    onPlaylistSelected(playList, (currentSongIndex + 1));
+                }
+            }
+        }, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //previous button clicked
+                if(currentSongIndex-1>0){
+                    onPlaylistSelected(playList, (currentSongIndex - 1));
+                }
+            }
+        });
 
-        //startService(serviceIntent);
-   }
+        //mMediaPlayer.reset();VideoSelected");
 
-    /*プレイリストをintentに詰めて送るやつ*/
-    @Override
-    public void onPlaylistSelected(List<YouTubeVideo> playlist, int position) {
-        if (!networkConf.isNetworkAvailable()) {
-            networkConf.createNetErrorDialog();
-            return;
-        }
-        Intent serviceIntent = new Intent(this, BackgroundAudioService.class);
-        serviceIntent.setAction(BackgroundAudioService.ACTION_PLAY);
-        serviceIntent.putExtra(Config.YOUTUBE_TYPE, ItemType.YOUTUBE_MEDIA_TYPE_PLAYLIST);
-        serviceIntent.putExtra(Config.YOUTUBE_TYPE_PLAYLIST, (ArrayList) playlist);
-        serviceIntent.putExtra(Config.YOUTUBE_TYPE_PLAYLIST_VIDEO_POS, position);
-        startService(serviceIntent);
     }
+
+
+
 
     /*お気に入りfragmentにビデオを追加したり削除したり*/
     @Override
