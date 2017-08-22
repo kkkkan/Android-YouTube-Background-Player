@@ -160,7 +160,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     public final String YouTubeFragment = "YouTubeFragment";
 
-    private String movieUrl;
+    private String videoUrl;
+    private String audioUrl;
     private SurfaceHolder mHolder;
     private SurfaceView mPreview;
     private MediaPlayer mMediaPlayer = null;
@@ -171,9 +172,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private int COMPLETION_COUNT = 0;
 
 
-    public void setMovieUrl(String movieUrl) {
-        this.movieUrl = movieUrl;
-    }
+
 
     public SurfaceHolder getmHolder() {
         return this.mHolder;
@@ -304,27 +303,47 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Log.d("kandabashi", "onStop");
     }
 
+
+    private int MediaStartTime=0;
+    public int getMediaStartTime() {
+        return MediaStartTime;
+    }
+
+    public void setMediaStartTime(int mediaStartTime) {
+        MediaStartTime = mediaStartTime;
+    }
+
     @Override
     public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
         Log.d("kandabashi", "surfaceCreated");
         /*mediaplayer関係*/
         // URLの先にある動画を再生する
-        if (movieUrl != null) {
-            Uri mediaPath = Uri.parse(movieUrl);
+        if (videoUrl != null) {
+            Uri mediaPath = Uri.parse(videoUrl);
             try {
                 /*音声だけ再生が動いてるときはまずそれを止める。→2重再生を防ぐため*/
                 /*ホームボタン→画面off→画面on→アプリに戻るをしたときにここに制御が来る。*/
                 if (mAudioMediaPlayer.isPlaying()) {
                     Log.d("kandabashi", "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()");
                     Log.d("kandabashi", "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()"+mAudioMediaPlayer.getCurrentPosition());
+                    //setMediaStartTime(mAudioMediaPlayer.getCurrentPosition());
                     mAudioMediaPlayer.stop();
                 }
 
                 Log.d("kandabashi", "surfaceCreated-1");
                 mMediaPlayer.setDataSource(this, mediaPath);
                 Log.d("kandabashi", "surfaceCreated-2");
-                mMediaPlayer.setDisplay(/*mHolder*/paramSurfaceHolder);
+                mMediaPlayer.setDisplay(paramSurfaceHolder);
              /*prepareに時間かかることを想定し直接startせずにLister使う*/
+                /*mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        Log.d("kandabashi", "onPrepared");
+                        mp.start();
+                        mp.seekTo(getMediaStartTime());
+                        setMediaStartTime(0);
+                    }
+                });*/
                 mMediaPlayer.setOnPreparedListener(this);
                 Log.d("kandabashi", "surfaceCreated-3");
                 mMediaPlayer.prepare();
@@ -348,8 +367,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     /*Homeボタンでバックグラウンド再生の時は音声だけのメディアプレイヤー使っちゃう*/
     public void audioCreated() {
         Log.d("kandabashi", "audioCreated");
-        if (movieUrl != null) {
-            Uri mediaPath = Uri.parse(movieUrl);
+        if (audioUrl != null) {
+            Uri mediaPath = Uri.parse(audioUrl);
             try {
                 mAudioMediaPlayer.setDataSource(this, mediaPath);
                 Log.d("kandabashi", "audioCreated-1");
@@ -673,35 +692,35 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     int[] itagVideo = {18, 134, 243};
                     int[] itagAudio = {251, 141, 140, 17};
                     if (ytFiles != null) {
-                        int tag = 0;
-                        /*画面見えてるとき*/
-                        if (!HOME_BUTTON_PAUSE) {
-                            for (int i : itagVideo) {
+                        int tagVideo = 0;
+                        int tagAudio = 0;
+                        for (int i : itagVideo) {
                                 if (ytFiles.get(i) != null) {
-                                    tag = i;
+                                    tagVideo = i;
                                     break;
                                 }
                             }
-                        /*バックグラウンド再生の時は音楽のみで*/
-                        } else {
                             for (int i : itagAudio) {
                                 if (ytFiles.get(i) != null) {
-                                    tag = i;
+                                    tagAudio = i;
                                     break;
                                 }
                             }
-                        }
 
-                        if (tag != 0) {
+
+                        if (tagVideo != 0 && tagAudio!=0) {
                         /*最近見たリストに追加*/
                             YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
-                            Log.d("kandabashi", "ytFile-not-null-tag:" + String.valueOf(tag));
-                            String downloadUrl = ytFiles.get(tag).getUrl();
-                            setMovieUrl(downloadUrl);
-                            Log.d("kandabashi", "URL:" + downloadUrl);
+                            Log.d("kandabashi", "ytFile-not-null-tagVideo:" + String.valueOf(tagVideo));
+                            Log.d("kandabashi", "ytFile-not-null-tagAudio:" + String.valueOf(tagAudio));
+                            String videoDownloadUrl = ytFiles.get(tagVideo).getUrl();
+                            String audioDownloadUrl=ytFiles.get(tagAudio).getUrl();
+                            Log.d("kandabashi", "VideoURL:" + videoDownloadUrl);
+                            Log.d("kandabashi", "audioURL:" + audioDownloadUrl);
                     /*resetとかここでやらないとダメ（非同期処理だから外でやると追いつかない）*/
                     /*ポーズから戻ったときのためMovieUrlも変えとく*/
-                            setMovieUrl(downloadUrl);
+                            videoUrl=videoDownloadUrl;
+                            audioUrl=audioDownloadUrl;
                             mMediaPlayer.reset();
                             mAudioMediaPlayer.reset();
                             if (!HOME_BUTTON_PAUSE) {
@@ -730,7 +749,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             public void onCompletion(MediaPlayer mp) {
                 if (currentSongIndex + 1 < playList.size()) {
                     Log.d("kandabashi", " mMediaController.setOnCompletionListener");
-                    /*再生が終わった今はhomeボタンによるバックグラウンド再生中である、というときは*/
+                    /*ホームボタンを押すと最初に2回無条件にmediaPlayer.oncompletion呼ばれる。そのための対策*/
                     if (HOME_BUTTON_PAUSE) {
                         /*COMPLETION_COUNTが0～2の時は増やす必要があるがその後は変化させる必要がない。*/
                         if (COMPLETION_COUNT < 3) {
