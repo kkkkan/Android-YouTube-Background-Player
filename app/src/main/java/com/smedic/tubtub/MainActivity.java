@@ -160,11 +160,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     public final String YouTubeFragment="YouTubeFragment";
 
-    private String movieUrl;//="https://r1---sn-5n5ip-ioql.googlevideo.com/videoplayback?itag=22&expire=1503298855&sparams=dur%2Cei%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire&mt=1503277186&mime=video%2Fmp4&ratebypass=yes&initcwndbps=2911250&ipbits=0&mv=m&dur=64.876&source=youtube&ms=au&lmt=1471825215662803&requiressl=yes&ip=61.213.93.242&ei=xzCaWcGeAsyWqQHtzaLwBQ&pl=20&mn=sn-5n5ip-ioql&mm=31&signature=7CC145CDBCB8334AA3F4996D5BB1334B6B64A907.8DDD32894794D7E190D82EC37E3B9621F60DA368&key=yt6&id=o-AB_KiypeA7HDuR_94Q9yJPHTcLMDqeYlyOFbRHSB1-uR";
+    private String movieUrl;
     private SurfaceHolder mHolder;
     private SurfaceView mPreview;
     private MediaPlayer mMediaPlayer = null;
+    private MediaPlayer mAudioMediaPlayer=null;
     private MediaController mMediaController;
+
+    private boolean HOME_BUTTON_PAUSE=false;
+    private int COMPLETION_COUNT=0;
+
 
     public void setMovieUrl(String movieUrl){
         this.movieUrl=movieUrl;
@@ -201,6 +206,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         // MediaPlayerを利用する
         mMediaPlayer = new MediaPlayer();
+        mAudioMediaPlayer=new MediaPlayer();
         // MediaControllerを利用する
         mMediaController = new MediaController(this);
         mMediaController.setMediaPlayer(this);
@@ -261,6 +267,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         // allow to continue playing media in the background.
         // バックグラウンド再生を許可する
         requestVisibleBehind(true);
+        //HOME_BUTTON_PAUSEをfalse,COMPLETION_COUNTを0に
+        HOME_BUTTON_PAUSE=false;
+        COMPLETION_COUNT=0;
     }
     @Override
  public void onPause(){
@@ -297,26 +306,21 @@ public void onStop(){
         /*mediaplayer関係*/
         // URLの先にある動画を再生する
         if(movieUrl!=null) {
-            Uri mediaPath = Uri.parse(/*"https://r1---sn-5n5ip-ioql.googlevideo.com/videoplayback?itag=22&expire=1503298855&sparams=dur%2Cei%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire&mt=1503277186&mime=video%2Fmp4&ratebypass=yes&initcwndbps=2911250&ipbits=0&mv=m&dur=64.876&source=youtube&ms=au&lmt=1471825215662803&requiressl=yes&ip=61.213.93.242&ei=xzCaWcGeAsyWqQHtzaLwBQ&pl=20&mn=sn-5n5ip-ioql&mm=31&signature=7CC145CDBCB8334AA3F4996D5BB1334B6B64A907.8DDD32894794D7E190D82EC37E3B9621F60DA368&key=yt6&id=o-AB_KiypeA7HDuR_94Q9yJPHTcLMDqeYlyOFbRHSB1-uR"*/movieUrl);
+            Uri mediaPath = Uri.parse(movieUrl);
             try {
-
+                /*音声だけ再生が動いてるときはまずそれを止める。→2重再生を防ぐため*/
+                if (mAudioMediaPlayer.isPlaying()) {
+                    mAudioMediaPlayer.stop();
+                }
                 Log.d("kandabashi", "surfaceCreated-1");
-                // mMediaPlayer=new MediaPlayer();
-                Log.d("kandabashi", "surfaceCreated-2");
                 mMediaPlayer.setDataSource(this, mediaPath);
-                Log.d("kandabashi", "surfaceCreated-3");
-                //  mPreview=(SurfaceView)findViewById(R.id.surface);
-                //mHolder=mPreview.getHolder();
-                Log.d("kandabashi", "surfaceCreated-3.5");
+                Log.d("kandabashi", "surfaceCreated-2");
                 mMediaPlayer.setDisplay(/*mHolder*/paramSurfaceHolder);
-                //mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
              /*prepareに時間かかることを想定し直接startせずにLister使う*/
                 mMediaPlayer.setOnPreparedListener(this);
-                Log.d("kandabashi", "surfaceCreated-4");
-
+                Log.d("kandabashi", "surfaceCreated-3");
                 mMediaPlayer.prepare();
-                Log.d("kandabashi", "surfaceCreated-5");
-                //mMediaPlayer.start();
+                Log.d("kandabashi", "surfaceCreated-4");
             } catch (IllegalArgumentException e) {
                 Log.d("kakndabashi", "surfaceCreated-IllegalArgumentException" + e.getMessage());
                 e.printStackTrace();
@@ -328,6 +332,35 @@ public void onStop(){
                 e.printStackTrace();
             }
       /*mediaplayer関係ここまで*/
+        }
+
+    }
+
+
+    /*Homeボタンでバックグラウンド再生の時は音声だけのメディアプレイヤー使っちゃう*/
+    public void audioCreated(){
+        Log.d("kandabashi", "audioCreated");
+        if(movieUrl!=null) {
+            Uri mediaPath = Uri.parse(movieUrl);
+            try {
+                mAudioMediaPlayer.setDataSource(this, mediaPath);
+                Log.d("kandabashi", "audioCreated-1");
+                mAudioMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+             /*prepareに時間かかることを想定し直接startせずにLister使う*/
+                mAudioMediaPlayer.setOnPreparedListener(this);
+                Log.d("kandabashi", "audioCreated-2");
+                mAudioMediaPlayer.prepare();
+                Log.d("kandabashi", "audioCreated-3");
+            } catch (IllegalArgumentException e) {
+                Log.d("kakndabashi", "audioCreated-IllegalArgumentException:" + e.getMessage());
+                e.printStackTrace();
+            } catch (IllegalStateException e) {
+                Log.d("kakndabashi", "audioCreated-IllegalStateException:" + e.getMessage());
+                e.printStackTrace();
+            } catch (IOException e) {
+                Log.d("kakndabashi", "audioCreated-IOException:" + e.getMessage());
+                e.printStackTrace();
+            }
         }
 
     }
@@ -344,13 +377,7 @@ public void onStop(){
     @Override
    public void surfaceDestroyed(SurfaceHolder paramSurfaceHolder) {
         Log.d("kandabashi", "surfaceDestroyed");
-        //mMediaPlayer.setDisplay(null);
-
-        /*if (mMediaPlayer != null) {
-            mMediaPlayer.stop();
-            mMediaPlayer.release();
-            mMediaPlayer = null;
-        }*/
+        HOME_BUTTON_PAUSE=true;
     }
 
     // ここから先はMediaController向け --------------------------
@@ -598,80 +625,113 @@ public void onStop(){
 
 
 
-    /*プレイリストをintentに詰めて送るやつ*/
+
     @Override
     public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
-        if (!networkConf.isNetworkAvailable()) {
-            networkConf.createNetErrorDialog();
-            return;
-        }
+        Log.d("kandabashi","onPlaylistSelected");
+            if (!networkConf.isNetworkAvailable()) {
+                networkConf.createNetErrorDialog();
+                return;
+            }
 
-        final List<YouTubeVideo> playList=playlist;
-        final YouTubeVideo video = ((ArrayList<YouTubeVideo>) playlist).get(position);
-        final int currentSongIndex = position;
-
-        String youtubeLink=Config.YOUTUBE_BASE_URL+video.getId();
-        new YouTubeExtractor(this) {
-            @Override
-            protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
-                Log.d("kandabashi","onExtractionComplete");
-                if (ytFiles == null) {
-                    // Something went wrong we got no urls. Always check this.
-                    Toast.makeText(YTApplication.getAppContext(), R.string.failed_playback,
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-
-                /*形式を変えて360p（ノーマル画質）で試す。アプリを軽くするため高画質は非対応にした。これ以上落とすと音声が含まれなくなっちゃう。*/
-                int[] itag={18,134,243};
-                if (ytFiles != null) {
-                    int tag=0;
-                    for(int i:itag){
-                        if(ytFiles.get(i)!=null){
-                            tag=i;
-                            break;
-                        }
+            final List<YouTubeVideo> playList = playlist;
+            final YouTubeVideo video = ((ArrayList<YouTubeVideo>) playlist).get(position);
+            final int currentSongIndex = position;
+        /*surfaceDetroy時に自動的に2回連続でonplaylistselected呼ばれるっぽい*/
+        /*homeボタンによるバックグラウンド再生ではない又はhomeボタンによるバックグラウンド再生で再生中の曲が終わって呼ばれた時*/
+        if(!HOME_BUTTON_PAUSE||(COMPLETION_COUNT!=1&&COMPLETION_COUNT!=2)) {
+            String youtubeLink = Config.YOUTUBE_BASE_URL + video.getId();
+            new YouTubeExtractor(this) {
+                @Override
+                protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
+                    Log.d("kandabashi", "onExtractionComplete");
+                    if (ytFiles == null) {
+                        // Something went wrong we got no urls. Always check this.
+                        Toast.makeText(YTApplication.getAppContext(), R.string.failed_playback,
+                                Toast.LENGTH_SHORT).show();
+                        return;
                     }
+                /*Videoでは形式を変えて360p（ノーマル画質）で試す。アプリを軽くするため高画質は非対応にした。これ以上落とすと音声が含まれなくなっちゃう。*/
+                    int[] itagVideo = {18, 134, 243};
+                    int[] itagAudio={251,141,140,17};
+                    if (ytFiles != null) {
+                        int tag = 0;
+                        /*画面見えてるとき*/
+                        if(!HOME_BUTTON_PAUSE){
+                        for (int i : itagVideo) {
+                            if (ytFiles.get(i) != null) {
+                                tag = i;
+                                break;
+                            }
+                        }
+                        /*バックグラウンド再生の時は音楽のみで*/
+                        }else {
+                            for (int i : itagAudio) {
+                                if (ytFiles.get(i) != null) {
+                                    tag = i;
+                                    break;
+                                }
+                            }
+                        }
 
-                    if(tag!=0) {
+                        if (tag != 0) {
                         /*最近見たリストに追加*/
-                        YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
-                        Log.d("kandabashi","ytFile-not-null-tag:"+String.valueOf(tag));
-                        String downloadUrl = ytFiles.get(tag).getUrl();
-                        setMovieUrl(downloadUrl);
-                        Log.d("kandabashi", "URL:" + downloadUrl);
+                            YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
+                            Log.d("kandabashi", "ytFile-not-null-tag:" + String.valueOf(tag));
+                            String downloadUrl = ytFiles.get(tag).getUrl();
+                            setMovieUrl(downloadUrl);
+                            Log.d("kandabashi", "URL:" + downloadUrl);
                     /*resetとかここでやらないとダメ（非同期処理だから外でやると追いつかない）*/
                     /*ポーズから戻ったときのためMovieUrlも変えとく*/
-                        setMovieUrl(downloadUrl);
-                        mMediaPlayer.reset();
-                        surfaceCreated(mHolder);
-                    }else if(currentSongIndex+1<playList.size()){
-                        Log.d("kandabashi","ytFile-null-next:"+video.getId());
-                        Toast.makeText(mainContext,"このビデオは読み込めません。次のビデオを再生します。",Toast.LENGTH_LONG).show();
-                        onPlaylistSelected( playList, currentSongIndex+1);
-                    }else{
-                        Log.d("kandabashi","ytFile-null-finish:"+video.getId());
-                        Toast.makeText(mainContext,"このビデオは読み込めません。再生を終了します。",Toast.LENGTH_LONG).show();
+                            setMovieUrl(downloadUrl);
+                            mMediaPlayer.reset();
+                            mAudioMediaPlayer.reset();
+                            if(!HOME_BUTTON_PAUSE){
+                            surfaceCreated(mHolder);
+                            }else{
+                                audioCreated();
+                            }
+                        } else if (currentSongIndex + 1 < playList.size()) {
+                            Log.d("kandabashi", "ytFile-null-next:" + video.getId());
+                            Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
+                            onPlaylistSelected(playList, (currentSongIndex + 1)%playList.size());
+                        }
 
                     }
 
                 }
-
-            }
-        }.execute(youtubeLink);
+            }.execute(youtubeLink);
 
 
-        /*終了後次の曲に行くためのリスナー*/
+
+        }
+
+ /*終了後次の曲に行くためのリスナー*/
         /*再帰呼び出しになってしまってる？*/
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener(){
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                if(currentSongIndex+1<playList.size()) {
+                if (currentSongIndex + 1 < playList.size()) {
+                    Log.d("kandabashi"," mMediaController.setOnCompletionListener");
+                    /*再生が終わった今はhomeボタンによるバックグラウンド再生中である、というときは*/
+                    if(HOME_BUTTON_PAUSE){
+                        /*COMPLETION_COUNTが0～2の時は増やす必要があるがその後は変化させる必要がない。*/
+                        if(COMPLETION_COUNT<3) {
+                            ++COMPLETION_COUNT;
+                        }
+                    }
                     onPlaylistSelected(playList, (currentSongIndex + 1));
-                }else{
+                }
+            }
+        });
 
-                    //mMediaPlayer.reset();
+        /*homeボタンによるバックグラウンド再生中、再生中の曲が終わったときに次の曲に行くためのリスナー*/
+        mAudioMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                if (currentSongIndex + 1 < playList.size()) {
+                    Log.d("kandabashi"," mMediaController.setOnCompletionListener");
+                    onPlaylistSelected(playList, (currentSongIndex + 1));
                 }
             }
         });
@@ -681,22 +741,23 @@ public void onStop(){
             @Override
             public void onClick(View v) {
                 //next button clicked
-                if(currentSongIndex+1<playList.size()) {
-                    onPlaylistSelected(playList, (currentSongIndex + 1));
-                }
+                //if (currentSongIndex + 1 < playList.size()) {
+                /*一周できるようにした*/
+                    Log.d("kandabashi"," mMediaController.setPrevNextListeners");
+                    onPlaylistSelected(playList, (currentSongIndex + 1)%playList.size());
+               // }
             }
         }, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //previous button clicked
-                if(currentSongIndex-1>0){
-                    onPlaylistSelected(playList, (currentSongIndex - 1));
-                }
+               // if (currentSongIndex - 1 > 0) {
+                /*一周できるようにした*/
+                    Log.d("kandabashi"," mMediaController.setPrevNextListeners");
+                    onPlaylistSelected(playList, (currentSongIndex - 1+playList.size())%playList.size());
+               // }
             }
         });
-
-        //mMediaPlayer.reset();VideoSelected");
-
     }
 
 
