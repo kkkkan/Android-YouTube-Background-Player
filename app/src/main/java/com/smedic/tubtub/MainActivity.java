@@ -128,7 +128,7 @@ import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentia
  * Activity that manages fragments and action bar
  */
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
-        OnItemSelected, OnFavoritesSelected,SurfaceHolder.Callback, MediaController.MediaPlayerControl,MediaPlayer.OnPreparedListener {
+        OnItemSelected, OnFavoritesSelected,SurfaceHolder.Callback, MediaController.MediaPlayerControl/*,MediaPlayer.OnPreparedListener*/ {
     public static Handler mainHandler = new Handler();
 
     public Context getMainContext() {
@@ -168,16 +168,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private MediaPlayer mAudioMediaPlayer = null;
     private MediaController mMediaController;
 
+    /*途中から再生のための再生位置入れとく変数*/
     private int MediaStartTime=0;
     public int getMediaStartTime() {
         return MediaStartTime;
     }
-
     public void setMediaStartTime(int mediaStartTime) {
         MediaStartTime = mediaStartTime;
     }
 
-
+   /*フラグたち*/
     private boolean HOME_BUTTON_PAUSE = false;
     private int COMPLETION_COUNT = 0;
     private boolean START_INITIAL=true;
@@ -385,7 +385,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 Log.d("kandabashi", "audioCreated-1");
                 mAudioMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
              /*prepareに時間かかることを想定し直接startせずにLister使う*/
-                mAudioMediaPlayer.setOnPreparedListener(this);
+                mAudioMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        Log.d("kandabashi", "onPrepared");
+                        mp.start();
+                        setMediaStartTime(0);
+                    }
+                });
                 Log.d("kandabashi", "audioCreated-2");
                 mAudioMediaPlayer.prepare();
                 Log.d("kandabashi", "audioCreated-3");
@@ -403,10 +410,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     }
 
-    public void onPrepared(MediaPlayer player) {
+   /* public void onPrepared(MediaPlayer player) {
         Log.d("kandabashi", "onPrepared");
         player.start();
-    }
+        setMediaStartTime(0);
+    }*/
 
     @Override
     public void surfaceChanged(SurfaceHolder paramSurfaceHolder, int paramInt1,
@@ -769,6 +777,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         }
                     }
                     onPlaylistSelected(playList, (currentSongIndex + 1));
+                }else{
+                    START_INITIAL=true;
                 }
             }
         });
@@ -780,6 +790,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 if (currentSongIndex + 1 < playList.size()) {
                     Log.d("kandabashi", " mMediaController.setOnCompletionListener");
                     onPlaylistSelected(playList, (currentSongIndex + 1));
+                }else{
+                    START_INITIAL=true;
+                    setMediaStartTime(0);
                 }
             }
         });
@@ -792,6 +805,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 //if (currentSongIndex + 1 < playList.size()) {
                 /*一周できるようにした*/
                 Log.d("kandabashi", " mMediaController.setPrevNextListeners");
+                START_INITIAL=true;
                 onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
                 // }
             }
@@ -802,6 +816,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 // if (currentSongIndex - 1 > 0) {
                 /*一周できるようにした*/
                 Log.d("kandabashi", " mMediaController.setPrevNextListeners");
+                START_INITIAL=true;
                 onPlaylistSelected(playList, (currentSongIndex - 1 + playList.size()) % playList.size());
                 // }
             }
