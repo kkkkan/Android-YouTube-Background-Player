@@ -168,6 +168,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private MediaPlayer mAudioMediaPlayer = null;
     private MediaController mMediaController;
 
+    private int MediaStartTime=0;
+    public int getMediaStartTime() {
+        return MediaStartTime;
+    }
+
+    public void setMediaStartTime(int mediaStartTime) {
+        MediaStartTime = mediaStartTime;
+    }
+
+
     private boolean HOME_BUTTON_PAUSE = false;
     private int COMPLETION_COUNT = 0;
 
@@ -304,14 +314,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
 
-    private int MediaStartTime=0;
-    public int getMediaStartTime() {
-        return MediaStartTime;
-    }
-
-    public void setMediaStartTime(int mediaStartTime) {
-        MediaStartTime = mediaStartTime;
-    }
 
     @Override
     public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
@@ -326,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 if (mAudioMediaPlayer.isPlaying()) {
                     Log.d("kandabashi", "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()");
                     Log.d("kandabashi", "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()"+mAudioMediaPlayer.getCurrentPosition());
-                    //setMediaStartTime(mAudioMediaPlayer.getCurrentPosition());
+                    setMediaStartTime(mAudioMediaPlayer.getCurrentPosition());
                     mAudioMediaPlayer.stop();
                 }
 
@@ -334,19 +336,21 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 mMediaPlayer.setDataSource(this, mediaPath);
                 Log.d("kandabashi", "surfaceCreated-2");
                 mMediaPlayer.setDisplay(paramSurfaceHolder);
+                //mMediaPlayer.seekTo(getMediaStartTime());
              /*prepareに時間かかることを想定し直接startせずにLister使う*/
-                /*mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
                     public void onPrepared(MediaPlayer mp) {
                         Log.d("kandabashi", "onPrepared");
-                        mp.start();
                         mp.seekTo(getMediaStartTime());
+                        mp.start();
                         setMediaStartTime(0);
                     }
-                });*/
-                mMediaPlayer.setOnPreparedListener(this);
+                });
+               // mMediaPlayer.setOnPreparedListener(this);
                 Log.d("kandabashi", "surfaceCreated-3");
                 mMediaPlayer.prepare();
+                //setMediaStartTime(0);
                 Log.d("kandabashi", "surfaceCreated-4");
             } catch (IllegalArgumentException e) {
                 Log.d("kakndabashi", "surfaceCreated-IllegalArgumentException" + e.getMessage());
