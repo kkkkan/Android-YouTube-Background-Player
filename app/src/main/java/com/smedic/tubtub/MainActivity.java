@@ -125,6 +125,9 @@ import static com.smedic.tubtub.utils.Auth.SCOPES;
 import static com.smedic.tubtub.youtube.YouTubeSingleton.getCredential;
 import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentials;
 
+
+import android.content.DialogInterface;
+
 /**
  * Activity that manages fragments and action bar
  */
@@ -168,9 +171,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private MediaPlayer mMediaPlayer = null;
     private MediaPlayer mAudioMediaPlayer = null;
     private MediaController mMediaController;
+    private AlertDialog.Builder mListDlg;
 
+    /*動画タイトル用*/
     private TextView mTextView;
     private String VideoTitle;
+
+
 
     /*途中から再生のための再生位置入れとく変数*/
     private int MediaStartTime=0;
@@ -247,6 +254,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         });
 
         mTextView=(TextView)findViewById(R.id.title_view);
+        mListDlg=new AlertDialog.Builder(this);
 
  /*Mediaplayer関係ここまで*/
 
@@ -845,7 +853,26 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     /*プレイリストに追加したり*/
     @Override
     public void onAddSelected(YouTubeVideo video){
+        Log.d("kandabashi","onAddSelected");
+        ArrayList<YouTubePlaylist> allPlaylist=YouTubeSqlDb.getInstance().playlists().readAll();
+        CharSequence[] playlists=new CharSequence[allPlaylist.size()+2];
+        int i=0;
+        for(YouTubePlaylist p:allPlaylist){
+           playlists[i++]=p.getTitle();
+        }
+        playlists[i++]="新しくプレイリストを作る";
+        playlists[i]="キャンセル";
+        final CharSequence[] playlistTitles=playlists;
 
+        mListDlg.setTitle(video.getTitle()+"を追加するプレイリストを選択してください。");
+        mListDlg.setItems(playlistTitles,new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog, int which) {
+                // リスト選択時の処理
+                // which は、選択されたアイテムのインデックス
+            }
+        });
+
+        mListDlg.create().show();
     }
 
 

@@ -159,7 +159,7 @@ public class YouTubeSqlDb {
         public boolean checkIfExists(String videoId) {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             //String Query = "SELECT * FROM " + tableName + " WHERE " + YouTubeVideoEntry.COLUMN_VIDEO_ID + "='" + videoId + "'";
-            Cursor cursor = db.query(tableName,null,YouTubeVideoEntry.COLUMN_VIDEO_ID + "=?",new String[]{videoId},null,null,null);//db.rawQuery(Query, null);
+            Cursor cursor = db.query(tableName,null,YouTubeVideoEntry.COLUMN_VIDEO_ID + "=?",new String[]{videoId},null,null,null);//db.FQuery(Query, null);
             if (cursor.getCount() <= 0) {
                 cursor.close();
                 return false;
