@@ -180,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private boolean HOME_BUTTON_PAUSE = false;
     private int COMPLETION_COUNT = 0;
+    private boolean START_INITIAL=true;
 
 
 
@@ -318,6 +319,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
         Log.d("kandabashi", "surfaceCreated");
+        Log.d("kandabashi","START_INITIAL:"+String.valueOf(START_INITIAL)+"\nmMediaplayer.isPlying:"+String.valueOf(mMediaPlayer.isPlaying()));
+        if((!START_INITIAL)){
+            setMediaStartTime(mMediaPlayer.getCurrentPosition());
+        }
+        START_INITIAL=false;
+        mMediaPlayer.reset();
         /*mediaplayer関係*/
         // URLの先にある動画を再生する
         if (videoUrl != null) {
@@ -329,14 +336,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     Log.d("kandabashi", "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()");
                     Log.d("kandabashi", "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()"+mAudioMediaPlayer.getCurrentPosition());
                     setMediaStartTime(mAudioMediaPlayer.getCurrentPosition());
-                    mAudioMediaPlayer.stop();
                 }
-
+                mAudioMediaPlayer.reset();
                 Log.d("kandabashi", "surfaceCreated-1");
                 mMediaPlayer.setDataSource(this, mediaPath);
                 Log.d("kandabashi", "surfaceCreated-2");
                 mMediaPlayer.setDisplay(paramSurfaceHolder);
-                //mMediaPlayer.seekTo(getMediaStartTime());
              /*prepareに時間かかることを想定し直接startせずにLister使う*/
                 mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
@@ -371,6 +376,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     /*Homeボタンでバックグラウンド再生の時は音声だけのメディアプレイヤー使っちゃう*/
     public void audioCreated() {
         Log.d("kandabashi", "audioCreated");
+        mMediaPlayer.reset();
+        mAudioMediaPlayer.reset();
         if (audioUrl != null) {
             Uri mediaPath = Uri.parse(audioUrl);
             try {
@@ -681,6 +688,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         /*surfaceDetroy時に自動的に2回連続でonplaylistselected呼ばれるっぽい*/
         /*homeボタンによるバックグラウンド再生ではない又はhomeボタンによるバックグラウンド再生で再生中の曲が終わって呼ばれた時*/
         if (!HOME_BUTTON_PAUSE || (COMPLETION_COUNT != 1 && COMPLETION_COUNT != 2)) {
+            START_INITIAL=true;
             String youtubeLink = Config.YOUTUBE_BASE_URL + video.getId();
             new YouTubeExtractor(this) {
                 @Override
@@ -725,9 +733,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     /*ポーズから戻ったときのためMovieUrlも変えとく*/
                             videoUrl=videoDownloadUrl;
                             audioUrl=audioDownloadUrl;
-                            mMediaPlayer.reset();
-                            mAudioMediaPlayer.reset();
+                            START_INITIAL=true;
                             if (!HOME_BUTTON_PAUSE) {
+                                Log.d("kandabashi","mMediaPlayer.isPlaying:"+String.valueOf(mMediaPlayer.isPlaying()));
                                 surfaceCreated(mHolder);
                             } else {
                                 audioCreated();
