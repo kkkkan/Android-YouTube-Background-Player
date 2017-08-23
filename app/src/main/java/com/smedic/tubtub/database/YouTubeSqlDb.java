@@ -158,8 +158,8 @@ public class YouTubeSqlDb {
          */
         public boolean checkIfExists(String videoId) {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
-            String Query = "SELECT * FROM " + tableName + " WHERE " + YouTubeVideoEntry.COLUMN_VIDEO_ID + "='" + videoId + "'";
-            Cursor cursor = db.rawQuery(Query, null);
+            //String Query = "SELECT * FROM " + tableName + " WHERE " + YouTubeVideoEntry.COLUMN_VIDEO_ID + "='" + videoId + "'";
+            Cursor cursor = db.query(tableName,null,YouTubeVideoEntry.COLUMN_VIDEO_ID + "=?",new String[]{videoId},null,null,null);//db.rawQuery(Query, null);
             if (cursor.getCount() <= 0) {
                 cursor.close();
                 return false;
@@ -178,20 +178,29 @@ public class YouTubeSqlDb {
             final String SELECT_QUERY_ORDER_DESC = "SELECT * FROM " + tableName + " ORDER BY "
                     + YouTubeVideoEntry.COLUMN_ENTRY_ID + " DESC";
 
-            SQLiteDatabase db = dbHelper.getReadableDatabase();
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
             ArrayList<YouTubeVideo> list = new ArrayList<>();
 
-            Cursor c = db.rawQuery(SELECT_QUERY_ORDER_DESC, null);
-            while (c.moveToNext()) {
-                String videoId = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_VIDEO_ID));
-                String title = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_TITLE));
-                String duration = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_DURATION));
-                String thumbnailUrl = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_THUMBNAIL_URL));
-                String viewsNumber = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_VIEWS_NUMBER));
-                list.add(new YouTubeVideo(videoId, title, thumbnailUrl, duration, viewsNumber));
+            Cursor c = null;
+            try {
+                //db.rawQuery(SELECT_QUERY_ORDER_DESC, null);
+                c=db.query(tableName,null,null,null,null,null,YouTubeVideoEntry.COLUMN_ENTRY_ID + " DESC");
+                while (c.moveToNext()) {
+                    String videoId = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_VIDEO_ID));
+                    String title = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_TITLE));
+                    String duration = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_DURATION));
+                    String thumbnailUrl = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_THUMBNAIL_URL));
+                    String viewsNumber = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_VIEWS_NUMBER));
+                    list.add(new YouTubeVideo(videoId, title, thumbnailUrl, duration, viewsNumber));
+                }
+            }catch(Exception e){
+
+            }finally {
+                if(c!=null){
+                    c.close();
+                }
+                return list;
             }
-            c.close();
-            return list;
         }
 
         /**
@@ -255,17 +264,28 @@ public class YouTubeSqlDb {
             ArrayList<YouTubePlaylist> list = new ArrayList<>();
             SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-            Cursor c = db.rawQuery(YouTubePlaylistEntry.SELECT_QUERY_ORDER_DESC, null);
-            while (c.moveToNext()) {
-                String playlistId = c.getString(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_PLAYLIST_ID));
-                String title = c.getString(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_TITLE));
-                long number = c.getLong(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_VIDEOS_NUMBER));
-                String status = c.getString(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_STATUS));
-                String thumbnailUrl = c.getString(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_THUMBNAIL_URL));
-                list.add(new YouTubePlaylist(title, thumbnailUrl, playlistId, number, status));
+            Cursor c =null;
+            try {
+               // db.rawQuery(YouTubePlaylistEntry.SELECT_QUERY_ORDER_DESC, null);
+               // "SELECT * FROM " + TABLE_NAME + " ORDER BY " + COLUMN_ENTRY_ID + " DESC";
+                c=db.query(YouTubePlaylistEntry.TABLE_NAME,null,null,null,null,null,YouTubePlaylistEntry.COLUMN_ENTRY_ID+" DESC");
+                while (c.moveToNext()) {
+                    String playlistId = c.getString(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_PLAYLIST_ID));
+                    String title = c.getString(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_TITLE));
+                    long number = c.getLong(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_VIDEOS_NUMBER));
+                    String status = c.getString(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_STATUS));
+                    String thumbnailUrl = c.getString(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_THUMBNAIL_URL));
+                    list.add(new YouTubePlaylist(title, thumbnailUrl, playlistId, number, status));
+                }
+            }catch (Exception e){
+
+            }finally {
+                if(c!=null) {
+                    c.close();
+                }
+                return list;
             }
-            c.close();
-            return list;
+
         }
 
         /**

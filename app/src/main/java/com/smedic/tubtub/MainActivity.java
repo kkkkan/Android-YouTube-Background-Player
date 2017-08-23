@@ -128,7 +128,7 @@ import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentia
  * Activity that manages fragments and action bar
  */
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
-        OnItemSelected, OnFavoritesSelected,SurfaceHolder.Callback, MediaController.MediaPlayerControl/*,MediaPlayer.OnPreparedListener*/ {
+        OnItemSelected, OnFavoritesSelected,SurfaceHolder.Callback, MediaController.MediaPlayerControl {
     public static Handler mainHandler = new Handler();
 
     public Context getMainContext() {
@@ -410,11 +410,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     }
 
-   /* public void onPrepared(MediaPlayer player) {
-        Log.d("kandabashi", "onPrepared");
-        player.start();
-        setMediaStartTime(0);
-    }*/
 
     @Override
     public void surfaceChanged(SurfaceHolder paramSurfaceHolder, int paramInt1,
@@ -728,6 +723,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                             }
 
 
+                        Log.d("kandabashi","video name:"+video.getTitle()+"\ntagAudio:"+String.valueOf(tagAudio)+"\ntagVideo"+String.valueOf(tagVideo));
                         if (tagVideo != 0 && tagAudio!=0) {
                         /*最近見たリストに追加*/
                             YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
@@ -758,8 +754,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                 }
             }.execute(youtubeLink);
-
-
+        }else{
+            Log.d("kandabashi","COMPLETION_COUNT:"+String.valueOf(COMPLETION_COUNT));
+            return;
         }
 
  /*終了後次の曲に行くためのリスナー*/
