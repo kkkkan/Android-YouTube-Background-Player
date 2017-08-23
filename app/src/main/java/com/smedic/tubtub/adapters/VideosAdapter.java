@@ -95,6 +95,15 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
             }
         });
 
+        holder.addButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                if (itemEventsListener != null) {
+                    itemEventsListener.onAddClicked(video);
+                }
+            }
+        });
+
         holder.itemView.setTag(video);
     }
 
@@ -118,6 +127,7 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
         TextView viewCount;
         CheckBox favoriteCheckBox;
         ImageView shareButton;
+        ImageView addButton;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -127,6 +137,7 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
             viewCount = (TextView) itemView.findViewById(R.id.views_number);
             favoriteCheckBox = (CheckBox) itemView.findViewById(R.id.favoriteButton);
             shareButton = (ImageView) itemView.findViewById(R.id.shareButton);
+            addButton=(ImageView)itemView.findViewById(R.id.PlaylistAddButton);
         }
     }
 

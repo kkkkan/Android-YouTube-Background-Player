@@ -61,8 +61,8 @@
 
             <CheckBox
                 android:id="@+id/favoriteButton"
-                android:layout_width="26dp"
-                android:layout_height="26dp"
+                android:layout_width="23dp"
+                android:layout_height="23dp"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
@@ -73,14 +73,28 @@
 
             <ImageView
                 android:id="@+id/shareButton"
-                android:layout_width="26dp"
-                android:layout_height="26dp"
+                android:layout_width="23dp"
+                android:layout_height="23dp"
                 android:layout_alignParentBottom="true"
-                android:layout_marginEnd="20dp"
-                android:layout_marginRight="20dp"
+                android:layout_marginEnd="15dp"
+                android:layout_marginRight="15dp"
                 android:layout_toLeftOf="@id/favoriteButton"
                 android:layout_toStartOf="@id/favoriteButton"
                 android:background="@drawable/share_button_selector" />
+
+            <ImageView
+                android:id="@+id/PlaylistAddButton"
+                android:layout_width="23dp"
+                android:layout_height="23dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginEnd="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_toLeftOf="@id/shareButton"
+                android:layout_toStartOf="@id/shareButton"
+                android:background="@drawable/add_button" />
+
+
+
 
         </RelativeLayout>
     </LinearLayout>

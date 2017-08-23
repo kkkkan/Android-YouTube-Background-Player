@@ -127,6 +127,10 @@ public class RecentlyWatchedFragment extends BaseFragment implements
     }
 
     @Override
+    public void onAddClicked(YouTubeVideo video){
+        onFavoritesSelected.onAddSelected(video); // pass event to MainActivity
+    }
+    @Override
     public void onItemClick(YouTubeVideo video) {
         itemSelected.onPlaylistSelected(recentlyPlayedVideos, recentlyPlayedVideos.indexOf(video));
     }

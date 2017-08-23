@@ -11,5 +11,8 @@ public interface ItemEventsListener<Model> {
 
     void onFavoriteClicked(YouTubeVideo video, boolean isChecked);
 
+    void onAddClicked(YouTubeVideo video);
+
     void onItemClick(Model model); //handle click on a row (video or playlist)
+
 }

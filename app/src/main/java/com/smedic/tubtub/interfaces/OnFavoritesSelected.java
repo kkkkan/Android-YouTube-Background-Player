@@ -8,4 +8,6 @@ import com.smedic.tubtub.model.YouTubeVideo;
 
 public interface OnFavoritesSelected {
     void onFavoritesSelected(YouTubeVideo video, boolean isChecked);
+
+    void onAddSelected(YouTubeVideo video);
 }

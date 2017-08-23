@@ -251,6 +251,10 @@ public class PlaylistsFragment extends BaseFragment implements
     }
 
     @Override
+    public void onAddClicked(YouTubeVideo video){
+        //何もしない
+    }
+    @Override
     public void onItemClick(YouTubePlaylist youTubePlaylist) {
         //results are in onVideosReceived callback method
         String id=youTubePlaylist.getId();

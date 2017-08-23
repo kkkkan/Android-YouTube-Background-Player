@@ -15,26 +15,20 @@
  */
 package com.smedic.tubtub.fragments;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.R;
-import com.smedic.tubtub.YouTubeFragment;
 import com.smedic.tubtub.adapters.VideosAdapter;
-import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.interfaces.OnFavoritesSelected;
 import com.smedic.tubtub.interfaces.OnItemSelected;
@@ -165,13 +159,15 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         onFavoritesSelected.onFavoritesSelected(video, isChecked); // pass event to MainActivity
     }
 
+    @Override
+    public void onAddClicked(YouTubeVideo video){
+        onFavoritesSelected.onAddSelected(video); // pass event to MainActivity
+    }
 
 
     @Override
     public void onItemClick(YouTubeVideo video) {
-        /*見れないのあるからリスト追加は再生できるのわかってから！*/
-        //YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
-        //itemSelected.onVideoSelected(video);
+        /*最近見たリスト追加はplaylistselectedでやる！*/
         itemSelected.onPlaylistSelected(searchResultsList, searchResultsList.indexOf(video));
     }
 }

@@ -119,7 +119,6 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 import static com.google.api.client.http.HttpMethods.HEAD;
 import static com.smedic.tubtub.R.layout.suggestions;
-import static com.smedic.tubtub.YouTubeFragment.setVideoId;
 import static com.smedic.tubtub.utils.Auth.SCOPES;
 import static com.smedic.tubtub.youtube.YouTubeSingleton.getCredential;
 import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentials;
@@ -727,6 +726,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         if (tagVideo != 0 && tagAudio!=0) {
                         /*最近見たリストに追加*/
                             YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
+
                             Log.d("kandabashi", "ytFile-not-null-tagVideo:" + String.valueOf(tagVideo));
                             Log.d("kandabashi", "ytFile-not-null-tagAudio:" + String.valueOf(tagAudio));
                             String videoDownloadUrl = ytFiles.get(tagVideo).getUrl();
@@ -831,7 +831,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
-    /*fragment追加？*/
+    /*プレイリストに追加したり*/
+    @Override
+    public void onAddSelected(YouTubeVideo video){
+
+    }
+
 
     /**
      * Class which provides adapter for fragment pager
