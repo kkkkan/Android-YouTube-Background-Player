@@ -61,10 +61,12 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.MediaController;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.network.connectionclass.ConnectionClassManager;
@@ -167,6 +169,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private MediaPlayer mAudioMediaPlayer = null;
     private MediaController mMediaController;
 
+    private TextView mTextView;
+    private String VideoTitle;
+
     /*途中から再生のための再生位置入れとく変数*/
     private int MediaStartTime=0;
     public int getMediaStartTime() {
@@ -241,6 +246,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
         });
 
+        mTextView=(TextView)findViewById(R.id.title_view);
 
  /*Mediaplayer関係ここまで*/
 
@@ -249,6 +255,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
 
         /*アクションバーに戻るボタンをつけない*/
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
@@ -341,6 +348,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 mMediaPlayer.setDataSource(this, mediaPath);
                 Log.d("kandabashi", "surfaceCreated-2");
                 mMediaPlayer.setDisplay(paramSurfaceHolder);
+                if(VideoTitle!=null) {
+                    mTextView.setText(VideoTitle);
+                }
              /*prepareに時間かかることを想定し直接startせずにLister使う*/
                 mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
@@ -737,6 +747,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     /*ポーズから戻ったときのためMovieUrlも変えとく*/
                             videoUrl=videoDownloadUrl;
                             audioUrl=audioDownloadUrl;
+                            VideoTitle=video.getTitle();
                             START_INITIAL=true;
                             if (!HOME_BUTTON_PAUSE) {
                                 Log.d("kandabashi","mMediaPlayer.isPlaying:"+String.valueOf(mMediaPlayer.isPlaying()));
