@@ -65,6 +65,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -92,6 +93,12 @@ import com.google.api.client.util.Strings;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.YouTubeScopes;
 import com.google.api.services.youtube.model.ChannelListResponse;
+import com.google.api.services.youtube.model.Playlist;
+import com.google.api.services.youtube.model.PlaylistItem;
+import com.google.api.services.youtube.model.PlaylistItemSnippet;
+import com.google.api.services.youtube.model.PlaylistSnippet;
+import com.google.api.services.youtube.model.PlaylistStatus;
+import com.google.api.services.youtube.model.ResourceId;
 import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.fragments.FavoritesFragment;
 import com.smedic.tubtub.fragments.PlaylistsFragment;
@@ -106,6 +113,7 @@ import com.smedic.tubtub.utils.Config;
 import com.smedic.tubtub.utils.NetworkConf;
 import com.smedic.tubtub.youtube.SuggestionsLoader;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -115,6 +123,7 @@ import java.util.List;
 
 import at.huber.youtubeExtractor.VideoMeta;
 import at.huber.youtubeExtractor.YouTubeExtractor;
+import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -172,6 +181,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private MediaPlayer mAudioMediaPlayer = null;
     private MediaController mMediaController;
     private AlertDialog.Builder mListDlg;
+    private AlertDialog.Builder mTitleDlg;
 
     /*動画タイトル用*/
     private TextView mTextView;
@@ -255,6 +265,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         mTextView=(TextView)findViewById(R.id.title_view);
         mListDlg=new AlertDialog.Builder(this);
+        mTitleDlg=new AlertDialog.Builder(this);
 
  /*Mediaplayer関係ここまで*/
 
@@ -839,10 +850,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         });
     }
 
-
     /*お気に入りfragmentにビデオを追加したり削除したり*/
     @Override
-    public void onFavoritesSelected(YouTubeVideo video, boolean isChecked) {
+    public void onFavoritesSelected(YouTubeVideo video, boolean isChecked){
         if (isChecked) {
             favoritesFragment.addToFavoritesList(video);
         } else {
@@ -850,27 +860,176 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
+    /*新規プレイリスト作成してvideo追加*/
+    private void AddPlaylist(final String title, final String privacyStatus,final YouTubeVideo video) {
+        final List<String> errorCatcher=new ArrayList<>();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                YouTube youtubeWithCredential = getYouTubeWithCredentials();
+
+                /*プレイリストを作成*/
+                PlaylistSnippet playlistSnippet = new PlaylistSnippet();
+                playlistSnippet.setTitle(title);
+
+                PlaylistStatus status = new PlaylistStatus();
+                status.setPrivacyStatus(privacyStatus);
+
+                Playlist playlist = new Playlist();
+                playlist.setSnippet(playlistSnippet);
+                playlist.setStatus(status);
+                try {
+                    String playlistid=youtubeWithCredential.playlists().insert("snippet,status", playlist).execute().getId();
+                    AddVideoToPlayList(playlistid,video,false);
+                } catch (Exception e) {
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(mainContext, "プレイリスト作成に失敗しました。", Toast.LENGTH_LONG).show();
+                            errorCatcher.add("error");
+                        }
+                    });
+
+                }
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(mainContext,privacyStatus+"リスト "+title+" を新規作成し\n"+video.getTitle()+" を追加しました。",Toast.LENGTH_LONG).show();
+                    }
+                });
+
+            }
+        }).start();
+
+    }
+
+    /*プレイリストにビデオ追加*/
+    private void AddVideoToPlayList (final String playlistId, final YouTubeVideo video, final boolean resultShow){
+        final List<String> errorChacher=new ArrayList<String>();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //プレイリストに追加
+
+                /*渡すjsonのresourceidを作成*/
+                ResourceId resourceId = new ResourceId();
+                resourceId.setVideoId(video.getId());
+                resourceId.setKind("youtube#video");
+
+                /*渡すjsonのsnippetを作成*/
+                PlaylistItemSnippet snippet = new PlaylistItemSnippet();
+                snippet.setPlaylistId(playlistId);
+                snippet.setResourceId(resourceId);
+
+                /*実際にinsertするplaylistitemを作成 */
+                PlaylistItem playlistItem = new PlaylistItem();
+                playlistItem.setSnippet(snippet);
+
+
+                try {
+                    getYouTubeWithCredentials().playlistItems().insert("snippet", playlistItem).execute();
+                } catch (Exception e) {
+                    Log.d("kandabashi", "AddPlaylist Error:" + e.getMessage());
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(mainContext, "追加に失敗しました。", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+                if(resultShow){
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(mainContext," 追加に成功しました。", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            }
+        }).start();
+
+    }
     /*プレイリストに追加したり*/
     @Override
-    public void onAddSelected(YouTubeVideo video){
+    public void onAddSelected(final YouTubeVideo video){
         Log.d("kandabashi","onAddSelected");
-        ArrayList<YouTubePlaylist> allPlaylist=YouTubeSqlDb.getInstance().playlists().readAll();
-        CharSequence[] playlists=new CharSequence[allPlaylist.size()+2];
+        /*video タイトル取得*/
+        final String videoTitle=video.getTitle();
+
+        /*プレイリストを取得*/
+        final ArrayList<YouTubePlaylist> allPlaylist=YouTubeSqlDb.getInstance().playlists().readAll();
+        Log.d("kandabashi","AddPlaylistDialog-1-which:"+String.valueOf(allPlaylist.size()));
+
+        /*プレイリストタイトルを取得*/
+        final CharSequence[] playlists=new CharSequence[allPlaylist.size()+1];
         int i=0;
         for(YouTubePlaylist p:allPlaylist){
-           playlists[i++]=p.getTitle();
+           playlists[i++]=p.getTitle()+"("+String.valueOf(p.getNumberOfVideos())+")";
         }
-        playlists[i++]="新しくプレイリストを作る";
-        playlists[i]="キャンセル";
-        final CharSequence[] playlistTitles=playlists;
+        playlists[i++]="新規作成して追加";
 
-        mListDlg.setTitle(video.getTitle()+"を追加するプレイリストを選択してください。");
-        mListDlg.setItems(playlistTitles,new DialogInterface.OnClickListener(){
+        /*チェックされたやつの番号を入れておく。*/
+        final ArrayList<Integer> checkedItems = new ArrayList<Integer>();
+        checkedItems.add(0);
+
+
+        mListDlg.setTitle("プレイリスト追加：\n"+videoTitle);
+
+        mListDlg.setSingleChoiceItems(playlists,0, new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialog, int which) {
-                // リスト選択時の処理
-                // which は、選択されたアイテムのインデックス
+                checkedItems.clear();
+                checkedItems.add(which);
             }
         });
+        mListDlg.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.d("kandabashi", "AddPlaylistDialog-1-which:" + String.valueOf(which));
+                if (!checkedItems.isEmpty()) {
+                    if (checkedItems.get(0) == (playlists.length - 1)) {
+                        //新しいプレイリスト作って追加
+                        final EditText titleEdit=new EditText(mainContext);
+                        mTitleDlg.setTitle("新規プレイリスト名入力");
+                        mTitleDlg.setView(titleEdit);
+                        mTitleDlg.setPositiveButton("非公開で作成", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                final String title=titleEdit.getText().toString();
+                                if(title.length()==0){
+                                    Toast.makeText(mainContext,"プレイリスト名は空白は認められません。",Toast.LENGTH_LONG).show();
+                                }else {
+                                    AddPlaylist(title, "private", video);
+                                }
+                            }
+                        });
+                        mTitleDlg.setNeutralButton("公開で作成", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                final String title=titleEdit.getText().toString();
+                                if(title.length()==0){
+                                    Toast.makeText(mainContext,"プレイリスト名は空白は認められません。",Toast.LENGTH_LONG).show();
+                                }else {
+                                    AddPlaylist(title, "public", video);
+                                }
+                            }
+                        });
+
+                        mTitleDlg.setNegativeButton("cancel",null);
+                        mTitleDlg.show();
+
+
+                    } else {
+                       AddVideoToPlayList(allPlaylist.get(checkedItems.get(0)).getId(),video,true);
+                           Toast.makeText(mainContext,"プレイリスト "+allPlaylist.get(checkedItems.get(0)).getTitle()+" に "+videoTitle+" を追加しました。",Toast.LENGTH_LONG).show();
+
+                    }
+                }
+            }
+        });
+
+        mListDlg.setNegativeButton("キャンセル",null);
 
         mListDlg.create().show();
     }
