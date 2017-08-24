@@ -28,6 +28,12 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
     private Context context;
     private List<YouTubePlaylist> playlists;
     private ItemEventsListener<YouTubePlaylist> itemEventsListener;
+    private OnDetailClickListener onDetailClickListener;
+
+
+    public interface OnDetailClickListener{
+        void onDetailClick(String playlistId);
+    }
 
     public PlaylistsAdapter(Context context, List<YouTubePlaylist> playlists) {
         super();
@@ -67,6 +73,15 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             }
         });
         holder.itemView.setTag(playlist);
+
+        holder.playlistDetail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(onDetailClickListener!=null) {
+                    onDetailClickListener.onDetailClick(playlist.getId());
+                }
+            }
+        });
     }
 
     @Override
@@ -88,6 +103,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
         TextView videosNumber;
         TextView privacy;
         ImageView shareButton;
+        ImageView playlistDetail;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -96,10 +112,15 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             videosNumber = (TextView) itemView.findViewById(R.id.videos_number);
             privacy = (TextView) itemView.findViewById(R.id.privacy);
             shareButton = (ImageView) itemView.findViewById(R.id.share_button);
+            playlistDetail=(ImageView)itemView.findViewById(R.id.detail_button);
         }
     }
 
     public void setOnItemEventsListener(ItemEventsListener<YouTubePlaylist> listener) {
         itemEventsListener = listener;
+    }
+
+    public void setOnDetailClickListener(OnDetailClickListener onDetailClickListener) {
+        this.onDetailClickListener = onDetailClickListener;
     }
 }

@@ -28,6 +28,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.services.youtube.YouTube;
@@ -71,6 +72,10 @@ public class PlaylistsFragment extends BaseFragment implements
     private Context context;
     private OnItemSelected itemSelected;
 
+    public PlaylistsAdapter getPlaylistsAdapter() {
+        return playlistsAdapter;
+    }
+
     public PlaylistsFragment() {
         // Required empty public constructor
     }
@@ -98,6 +103,9 @@ public class PlaylistsFragment extends BaseFragment implements
         playlistsAdapter = new PlaylistsAdapter(context, playlists);
         playlistsAdapter.setOnItemEventsListener(this);
         playlistsListView.setAdapter(playlistsAdapter);
+        playlistsAdapter.setOnDetailClickListener((PlaylistsAdapter.OnDetailClickListener) getActivity());
+
+
 
         swipeToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override

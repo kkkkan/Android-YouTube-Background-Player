@@ -19,7 +19,6 @@ import android.Manifest;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -41,7 +40,6 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
@@ -55,13 +53,11 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseArray;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -70,9 +66,6 @@ import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.facebook.network.connectionclass.ConnectionClassManager;
-import com.facebook.network.connectionclass.ConnectionQuality;
-import com.facebook.network.connectionclass.DeviceBandwidthSampler;
 import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.OnColorSelectedListener;
 import com.flask.colorpicker.builder.ColorPickerClickListener;
@@ -80,25 +73,14 @@ import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.AccountPicker;
-import com.google.android.gms.common.Scopes;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.ExponentialBackOff;
-import com.google.api.client.util.Strings;
 import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.YouTubeScopes;
-import com.google.api.services.youtube.model.ChannelListResponse;
 import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemSnippet;
 import com.google.api.services.youtube.model.PlaylistSnippet;
 import com.google.api.services.youtube.model.PlaylistStatus;
 import com.google.api.services.youtube.model.ResourceId;
+import com.smedic.tubtub.adapters.PlaylistsAdapter;
 import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.fragments.FavoritesFragment;
 import com.smedic.tubtub.fragments.PlaylistsFragment;
@@ -106,42 +88,32 @@ import com.smedic.tubtub.fragments.RecentlyWatchedFragment;
 import com.smedic.tubtub.fragments.SearchFragment;
 import com.smedic.tubtub.interfaces.OnFavoritesSelected;
 import com.smedic.tubtub.interfaces.OnItemSelected;
-import com.smedic.tubtub.model.ItemType;
 import com.smedic.tubtub.model.YouTubePlaylist;
 import com.smedic.tubtub.model.YouTubeVideo;
 import com.smedic.tubtub.utils.Config;
 import com.smedic.tubtub.utils.NetworkConf;
 import com.smedic.tubtub.youtube.SuggestionsLoader;
 
-import java.io.EOFException;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import at.huber.youtubeExtractor.VideoMeta;
 import at.huber.youtubeExtractor.YouTubeExtractor;
-import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
-import static com.google.api.client.http.HttpMethods.HEAD;
 import static com.smedic.tubtub.R.layout.suggestions;
-import static com.smedic.tubtub.utils.Auth.SCOPES;
 import static com.smedic.tubtub.youtube.YouTubeSingleton.getCredential;
 import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentials;
-
-
-import android.content.DialogInterface;
 
 /**
  * Activity that manages fragments and action bar
  */
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
-        OnItemSelected, OnFavoritesSelected,SurfaceHolder.Callback, MediaController.MediaPlayerControl {
+        OnItemSelected, OnFavoritesSelected,SurfaceHolder.Callback, MediaController.MediaPlayerControl,PlaylistsAdapter.OnDetailClickListener {
     public static Handler mainHandler = new Handler();
 
     public Context getMainContext() {
@@ -1034,7 +1006,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mListDlg.create().show();
     }
 
+    /*プレイリスト詳細を見るためのリスナーの中身実装*/
+public void onDetailClick(){
 
+}
     /**
      * Class which provides adapter for fragment pager
      */
@@ -1317,5 +1292,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(color);
         }
+    }
+
+   public void onDetailClick(String playlistId){
+        Log.d("kandabashi","playlist-detail-checked!!!\n\n");
     }
 }
