@@ -6,6 +6,7 @@ package com.smedic.tubtub.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.smedic.tubtub.R;
+import com.smedic.tubtub.fragments.PlaylistDetailFragment;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.model.YouTubePlaylist;
 import com.squareup.picasso.Picasso;
@@ -79,6 +81,9 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             public void onClick(View v) {
                 if(onDetailClickListener!=null) {
                     onDetailClickListener.onDetailClick(playlist.getId());
+                    Log.d("kandabashi","onDetailClickListener-playlistId:"+String.valueOf(playlist.getId())+String.valueOf(playlist.getTitle()));
+                  // PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();
+                    //playlistDetailFragment.setPlaylistId(playlist.getId());
                 }
             }
         });

@@ -36,10 +36,12 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
@@ -82,7 +84,9 @@ import com.google.api.services.youtube.model.PlaylistStatus;
 import com.google.api.services.youtube.model.ResourceId;
 import com.smedic.tubtub.adapters.PlaylistsAdapter;
 import com.smedic.tubtub.database.YouTubeSqlDb;
+import com.smedic.tubtub.fragments.BlankFragment;
 import com.smedic.tubtub.fragments.FavoritesFragment;
+import com.smedic.tubtub.fragments.PlaylistDetailFragment;
 import com.smedic.tubtub.fragments.PlaylistsFragment;
 import com.smedic.tubtub.fragments.RecentlyWatchedFragment;
 import com.smedic.tubtub.fragments.SearchFragment;
@@ -658,11 +662,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         recentlyPlayedFragment = RecentlyWatchedFragment.newInstance();
         favoritesFragment = FavoritesFragment.newInstance();
         PlaylistsFragment playlistsFragment = PlaylistsFragment.newInstance();
+        PlaylistDetailFragment playlistDetailFragment=PlaylistDetailFragment.newInstance();
 
         adapter.addFragment(favoritesFragment, null);/*0*/
         adapter.addFragment(recentlyPlayedFragment, null);/*1*/
         adapter.addFragment(searchFragment, null);/*2*/
         adapter.addFragment(playlistsFragment, null);/*3*/
+        //adapter.addFragment(playlistDetailFragment,null);
         viewPager.setAdapter(adapter);
     }
 
@@ -1294,7 +1300,17 @@ public void onDetailClick(){
         }
     }
 
-   public void onDetailClick(String playlistId){
-        Log.d("kandabashi","playlist-detail-checked!!!\n\n");
-    }
+   public void onDetailClick(String playlistId) {
+       Log.d("kandabashi", "playlist-detail-checked!!!\n\n");
+       /*PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();
+       playlistDetailFragment.setPlaylistId(playlistId);*/
+      BlankFragment playlistDetailFragment = new BlankFragment();
+
+       FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+       ft.add(R.id.frame_layout,playlistDetailFragment);
+       //viewPager.setVisibility(View.INVISIBLE);
+       ft.addToBackStack(null);
+       ft.commit();
+
+   }
 }
