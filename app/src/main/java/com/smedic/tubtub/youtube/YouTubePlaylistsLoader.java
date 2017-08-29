@@ -54,8 +54,6 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
         }
 
         try {
-            Log.d("kandabashi","YouTubePlaylistLoader-1");
-            Log.d("kandabashi","YouTubePlaylistLoader-2");
             /*setMineまでは大丈夫。execute()で例外発生->execute()が実行命令だから当たり前。*/
             /*setmine→アカウントに登録されたチャンネルだけ返す。*/
             ChannelListResponse channelListResponse = youtube.channels().list("snippet").setMine(true).execute();
@@ -64,21 +62,18 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
             if (channelList.isEmpty()) {
                 Log.d(TAG, "Can't find user channel");
             }
-            Log.d("kandabashi","YouTubePlaylistLoader-3");
             Channel channel = channelList.get(0);
 
-            Log.d("kandabashi","YouTubePlaylistLoader-4");
             YouTube.Playlists.List searchList = youtube.playlists().list("id,snippet,contentDetails,status");//.setKey("AIzaSyApidIQCEBbqishTDtwuNky9uA-wyqZlR0");
 
-            Log.d("kandabshi","YouTubePlaylistLoader-5");
             searchList.setChannelId(channel.getId());
             searchList.setFields("items(id,snippet/title,snippet/thumbnails/default/url,contentDetails/itemCount,status)");
             searchList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
-            Log.d("kandabshi","YouTubePlaylistLoader-6");
+
             PlaylistListResponse playListResponse = searchList.execute();
-            Log.d("kandabshi","YouTubePlaylistLoader-7");
+
             List<Playlist> playlists = playListResponse.getItems();
-            Log.d("kandabshi","YouTubePlaylistLoader-8");
+
 
             if (playlists != null) {
 
@@ -86,9 +81,9 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
                 if (!iteratorPlaylistResults.hasNext()) {
                     Log.d(TAG, " There aren't any results for your query.");
                 }
-                Log.d("kandabshi","YouTubePlaylistLoader-9");
+
                 ArrayList<YouTubePlaylist> youTubePlaylistList = new ArrayList<>();
-                Log.d("kandabshi","YouTubePlaylistLoader-10");
+
                 while (iteratorPlaylistResults.hasNext()) {
                     Playlist playlist = iteratorPlaylistResults.next();
                     String id=playlist.getId();

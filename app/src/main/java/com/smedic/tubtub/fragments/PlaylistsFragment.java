@@ -94,6 +94,8 @@ public class PlaylistsFragment extends BaseFragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_list, container, false);
+
+        Log.d("kandabshi","Playlistfragment-onCreateView");
         /* Setup the ListView */
         playlistsListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
         playlistsListView.setLayoutManager(new LinearLayoutManager(context));

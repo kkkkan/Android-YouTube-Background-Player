@@ -2,6 +2,7 @@ package com.smedic.tubtub.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.api.services.youtube.model.Playlist;
+import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.R;
 import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
@@ -26,7 +28,7 @@ import java.util.List;
 public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAdapter.ViewHolder>
         implements View.OnClickListener {
 
-    private static final String TAG = "SMEDIC";
+    private static final String TAG = "Kandabashi";
     private Context context;
     private final List<YouTubeVideo> list;
     private boolean[] itemChecked;
@@ -41,7 +43,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
     }
 
     @Override
-    public PlaylistDetailAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_playlist_detail, null);
         view.setOnClickListener(this);
         return new ViewHolder(view);
@@ -63,6 +65,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
         holder.favoriteCheckBox.setOnCheckedChangeListener(null);
         holder.favoriteCheckBox.setChecked(itemChecked[position]);
 
+        /*お気に入りリストに入れたり抜いたり*/
         holder.favoriteCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton btn, boolean isChecked) {
                 itemChecked[position] = isChecked;
@@ -72,6 +75,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
             }
         });
 
+        /*shareする*/
         holder.shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -80,6 +84,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
                 }
             }
         });
+
 
         holder.DeleteButton.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -123,11 +128,12 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
             viewCount = (TextView) itemView.findViewById(R.id.views_number);
             favoriteCheckBox = (CheckBox) itemView.findViewById(R.id.favoriteButton);
             shareButton = (ImageView) itemView.findViewById(R.id.shareButton);
-            DeleteButton=(ImageView)itemView.findViewById(R.id.detail_button);
+            DeleteButton=(ImageView)itemView.findViewById(R.id.musicDeleteButton);
         }
     }
 
     public void setOnItemEventsListener(ItemEventsListener<YouTubeVideo> listener) {
         itemEventsListener = listener;
     }
+
 }

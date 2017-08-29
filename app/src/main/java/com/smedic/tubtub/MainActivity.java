@@ -19,6 +19,7 @@ import android.Manifest;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -36,7 +37,6 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private MediaController mMediaController;
     private AlertDialog.Builder mListDlg;
     private AlertDialog.Builder mTitleDlg;
+    private ProgressDialog mProgressDialog;
 
     /*動画タイトル用*/
     private TextView mTextView;
@@ -242,6 +243,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mTextView=(TextView)findViewById(R.id.title_view);
         mListDlg=new AlertDialog.Builder(this);
         mTitleDlg=new AlertDialog.Builder(this);
+        mProgressDialog = new ProgressDialog(this);
 
  /*Mediaplayer関係ここまで*/
 
@@ -354,6 +356,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         mp.seekTo(getMediaStartTime());
                         mp.start();
                         setMediaStartTime(0);
+                        /*読み込み中ダイアログ消す*/
+                        mProgressDialog.dismiss();
                     }
                 });
                // mMediaPlayer.setOnPreparedListener(this);
@@ -686,6 +690,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
         Log.d("kandabashi", "onPlaylistSelected");
+        /*読み込み中ダイアログ表示*/
+        /*進捗状況は表示しない*/
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setMessage("Loading...");
+        mProgressDialog.show();
+
         if (!networkConf.isNetworkAvailable()) {
             networkConf.createNetErrorDialog();
             return;
@@ -1302,15 +1312,29 @@ public void onDetailClick(){
 
    public void onDetailClick(String playlistId) {
        Log.d("kandabashi", "playlist-detail-checked!!!\n\n");
-       /*PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();
-       playlistDetailFragment.setPlaylistId(playlistId);*/
-      BlankFragment playlistDetailFragment = new BlankFragment();
+       PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();
+       playlistDetailFragment.setPlaylistId(playlistId);
+      //FavoritesFragment playlistDetailFragment=new FavoritesFragment();
+      //BlankFragment playlistDetailFragment = new BlankFragment();
 
        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
        ft.add(R.id.frame_layout,playlistDetailFragment);
-       //viewPager.setVisibility(View.INVISIBLE);
+       /*このままだと下のviewpageが見えていて且つタッチできてしまうので対策*
+       playlistdetailのdestroyで、可視化＆タッチ有効化
+        */
+       viewPager.setVisibility(View.INVISIBLE);
+       viewPager.setOnTouchListener(new View.OnTouchListener() {
+           @Override
+           public boolean onTouch(View v, MotionEvent event) {
+               return false;
+           }
+       });
        ft.addToBackStack(null);
        ft.commit();
 
    }
+
+    public ViewPager getViewPager() {
+        return viewPager;
+    }
 }

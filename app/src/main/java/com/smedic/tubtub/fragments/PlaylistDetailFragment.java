@@ -6,10 +6,12 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -42,7 +44,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
         private static final String TAG = "SMEDIC search frag";
         private RecyclerView detailFoundListView;
-        static private List<YouTubeVideo> playlistDetailList;
+        static private ArrayList<YouTubeVideo> playlistDetailList;
         private PlaylistDetailAdapter detailListAdapter;
         private ProgressBar loadingProgressBar;
         private NetworkConf networkConf;
@@ -76,9 +78,14 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                     Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onLoadFinished-empty");
                     return ;
                 }
-                playlistDetailList=data;
+
                  /*データ変更したことをお知らせする。*/
+                playlistDetailList.clear();
+                playlistDetailList.addAll(data);
                 detailListAdapter.notifyDataSetChanged();
+                for (YouTubeVideo video : playlistDetailList) {
+                    Log.d(TAG, "onLoadFinished: >>> " + video.getTitle());
+                }
             }
 
             @Override
@@ -102,7 +109,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         playlistDetailList = new ArrayList<>();
-        networkConf = new NetworkConf(getActivity());
+        //networkConf = new NetworkConf(getActivity());
     }
 
     @Override
@@ -114,7 +121,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         View v = inflater.inflate(R.layout.fragment_list, container, false);
         detailFoundListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
         detailFoundListView.setLayoutManager(new LinearLayoutManager(context));
-        loadingProgressBar = (ProgressBar) v.findViewById(R.id.fragment_progress_bar);
+       // loadingProgressBar = (ProgressBar) v.findViewById(R.id.fragment_progress_bar);
         detailListAdapter = new PlaylistDetailAdapter(context, playlistDetailList);
         detailListAdapter.setOnItemEventsListener(this);
         detailFoundListView.setAdapter(detailListAdapter);
@@ -133,6 +140,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         Log.d("kandabashi","PlaylistDetailFragment-onResume");
         /*playlistDetailListにデータ詰める。*/
         acquirePlaylistVideos(playlistId);
+       //detailListAdapter.notifyDataSetChanged();
 
     }
 
@@ -216,6 +224,19 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     public void onItemClick(YouTubeVideo video) {
         /*最近見たリスト追加はplaylistselectedでやる！*/
         itemSelected.onPlaylistSelected(playlistDetailList, playlistDetailList.indexOf(video));
+    }
+
+    /*viewPager見えるようにし、タッチイベントも復活させる*/
+    public void onDestroy(){
+        super.onDestroy();
+        ViewPager viewPager=((MainActivity)getActivity()).getViewPager();
+        viewPager.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return true;
+            }
+        });
+        viewPager.setVisibility(View.VISIBLE);
     }
 }
 

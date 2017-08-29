@@ -76,6 +76,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
         });
         holder.itemView.setTag(playlist);
 
+        /*プレイリストの曲一覧を表示*/
         holder.playlistDetail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
