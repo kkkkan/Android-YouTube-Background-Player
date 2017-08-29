@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -59,7 +60,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         private OnFavoritesSelected onFavoritesSelected;
         private YouTube youTubeWithCredential;
         private String playlistId;
-        //final private ProgressDialog progressDialog=((MainActivity)getActivity()).getmProgressDialog();
+        private SwipeRefreshLayout swipeToRefresh;
         final private Handler mainHandler=((MainActivity)getActivity()).mainHandler;
 
 
@@ -73,14 +74,6 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
             @Override
             public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
                 Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:"+playlistId);
-                /*mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        progressDialog.setIndeterminate(true);
-                        progressDialog.setMessage("Loading...");
-                        progressDialog.show();
-                    }
-                });*/
                 return new YouTubePlaylistVideosLoader(context, playlistId);
             }
 
@@ -89,25 +82,21 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                 Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onLoadFinished");
                 if (data == null || data.isEmpty()) {
                     Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onLoadFinished-empty");
-                   /* mainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            progressDialog.dismiss();
-                        }
-                    });*/
+                    /*更新中のクルクルを止める*/
+                    if(swipeToRefresh.isRefreshing()){
+                        swipeToRefresh.setRefreshing(false);
+                    }
                     return ;
                 }
 
                  /*データ変更したことをお知らせする。*/
                 playlistDetailList.clear();
                 playlistDetailList.addAll(data);
-               /* mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        progressDialog.dismiss();
-                    }
-                });*/
                 detailListAdapter.notifyDataSetChanged();
+                 /*更新中のクルクルを止める*/
+                if(swipeToRefresh.isRefreshing()){
+                    swipeToRefresh.setRefreshing(false);
+                }
                 for (YouTubeVideo video : playlistDetailList) {
                     Log.d(TAG, "onLoadFinished: >>> " + video.getTitle());
                 }
@@ -152,8 +141,16 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         detailFoundListView.setAdapter(detailListAdapter);
         youTubeWithCredential = YouTubeSingleton.getYouTubeWithCredentials();
 
-        //disable swipe to refresh for this tab
-        v.findViewById(R.id.swipe_to_refresh).setEnabled(false);
+        /*swipeで更新*/
+        swipeToRefresh = (SwipeRefreshLayout) v.findViewById(R.id.swipe_to_refresh);
+        swipeToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Log.d(TAG,"onRefresh");
+                acquirePlaylistVideos(playlistId);
+            }
+        });
+
         return v;
     }
 
@@ -189,46 +186,6 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
     }
 
-    /**
-     * Search for query on youTube by using YouTube Data API V3
-     *
-     * @param query
-     */
-    public void searchQuery(final String query) {
-        //check network connectivity
-        if (!networkConf.isNetworkAvailable()) {
-            networkConf.createNetErrorDialog();
-            return;
-        }
-
-        loadingProgressBar.setVisibility(View.VISIBLE);
-
-        getLoaderManager().restartLoader(1, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
-            @Override
-            public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
-
-                return new YouTubeVideosLoader(context, query);
-            }
-
-            @Override
-            public void onLoadFinished(Loader<List<YouTubeVideo>> loader, List<YouTubeVideo> data) {
-                if (data == null)
-                    return;
-                detailFoundListView.smoothScrollToPosition(0);
-                playlistDetailList.clear();
-                playlistDetailList.addAll(data);
-                detailListAdapter.notifyDataSetChanged();
-                loadingProgressBar.setVisibility(View.INVISIBLE);
-            }
-
-            @Override
-            public void onLoaderReset(Loader<List<YouTubeVideo>> loader) {
-                playlistDetailList.clear();
-                playlistDetailList.addAll(Collections.<YouTubeVideo>emptyList());
-                detailListAdapter.notifyDataSetChanged();
-            }
-        }).forceLoad();
-    }
 
     @Override
     public void onShareClicked(String itemId) {
