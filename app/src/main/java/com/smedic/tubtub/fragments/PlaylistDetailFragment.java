@@ -1,8 +1,10 @@
 package com.smedic.tubtub.fragments;
 
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -15,8 +17,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.PlaylistItem;
+import com.google.api.services.youtube.model.PlaylistItemSnippet;
+import com.google.api.services.youtube.model.ResourceId;
 import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.R;
 import com.smedic.tubtub.adapters.PlaylistDetailAdapter;
@@ -53,12 +59,11 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         private OnFavoritesSelected onFavoritesSelected;
         private YouTube youTubeWithCredential;
         private String playlistId;
+        //final private ProgressDialog progressDialog=((MainActivity)getActivity()).getmProgressDialog();
+        final private Handler mainHandler=((MainActivity)getActivity()).mainHandler;
 
 
 
-    public void setPlaylistId(String playlistId) {
-        this.playlistId = playlistId;
-    }
 
     private  void acquirePlaylistVideos(final String playlistId) {
         Log.d("kandabashi","acquirePlaylistVideos");
@@ -68,6 +73,14 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
             @Override
             public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
                 Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:"+playlistId);
+                /*mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressDialog.setIndeterminate(true);
+                        progressDialog.setMessage("Loading...");
+                        progressDialog.show();
+                    }
+                });*/
                 return new YouTubePlaylistVideosLoader(context, playlistId);
             }
 
@@ -76,12 +89,24 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                 Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onLoadFinished");
                 if (data == null || data.isEmpty()) {
                     Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onLoadFinished-empty");
+                   /* mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            progressDialog.dismiss();
+                        }
+                    });*/
                     return ;
                 }
 
                  /*データ変更したことをお知らせする。*/
                 playlistDetailList.clear();
                 playlistDetailList.addAll(data);
+               /* mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressDialog.dismiss();
+                    }
+                });*/
                 detailListAdapter.notifyDataSetChanged();
                 for (YouTubeVideo video : playlistDetailList) {
                     Log.d(TAG, "onLoadFinished: >>> " + video.getTitle());
@@ -181,6 +206,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         getLoaderManager().restartLoader(1, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
             @Override
             public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
+
                 return new YouTubeVideosLoader(context, query);
             }
 
@@ -214,9 +240,39 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         onFavoritesSelected.onFavoritesSelected(video, isChecked); // pass event to MainActivity
     }
 
+    /*プレイリストから曲を除く*/
     @Override
-    public void onAddClicked(YouTubeVideo video){
-        onFavoritesSelected.onAddSelected(video); // pass event to MainActivity
+    public void onAddClicked(final YouTubeVideo video){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    /*playlistItemId(playlistidとvideoidの両方の情報が入ったid）を取得*/
+                    YouTube.PlaylistItems.List playlistItemRequest = youTubeWithCredential.playlistItems().list("id,contentDetails,snippet");
+                    playlistItemRequest.setPlaylistId(playlistId);
+                    playlistItemRequest.setVideoId(video.getId());
+                    List<PlaylistItem> playlistItemResult =playlistItemRequest.execute().getItems();
+                    int index=playlistItemResult.size();
+                    String id=playlistItemResult.get(index-1).getId();
+                    youTubeWithCredential.playlistItems().delete(id).execute();
+                }catch (Exception e){
+                    Log.d(TAG,"PlaylistDetailFragment-onAddClicked-delete-error-:"+e.getMessage());
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getContext(), "削除に失敗しました。", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                    });
+                }
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getContext(), "削除に成功しました。", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        }).start();
     }
 
 
@@ -237,6 +293,10 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
             }
         });
         viewPager.setVisibility(View.VISIBLE);
+    }
+
+    public void setPlaylistId(String playlistId) {
+        this.playlistId = playlistId;
     }
 }
 

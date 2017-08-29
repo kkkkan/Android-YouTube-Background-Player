@@ -11,10 +11,9 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.api.services.youtube.model.Playlist;
-import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.R;
 import com.smedic.tubtub.database.YouTubeSqlDb;
+import com.smedic.tubtub.fragments.PlaylistDetailFragment;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.model.YouTubeVideo;
 import com.smedic.tubtub.utils.Config;
@@ -106,6 +105,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
     @Override
     public void onClick(View v) {
         if (itemEventsListener != null) {
+            Log.d(TAG,"onClick");
             YouTubeVideo item = (YouTubeVideo) v.getTag();
             itemEventsListener.onItemClick(item);
         }

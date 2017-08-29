@@ -563,7 +563,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 token = GoogleAuthUtil.getToken(
                                         MainActivity.this,
                                         getCredential().getSelectedAccountName(),
-                                        "oauth2:" + " " + "https://www.googleapis.com/auth/youtube" + " " + "https://www.googleapis.com/auth/youtube.readonly" + " " + "https://www.googleapis.com/auth/youtube.upload" + " " + "https://www.googleapis.com/auth/youtubepartner-channel-audit");
+                                        "oauth2:" + " " + "https://www.googleapis.com/auth/youtube" + " " + "https://www.googleapis.com/auth/youtube.readonly" + " " + "https://www.googleapis.com/auth/youtube.upload" + " " + "https://www.googleapis.com/auth/youtubepartner-channel-audit"+"https://www.googleapis.com/auth/youtubepartner");
                                 mainHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -714,10 +714,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
                     Log.d("kandabashi", "onExtractionComplete");
                     if (ytFiles == null) {
-                        // Something went wrong we got no urls. Always check this.
-                        Toast.makeText(YTApplication.getAppContext(), R.string.failed_playback,
-                                Toast.LENGTH_SHORT).show();
-                        return;
+                        Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
+                        mProgressDialog.dismiss();
+                        onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
+                        //return;
                     }
                 /*Videoでは形式を変えて360p（ノーマル画質）で試す。アプリを軽くするため高画質は非対応にした。これ以上落とすと音声が含まれなくなっちゃう。*/
                     int[] itagVideo = {18, 134, 243};
@@ -760,11 +760,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 Log.d("kandabashi","mMediaPlayer.isPlaying:"+String.valueOf(mMediaPlayer.isPlaying()));
                                 surfaceCreated(mHolder);
                             } else {
+                                mProgressDialog.dismiss();
                                 audioCreated();
                             }
                         } else if (currentSongIndex + 1 < playList.size()) {
                             Log.d("kandabashi", "ytFile-null-next:" + video.getId());
                             Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
+                            mProgressDialog.dismiss();
                             onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
                         }
 
@@ -919,12 +921,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     getYouTubeWithCredentials().playlistItems().insert("snippet", playlistItem).execute();
                 } catch (Exception e) {
                     Log.d("kandabashi", "AddPlaylist Error:" + e.getMessage());
+                    if(resultShow){
                     mainHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             Toast.makeText(mainContext, "追加に失敗しました。", Toast.LENGTH_LONG).show();
+                            return;
                         }
                     });
+                    }
                 }
                 if(resultShow){
                     mainHandler.post(new Runnable() {
@@ -961,7 +966,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         final ArrayList<Integer> checkedItems = new ArrayList<Integer>();
         checkedItems.add(0);
 
-
+/*ダイアログ表示のための準備*/
         mListDlg.setTitle("プレイリスト追加：\n"+videoTitle);
 
         mListDlg.setSingleChoiceItems(playlists,0, new DialogInterface.OnClickListener() {
@@ -1010,7 +1015,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                     } else {
                        AddVideoToPlayList(allPlaylist.get(checkedItems.get(0)).getId(),video,true);
-                           Toast.makeText(mainContext,"プレイリスト "+allPlaylist.get(checkedItems.get(0)).getTitle()+" に "+videoTitle+" を追加しました。",Toast.LENGTH_LONG).show();
+                          // Toast.makeText(mainContext,"プレイリスト "+allPlaylist.get(checkedItems.get(0)).getTitle()+" に "+videoTitle+" を追加しました。",Toast.LENGTH_LONG).show();
 
                     }
                 }
@@ -1023,7 +1028,29 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     /*プレイリスト詳細を見るためのリスナーの中身実装*/
-public void onDetailClick(){
+public void onDetailClick(String playlistId){
+    Log.d("kandabashi", "playlist-detail-checked!!!\n\n");
+    PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();
+    playlistDetailFragment.setPlaylistId(playlistId);
+    //FavoritesFragment playlistDetailFragment=new FavoritesFragment();
+    //BlankFragment playlistDetailFragment = new BlankFragment();
+
+    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+    ft.add(R.id.frame_layout,playlistDetailFragment);
+       /*このままだと下のviewpageが見えていて且つタッチできてしまうので対策*
+       playlistdetailのdestroyで、可視化＆タッチ有効化
+        */
+    viewPager.setVisibility(View.INVISIBLE);
+    viewPager.setOnTouchListener(new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            return false;
+        }
+    });
+    ft.addToBackStack(null);
+    ft.commit();
+
+
 
 }
     /**
@@ -1310,10 +1337,10 @@ public void onDetailClick(){
         }
     }
 
-   public void onDetailClick(String playlistId) {
+   public void onDetailClick(YouTubePlaylist playlist) {
        Log.d("kandabashi", "playlist-detail-checked!!!\n\n");
        PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();
-       playlistDetailFragment.setPlaylistId(playlistId);
+       playlistDetailFragment.setPlaylistId(playlist.getId());
       //FavoritesFragment playlistDetailFragment=new FavoritesFragment();
       //BlankFragment playlistDetailFragment = new BlankFragment();
 
@@ -1336,5 +1363,13 @@ public void onDetailClick(){
 
     public ViewPager getViewPager() {
         return viewPager;
+    }
+
+    public ProgressDialog getmProgressDialog() {
+        return mProgressDialog;
+    }
+
+    public TextView getmTextView() {
+        return mTextView;
     }
 }

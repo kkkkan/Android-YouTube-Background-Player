@@ -26,13 +26,13 @@
 
             <SurfaceView android:id="@+id/surface"
                 android:layout_width="fill_parent"
-                android:layout_height="200dp"
+                android:layout_height="190dp"
                 android:visibility="visible"
                 />
 
         <TextView
             android:layout_width="fill_parent"
-            android:layout_height="50dp"
+            android:layout_height="40dp"
             android:id="@+id/title_view"
             android:background="@color/cardview_shadow_start_color"
             android:gravity="center"/>

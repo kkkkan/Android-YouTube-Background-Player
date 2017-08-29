@@ -138,7 +138,8 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
 
     @Override
     public void onAddClicked(YouTubeVideo video){
-
+        /*mainactivityのonAddSelected(video)へ*/
+        ((MainActivity)itemSelected).onAddSelected(video);
     }
     @Override
     public void onItemClick(YouTubeVideo video) {

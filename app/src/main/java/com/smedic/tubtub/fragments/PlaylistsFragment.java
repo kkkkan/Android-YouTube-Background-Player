@@ -106,6 +106,7 @@ public class PlaylistsFragment extends BaseFragment implements
         playlistsAdapter.setOnItemEventsListener(this);
         playlistsListView.setAdapter(playlistsAdapter);
         playlistsAdapter.setOnDetailClickListener((PlaylistsAdapter.OnDetailClickListener) getActivity());
+        playlistsAdapter.setmTextView(((MainActivity)getActivity()).getmTextView());
 
 
 
