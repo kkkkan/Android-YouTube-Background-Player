@@ -3,6 +3,7 @@ package com.smedic.tubtub.fragments;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -10,6 +11,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -59,8 +61,8 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         private OnItemSelected itemSelected;
         private OnFavoritesSelected onFavoritesSelected;
         private YouTube youTubeWithCredential;
-        private String playlistId;
         private SwipeRefreshLayout swipeToRefresh;
+        private YouTubePlaylist playlist;
         final private Handler mainHandler=((MainActivity)getActivity()).mainHandler;
 
 
@@ -147,7 +149,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
             @Override
             public void onRefresh() {
                 Log.d(TAG,"onRefresh");
-                acquirePlaylistVideos(playlistId);
+                acquirePlaylistVideos(playlist.getId());
             }
         });
 
@@ -161,7 +163,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         playlistDetailList.clear();
         Log.d("kandabashi","PlaylistDetailFragment-onResume");
         /*playlistDetailListにデータ詰める。*/
-        acquirePlaylistVideos(playlistId);
+        acquirePlaylistVideos(playlist.getId());
        //detailListAdapter.notifyDataSetChanged();
 
     }
@@ -200,36 +202,46 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     /*プレイリストから曲を除く*/
     @Override
     public void onAddClicked(final YouTubeVideo video){
-        new Thread(new Runnable() {
+
+        AlertDialog.Builder dialog=new AlertDialog.Builder(getContext());
+        dialog.setTitle("削除").setMessage(video.getTitle()+" を\nプレイリスト"+playlist.getTitle()+"から削除しますか？")
+                .setNegativeButton("Cancel",null)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
-            public void run() {
-                try{
-                    /*playlistItemId(playlistidとvideoidの両方の情報が入ったid）を取得*/
-                    YouTube.PlaylistItems.List playlistItemRequest = youTubeWithCredential.playlistItems().list("id,contentDetails,snippet");
-                    playlistItemRequest.setPlaylistId(playlistId);
-                    playlistItemRequest.setVideoId(video.getId());
-                    List<PlaylistItem> playlistItemResult =playlistItemRequest.execute().getItems();
-                    int index=playlistItemResult.size();
-                    String id=playlistItemResult.get(index-1).getId();
-                    youTubeWithCredential.playlistItems().delete(id).execute();
-                }catch (Exception e){
-                    Log.d(TAG,"PlaylistDetailFragment-onAddClicked-delete-error-:"+e.getMessage());
-                    mainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getContext(), "削除に失敗しました。", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                    });
-                }
-                mainHandler.post(new Runnable() {
+            public void onClick(DialogInterface dialog, int which) {
+                new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(getContext(), "削除に成功しました。", Toast.LENGTH_LONG).show();
+                        try{
+                    /*playlistItemId(playlistidとvideoidの両方の情報が入ったid）を取得*/
+                            YouTube.PlaylistItems.List playlistItemRequest = youTubeWithCredential.playlistItems().list("id");
+                            playlistItemRequest.setPlaylistId(playlist.getId());
+                            playlistItemRequest.setVideoId(video.getId());
+                            List<PlaylistItem> playlistItemResult =playlistItemRequest.execute().getItems();
+                            int index=playlistItemResult.size();
+                            String id=playlistItemResult.get(index-1).getId();
+                            youTubeWithCredential.playlistItems().delete(id).execute();
+                        }catch (Exception e){
+                            Log.d(TAG,"PlaylistDetailFragment-onAddClicked-delete-error-:"+e.getMessage());
+                            mainHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getContext(), "削除に失敗しました。", Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+                            });
+                        }
+                        mainHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getContext(), "削除に成功しました。", Toast.LENGTH_LONG).show();
+                            }
+                        });
                     }
-                });
+                }).start();
             }
-        }).start();
+        }).show();
+
     }
 
 
@@ -252,8 +264,10 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         viewPager.setVisibility(View.VISIBLE);
     }
 
-    public void setPlaylistId(String playlistId) {
-        this.playlistId = playlistId;
+
+
+    public void setPlaylist(YouTubePlaylist playlist) {
+        this.playlist = playlist;
     }
 }
 

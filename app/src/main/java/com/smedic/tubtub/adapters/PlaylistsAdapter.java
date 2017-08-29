@@ -36,7 +36,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
 
 
     public interface OnDetailClickListener{
-        void onDetailClick(String playlistId);
+        void onDetailClick(YouTubePlaylist playlist);
     }
 
     public PlaylistsAdapter(Context context, List<YouTubePlaylist> playlists) {
@@ -83,7 +83,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             @Override
             public void onClick(View v) {
                 if(onDetailClickListener!=null) {
-                    onDetailClickListener.onDetailClick(playlist.getId());
+                    onDetailClickListener.onDetailClick(playlist);
                     mTextView.setText(playlist.getTitle()+"("+playlist.getNumberOfVideos()+")");
                     Log.d("kandabashi","onDetailClickListener-playlistId:"+String.valueOf(playlist.getId())+String.valueOf(playlist.getTitle()));
                   // PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();

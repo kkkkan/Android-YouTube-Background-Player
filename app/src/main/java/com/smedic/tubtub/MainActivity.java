@@ -1028,10 +1028,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     /*プレイリスト詳細を見るためのリスナーの中身実装*/
-public void onDetailClick(String playlistId){
+public void onDetailClick(YouTubePlaylist playlist){
     Log.d("kandabashi", "playlist-detail-checked!!!\n\n");
     PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();
-    playlistDetailFragment.setPlaylistId(playlistId);
+    playlistDetailFragment.setPlaylist(playlist);
     //FavoritesFragment playlistDetailFragment=new FavoritesFragment();
     //BlankFragment playlistDetailFragment = new BlankFragment();
 
@@ -1053,6 +1053,30 @@ public void onDetailClick(String playlistId){
 
 
 }
+
+    /*public void onDetailClick(YouTubePlaylist playlist) {
+        Log.d("kandabashi", "playlist-detail-checked!!!\n\n");
+        PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();
+        playlistDetailFragment.setPlaylist(playlist);
+        //FavoritesFragment playlistDetailFragment=new FavoritesFragment();
+        //BlankFragment playlistDetailFragment = new BlankFragment();
+
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.add(R.id.frame_layout,playlistDetailFragment);
+       /*このままだと下のviewpageが見えていて且つタッチできてしまうので対策*
+       playlistdetailのdestroyで、可視化＆タッチ有効化
+        */
+       /* viewPager.setVisibility(View.INVISIBLE);
+        viewPager.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return false;
+            }
+        });
+        ft.addToBackStack(null);
+        ft.commit();
+
+    }*/
     /**
      * Class which provides adapter for fragment pager
      */
@@ -1337,29 +1361,7 @@ public void onDetailClick(String playlistId){
         }
     }
 
-   public void onDetailClick(YouTubePlaylist playlist) {
-       Log.d("kandabashi", "playlist-detail-checked!!!\n\n");
-       PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();
-       playlistDetailFragment.setPlaylistId(playlist.getId());
-      //FavoritesFragment playlistDetailFragment=new FavoritesFragment();
-      //BlankFragment playlistDetailFragment = new BlankFragment();
 
-       FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-       ft.add(R.id.frame_layout,playlistDetailFragment);
-       /*このままだと下のviewpageが見えていて且つタッチできてしまうので対策*
-       playlistdetailのdestroyで、可視化＆タッチ有効化
-        */
-       viewPager.setVisibility(View.INVISIBLE);
-       viewPager.setOnTouchListener(new View.OnTouchListener() {
-           @Override
-           public boolean onTouch(View v, MotionEvent event) {
-               return false;
-           }
-       });
-       ft.addToBackStack(null);
-       ft.commit();
-
-   }
 
     public ViewPager getViewPager() {
         return viewPager;
@@ -1372,4 +1374,8 @@ public void onDetailClick(String playlistId){
     public TextView getmTextView() {
         return mTextView;
     }
+
+    /*public AlertDialog.Builder getmListDlg() {
+        return mListDlg;
+    }*/
 }
