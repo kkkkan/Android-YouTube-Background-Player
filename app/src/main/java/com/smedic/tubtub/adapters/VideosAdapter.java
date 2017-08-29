@@ -32,6 +32,7 @@ import com.smedic.tubtub.model.YouTubeVideo;
 import com.smedic.tubtub.utils.Config;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,20 +45,23 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
     private static final String TAG = "SMEDIC";
     private Context context;
     private final List<YouTubeVideo> list;
-    private boolean[] itemChecked;
+    private ArrayList<Boolean> itemCheck;
+    //private boolean[] itemChecked;
     private ItemEventsListener<YouTubeVideo> itemEventsListener;
 
     public VideosAdapter(Context context, List<YouTubeVideo> list) {
         super();
         this.list = list;
         this.context = context;
-        this.itemChecked = new boolean[(int) Config.NUMBER_OF_VIDEOS_RETURNED];
+        this.itemCheck=new ArrayList<>();
+        //this.itemChecked = new boolean[(int)getItemCount() /*Config.NUMBER_OF_VIDEOS_RETURNED*/];
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.video_item, null);
         view.setOnClickListener(this);
+        //itemCheck.add(false);
         return new ViewHolder(view);
     }
 
@@ -65,9 +69,11 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
     public void onBindViewHolder(ViewHolder holder, final int position) {
         final YouTubeVideo video = list.get(position);
         if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).checkIfExists(video.getId())) {
-            itemChecked[position] = true;
+            itemCheck.add(true);
+            //itemChecked[position] = true;
         } else {
-            itemChecked[position] = false;
+            itemCheck.add(false);
+            //itemChecked[position] = false;
         }
 
         Picasso.with(context).load(video.getThumbnailURL()).into(holder.thumbnail);
@@ -75,11 +81,12 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
         holder.duration.setText(video.getDuration());
         holder.viewCount.setText(video.getViewCount());
         holder.favoriteCheckBox.setOnCheckedChangeListener(null);
-        holder.favoriteCheckBox.setChecked(itemChecked[position]);
+        holder.favoriteCheckBox.setChecked(/*itemChecked[position]*/itemCheck.get(position));
 
         holder.favoriteCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton btn, boolean isChecked) {
-                itemChecked[position] = isChecked;
+                itemCheck.set(position,isChecked);
+                //itemChecked[position] = isChecked;
                 if (itemEventsListener != null) {
                     itemEventsListener.onFavoriteClicked(video, isChecked);
                 }
