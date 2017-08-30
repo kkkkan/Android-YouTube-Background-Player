@@ -17,6 +17,7 @@ package com.smedic.tubtub.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -48,6 +49,7 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
     private VideosAdapter videoListAdapter;
     private OnItemSelected itemSelected;
     private Context context;
+    private SwipeRefreshLayout swipeToRefresh;
 
     public FavoritesFragment() {
         // Required empty public constructor
@@ -75,8 +77,18 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
         videoListAdapter.setOnItemEventsListener(this);
         favoritesListView.setAdapter(videoListAdapter);
 
-        //disable swipe to refresh for this tab
-        v.findViewById(R.id.swipe_to_refresh).setEnabled(false);
+          /*swipeで更新*/
+        swipeToRefresh = (SwipeRefreshLayout) v.findViewById(R.id.swipe_to_refresh);
+        swipeToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Log.d(TAG,"onRefresh");
+                favoriteVideos.clear();
+                favoriteVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).readAll());
+                videoListAdapter.notifyDataSetChanged();
+                swipeToRefresh.setRefreshing(false);
+            }
+        });
         return v;
     }
 

@@ -16,15 +16,24 @@
 package com.smedic.tubtub.fragments;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.PlaylistItem;
 import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.R;
+import com.smedic.tubtub.adapters.RecentlyVideosAdapter;
 import com.smedic.tubtub.adapters.VideosAdapter;
 import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
@@ -34,6 +43,7 @@ import com.smedic.tubtub.model.YouTubeVideo;
 import com.smedic.tubtub.utils.Config;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class that handles list of the recently watched YouTube
@@ -46,10 +56,12 @@ public class RecentlyWatchedFragment extends BaseFragment implements
     private ArrayList<YouTubeVideo> recentlyPlayedVideos;
 
     private RecyclerView recentlyPlayedListView;
-    private VideosAdapter videoListAdapter;
+    private RecentlyVideosAdapter videoListAdapter;
     private OnItemSelected itemSelected;
     private OnFavoritesSelected onFavoritesSelected;
     private Context context;
+    private Handler mainHandler;
+    private SwipeRefreshLayout swipeToRefresh;
 
     public RecentlyWatchedFragment() {
         // Required empty public constructor
@@ -72,12 +84,24 @@ public class RecentlyWatchedFragment extends BaseFragment implements
         View v = inflater.inflate(R.layout.fragment_list, container, false);
         recentlyPlayedListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
         recentlyPlayedListView.setLayoutManager(new LinearLayoutManager(context));
-        videoListAdapter = new VideosAdapter(context, recentlyPlayedVideos);
+        videoListAdapter = new RecentlyVideosAdapter(context, recentlyPlayedVideos);
         videoListAdapter.setOnItemEventsListener(this);
         recentlyPlayedListView.setAdapter(videoListAdapter);
+        mainHandler=((MainActivity)getActivity()).mainHandler;
 
-        //disable swipe to refresh for this tab
-        v.findViewById(R.id.swipe_to_refresh).setEnabled(false);
+         /*swipeで更新*/
+        swipeToRefresh = (SwipeRefreshLayout) v.findViewById(R.id.swipe_to_refresh);
+        swipeToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Log.d(TAG,"onRefresh");
+                recentlyPlayedVideos.clear();
+                recentlyPlayedVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).readAll());
+                videoListAdapter.notifyDataSetChanged();
+                swipeToRefresh.setRefreshing(false);
+            }
+        });
+
 
         return v;
     }
@@ -134,4 +158,41 @@ public class RecentlyWatchedFragment extends BaseFragment implements
     public void onItemClick(YouTubeVideo video) {
         itemSelected.onPlaylistSelected(recentlyPlayedVideos, recentlyPlayedVideos.indexOf(video));
     }
+
+    public void onDeleteClicked(final YouTubeVideo video){
+        /*削除の確認のダイアログを出す。*/
+        AlertDialog.Builder dialog=new AlertDialog.Builder(getContext());
+        dialog.setTitle("削除").setMessage(video.getTitle()+"\nを履歴から削除しますか？")
+                .setNegativeButton("Cancel",null)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).delete(video.getId())) {
+                                    mainHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getContext(), "削除に成功しました。", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                } else {
+                                    Log.d(TAG, "RecentlyWztchedFragment-delete-error-" + video.getTitle());
+                                    mainHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getContext(), "削除に失敗しました。", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                }
+
+                            }
+
+                        }).start();
+                    }
+                }).show();
+    }
 }
+

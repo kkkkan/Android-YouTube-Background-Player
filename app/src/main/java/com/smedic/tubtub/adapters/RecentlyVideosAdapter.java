@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 SMedic
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.smedic.tubtub.adapters;
 
 import android.content.Context;
@@ -27,22 +12,19 @@ import android.widget.TextView;
 
 import com.smedic.tubtub.R;
 import com.smedic.tubtub.database.YouTubeSqlDb;
-import com.smedic.tubtub.fragments.FavoritesFragment;
+import com.smedic.tubtub.fragments.RecentlyWatchedFragment;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.model.YouTubeVideo;
-import com.smedic.tubtub.utils.Config;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Custom ArrayAdapter which enables setup of a list view row views
- * Created by smedic on 8.2.16..
+ * Created by admin on 2017/08/30.
  */
-public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder>
-        implements View.OnClickListener {
 
+public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAdapter.ViewHolder>implements View.OnClickListener {
     private static final String TAG = "SMEDIC";
     private Context context;
     private final List<YouTubeVideo> list;
@@ -50,7 +32,7 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
     //private boolean[] itemChecked;
     private ItemEventsListener<YouTubeVideo> itemEventsListener;
 
-    public VideosAdapter(Context context, List<YouTubeVideo> list) {
+    public RecentlyVideosAdapter(Context context, List<YouTubeVideo> list) {
         super();
         this.list = list;
         this.context = context;
@@ -59,15 +41,15 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.video_item, null);
+    public RecentlyVideosAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recently_video_item, null);
         view.setOnClickListener(this);
         //itemCheck.add(false);
-        return new ViewHolder(view);
+        return new RecentlyVideosAdapter.ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, final int position) {
+    public void onBindViewHolder(RecentlyVideosAdapter.ViewHolder holder, final int position) {
         final YouTubeVideo video = list.get(position);
         if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).checkIfExists(video.getId())) {
             itemCheck.add(true);
@@ -85,16 +67,12 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
         holder.favoriteCheckBox.setChecked(/*itemChecked[position]*/itemCheck.get(position));
 
         holder.favoriteCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            /*favoriteFragmentではすぐDBのテーブルから情報が消えるためリストがすぐ更新されるのでハートoffさせると表示がづれる。*/
             public void onCheckedChanged(CompoundButton btn, boolean isChecked) {
-                if (!(itemEventsListener instanceof FavoritesFragment)) {
-                    itemCheck.set(position, isChecked);
+                itemCheck.set(position,isChecked);
+                //itemChecked[position] = isChecked;
+                if (itemEventsListener != null) {
+                    itemEventsListener.onFavoriteClicked(video, isChecked);
                 }
-                    //itemChecked[position] = isChecked;
-                    if (itemEventsListener != null) {
-                        itemEventsListener.onFavoriteClicked(video, isChecked);
-                    }
-
             }
         });
 
@@ -112,6 +90,16 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
             public void onClick(View view) {
                 if (itemEventsListener != null) {
                     itemEventsListener.onAddClicked(video);
+                }
+            }
+        });
+
+
+        holder.deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (itemEventsListener != null) {
+                    ((RecentlyWatchedFragment)itemEventsListener).onDeleteClicked(video);
                 }
             }
         });
@@ -140,6 +128,7 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
         CheckBox favoriteCheckBox;
         ImageView shareButton;
         ImageView addButton;
+        ImageView deleteButton;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -150,6 +139,7 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
             favoriteCheckBox = (CheckBox) itemView.findViewById(R.id.favoriteButton);
             shareButton = (ImageView) itemView.findViewById(R.id.shareButton);
             addButton=(ImageView)itemView.findViewById(R.id.PlaylistAddButton);
+            deleteButton=(ImageView)itemView.findViewById(R.id.musicDeleteButton);
         }
     }
 
