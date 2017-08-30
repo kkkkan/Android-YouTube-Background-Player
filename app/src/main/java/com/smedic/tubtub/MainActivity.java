@@ -713,7 +713,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 @Override
                 protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
                     Log.d("kandabashi", "onExtractionComplete");
-                    if (ytFiles == null) {
+                    if (ytFiles == null /*|| video.getThumbnailURL().equals("")*/) {
                         Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
                         mProgressDialog.dismiss();
                         onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
@@ -1054,29 +1054,6 @@ public void onDetailClick(YouTubePlaylist playlist){
 
 }
 
-    /*public void onDetailClick(YouTubePlaylist playlist) {
-        Log.d("kandabashi", "playlist-detail-checked!!!\n\n");
-        PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();
-        playlistDetailFragment.setPlaylist(playlist);
-        //FavoritesFragment playlistDetailFragment=new FavoritesFragment();
-        //BlankFragment playlistDetailFragment = new BlankFragment();
-
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.add(R.id.frame_layout,playlistDetailFragment);
-       /*このままだと下のviewpageが見えていて且つタッチできてしまうので対策*
-       playlistdetailのdestroyで、可視化＆タッチ有効化
-        */
-       /* viewPager.setVisibility(View.INVISIBLE);
-        viewPager.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return false;
-            }
-        });
-        ft.addToBackStack(null);
-        ft.commit();
-
-    }*/
     /**
      * Class which provides adapter for fragment pager
      */

@@ -53,21 +53,25 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
         String nextToken = "";
         // Retrieve the playlist of the channel's uploaded videos.
         YouTube.PlaylistItems.List playlistItemRequest;
-        Log.d("kandabashi", "YTPVL-loadInBackground-2");
+
         try {
             playlistItemRequest = youtube.playlistItems().list("id,contentDetails,snippet");
             playlistItemRequest.setPlaylistId(playlistId);
             Log.d("kandabashi", "YTPVL-loadInBackground-id:" + playlistId);
             //playlistItemRequest.setKey("ee");
             playlistItemRequest.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
-            playlistItemRequest.setFields("items(contentDetails/videoId,snippet/title,snippet/thumbnails/default/url),nextPageToken");
+            /*videoid,動画タイトル、デフォルトのサムネイル画像のurlと次のページのトークンを取得*/
+            playlistItemRequest.setFields("items(contentDetails/videoId,snippet/title,snippet/thumbnails/default/url)"/*,nextPageToken"*/);
             // Call API one or more times to retrieve all items in the list. As long as API
             // response returns a nextPageToken, there are still more items to retrieve.
             // do {
             // playlistItemRequest.setPageToken(nextToken);
-            Log.d("kandabashi", "YTPVL-loadInBackground-3");
+
             PlaylistItemListResponse playlistItemResult = playlistItemRequest.execute();
-            Log.d("kandabashi", "YTPVL-loadInBackground-4");
+
+            for(PlaylistItem p:playlistItemResult.getItems()){
+                Log.d("kandabashi","title:"+p.getSnippet().getTitle());
+            }
             //List  str= playlistItemResult.getItems();
             playlistItemList.addAll(playlistItemResult.getItems());
             //nextToken = playlistItemResult.getNextPageToken();
@@ -92,19 +96,21 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
             return Collections.emptyList();
         }
 
-        Log.d("kandabashi", "YTPVL-loadInBackground-5");
+
         //videos to get duration
         YouTube.Videos.List videosList = null;
-        Log.d("kandabashi", "YTPVL-loadInBackground-6");
+        int ii = 0;
         try {
             videosList = youtube.videos().list("id,contentDetails");
             //videosList.setKey("ee");
+            /*動画の長さを取ってくる*/
             videosList.setFields("items(contentDetails/duration)");
-            Log.d("kandabashi", "YTPVL-loadInBackground-7");
+
             //save all ids from searchList list in order to find video list
             StringBuilder contentDetails = new StringBuilder();
 
-            int ii = 0;
+            /*videoIdをつなげたものをIdとしてvideosListにセット*/
+
             for (PlaylistItem result : playlistItemList) {
                 //String aa = result.getContentDetails().getVideoId();
                 contentDetails.append(result.getContentDetails().getVideoId());
@@ -112,74 +118,75 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
                     contentDetails.append(",");
                 ii++;
             }
-            Log.d("kandabashi", "YTPVL-loadInBackground-8");
+
             //find video list
             videosList.setId(contentDetails.toString());
-            Log.d("kandabashi", "YTPVL-loadInBackground-9");
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         VideoListResponse resp = null;
         try {
-            Log.d("kandabashi", "YTPVL-loadInBackground-10");
+
             /*ビデオidを基にをとってこようとする。削除されてるやつや非公開にされてしまったやつは特に通知もなく取らずにスルーしてくる？*/
             resp = videosList.execute();
-            Log.d("kandabashi", "YTPVL-loadInBackground-11");
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        Log.d("kandabashi", "YTPVL-loadInBackground-12");
+
         /*resp(videoList)の方は削除されたビデオは含まない。*/
         List<Video> videoResults = resp.getItems();
+        /*50個videoIdを入れても、videoぃstでは50個全部取ってこれるとは限らないようである。*/
+        Log.d("kandabashi",String.valueOf(ii)+"NUMBER OF VIDEOS:"+videoResults.size());
         /*playlistItemListの方は削除されたビデオも要素として持ってしまってる。*/
         Iterator<PlaylistItem> pit = playlistItemList.iterator();
         Iterator<Video> vit = videoResults.iterator();
-        Log.d("kandabashi", "YTPVL-loadInBackground-13");
-        /*ビデオの数に合わせる*/
+
+
+        /*50個videoIdを入れても、videolistでは50個全部取ってこれるとは限らないようである。なのでビデオの数に合わせる*/
+        int count=0;
         while (vit.hasNext()) {
-            Log.d("kandabashi", "YTPVL-loadInBackground-14");
             PlaylistItem playlistItem = pit.next();
-            Log.d("kandabashi", "YTPVL-loadInBackground-16");
+            Log.d("kandabashi",playlistItem.getSnippet().getTitle());
             YouTubeVideo youTubeVideo = new YouTubeVideo();
-            Log.d("kandabashi", "YTPVL-loadInBackground-17");
             youTubeVideo.setId(playlistItem.getContentDetails().getVideoId());
-            Log.d("kandabashi", "YTPVL-loadInBackground-18");
             youTubeVideo.setTitle(playlistItem.getSnippet().getTitle());
            /* Log.d("kandabashi", "YTPVL-loadInBackground-19");
             playlistItem.getSnippet();
             Log.d("kandabashi", "YTPVL-loadInBackground-19-1");*/
             ThumbnailDetails thumbnailDetails = playlistItem.getSnippet().getThumbnails();
-            Log.d("kandabashi", "YTPVL-loadInBackground-19-2");
+
             if (thumbnailDetails != null) {
                /* Thumbnail a = playlistItem.getSnippet().getThumbnails().getDefault();
                 Log.d("kandabashi", "YTPVL-loadInBackground-19-3");
-                playlistItem.getSnippet().getThumbnails().getDefault().getUrl();
-                Log.d("kandabashi", "YTPVL-loadInBackground-19-4");*/
+                playlistItem.getSnippet().getThumbnails().getDefault().getUrl();*/
+
                 youTubeVideo.setThumbnailURL(playlistItem.getSnippet().getThumbnails().getDefault().getUrl());
 
                 /*削除されたビデオではないときのみビデオも進める。*/
-                Log.d("kandabashi", "YTPVL-loadInBackground-15");
                 Video videoItem = vit.next();
-                Log.d("kandabashi", "YTPVL-loadInBackground-20");
                 //video info
                 /*ビデオがnullなことはあり得ない。*/
                /* if (videoItem != null) {*/
-                    Log.d("kandabashi", "YTPVL-loadInBackground-21");
                     String isoTime = videoItem.getContentDetails().getDuration();
-                    Log.d("kandabashi", "YTPVL-loadInBackground-22");
                     String time = Utils.convertISO8601DurationToNormalTime(isoTime);
-                    Log.d("kandabashi", "YTPVL-loadInBackground-23");
                     youTubeVideo.setDuration(time);
-                    Log.d("kandabashi", "YTPVL-loadInBackground-24");
+                    Log.d("kandabashi",String.valueOf(++count)+"-"+playlistItem.getSnippet().getTitle());
                /* } else {
                     Log.d("kandabashi", "YTPVL-loadInBackground-14");
                     youTubeVideo.setDuration("NA");
                 }*/
-                playlistItems.add(youTubeVideo);
+                //playlistItems.add(youTubeVideo);
+            }else{
+                youTubeVideo.setThumbnailURL(null);
+                youTubeVideo.setDuration("00:00");
+                Log.d("kandabashi", String.valueOf(++count)+"-"+playlistItem.getSnippet().getTitle());
             }
 
+            playlistItems.add(youTubeVideo);
             }
             Log.d("kandabashi", "YTPVL-loadInBackground-25");
             return playlistItems;

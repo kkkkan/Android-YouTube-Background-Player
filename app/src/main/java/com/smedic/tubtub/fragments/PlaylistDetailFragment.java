@@ -203,6 +203,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     @Override
     public void onAddClicked(final YouTubeVideo video){
 
+       /*削除の確認のダイアログを出す。*/
         AlertDialog.Builder dialog=new AlertDialog.Builder(getContext());
         dialog.setTitle("削除").setMessage(video.getTitle()+" を\nプレイリスト"+playlist.getTitle()+"から削除しますか？")
                 .setNegativeButton("Cancel",null)
