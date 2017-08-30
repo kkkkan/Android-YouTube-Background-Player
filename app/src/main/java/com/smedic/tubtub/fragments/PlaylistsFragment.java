@@ -113,7 +113,7 @@ public class PlaylistsFragment extends BaseFragment implements
         playlistsAdapter.setOnItemEventsListener(this);
         playlistsListView.setAdapter(playlistsAdapter);
         playlistsAdapter.setOnDetailClickListener((PlaylistsAdapter.OnDetailClickListener) getActivity());
-        playlistsAdapter.setmTextView(((MainActivity)getActivity()).getmTextView());
+        //playlistsAdapter.setmTextView(((MainActivity)getActivity()).getmTextView());
         mainHandler=((MainActivity) getActivity()).mainHandler;
 
 
@@ -284,7 +284,7 @@ public class PlaylistsFragment extends BaseFragment implements
     public void onDeleteClicked(final YouTubePlaylist playlist){
          /*削除の確認のダイアログを出す。*/
         AlertDialog.Builder dialog=new AlertDialog.Builder(getContext());
-        dialog.setTitle("削除").setMessage("プレイリスト "+playlist.getTitle()+" を削除しますか？")
+        dialog.setTitle("削除").setMessage("プレイリスト "+playlist.getTitle()+"("+playlist.getNumberOfVideos()+")\nを削除しますか？")
                 .setNegativeButton("Cancel",null)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override

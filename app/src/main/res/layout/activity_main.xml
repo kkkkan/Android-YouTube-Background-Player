@@ -36,12 +36,17 @@
                 android:layout_height="40dp"
                 android:background="@color/cardview_shadow_start_color"
                 android:gravity="center" />
-
+            <FrameLayout
+                android:id="@+id/frame_layout_tab"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/app_bar_layout">
             <android.support.design.widget.TabLayout
                 android:id="@+id/tabs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:tabGravity="fill" />
+            </FrameLayout>
 
         </android.support.design.widget.AppBarLayout>
 

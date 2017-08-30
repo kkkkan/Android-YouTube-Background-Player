@@ -84,9 +84,9 @@ import com.google.api.services.youtube.model.PlaylistStatus;
 import com.google.api.services.youtube.model.ResourceId;
 import com.smedic.tubtub.adapters.PlaylistsAdapter;
 import com.smedic.tubtub.database.YouTubeSqlDb;
-import com.smedic.tubtub.fragments.BlankFragment;
 import com.smedic.tubtub.fragments.FavoritesFragment;
 import com.smedic.tubtub.fragments.PlaylistDetailFragment;
+import com.smedic.tubtub.fragments.PlaylistTitleFragment;
 import com.smedic.tubtub.fragments.PlaylistsFragment;
 import com.smedic.tubtub.fragments.RecentlyWatchedFragment;
 import com.smedic.tubtub.fragments.SearchFragment;
@@ -159,6 +159,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private AlertDialog.Builder mListDlg;
     private AlertDialog.Builder mTitleDlg;
     private ProgressDialog mProgressDialog;
+
 
     /*動画タイトル用*/
     private TextView mTextView;
@@ -1030,13 +1031,17 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     /*プレイリスト詳細を見るためのリスナーの中身実装*/
 public void onDetailClick(YouTubePlaylist playlist){
     Log.d("kandabashi", "playlist-detail-checked!!!\n\n");
+    /*playlistDetailFragment追加用*/
     PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();
     playlistDetailFragment.setPlaylist(playlist);
-    //FavoritesFragment playlistDetailFragment=new FavoritesFragment();
-    //BlankFragment playlistDetailFragment = new BlankFragment();
+
+    /*プレイリストタイトル表示用*/
+    PlaylistTitleFragment playlistTitleFragment=new PlaylistTitleFragment();
+    playlistTitleFragment.setPlaylistTitle(playlist.getTitle());
 
     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
     ft.add(R.id.frame_layout,playlistDetailFragment);
+    ft.add(R.id.frame_layout_tab,playlistTitleFragment);
        /*このままだと下のviewpageが見えていて且つタッチできてしまうので対策*
        playlistdetailのdestroyで、可視化＆タッチ有効化
         */
@@ -1047,6 +1052,15 @@ public void onDetailClick(YouTubePlaylist playlist){
             return false;
         }
     });
+    /*tabも見えるし触れちゃうのでoffにする。*/
+    tabLayout.setVisibility(View.INVISIBLE);
+    tabLayout.setOnTouchListener(new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            return false;
+        }
+    });
+    /*複数addしてもcommit()呼び出しまでを一つとしてスタックに入れてくれる。*/
     ft.addToBackStack(null);
     ft.commit();
 
@@ -1352,7 +1366,7 @@ public void onDetailClick(YouTubePlaylist playlist){
         return mTextView;
     }
 
-    /*public AlertDialog.Builder getmListDlg() {
-        return mListDlg;
-    }*/
+    public TabLayout getTabLayout() {
+        return tabLayout;
+    }
 }
