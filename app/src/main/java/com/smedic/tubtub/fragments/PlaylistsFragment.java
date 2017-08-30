@@ -16,12 +16,15 @@
 package com.smedic.tubtub.fragments;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -29,12 +32,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.Channel;
 import com.google.api.services.youtube.model.ChannelListResponse;
 import com.google.api.services.youtube.model.Playlist;
+import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistListResponse;
 import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.R;
@@ -47,6 +52,7 @@ import com.smedic.tubtub.model.YouTubeVideo;
 import com.smedic.tubtub.utils.Config;
 import com.smedic.tubtub.youtube.YouTubePlaylistVideosLoader;
 import com.smedic.tubtub.youtube.YouTubePlaylistsLoader;
+import com.smedic.tubtub.youtube.YouTubeSingleton;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -71,6 +77,7 @@ public class PlaylistsFragment extends BaseFragment implements
     private SwipeRefreshLayout swipeToRefresh;
     private Context context;
     private OnItemSelected itemSelected;
+    private Handler mainHandler;
 
     public PlaylistsAdapter getPlaylistsAdapter() {
         return playlistsAdapter;
@@ -107,6 +114,7 @@ public class PlaylistsFragment extends BaseFragment implements
         playlistsListView.setAdapter(playlistsAdapter);
         playlistsAdapter.setOnDetailClickListener((PlaylistsAdapter.OnDetailClickListener) getActivity());
         playlistsAdapter.setmTextView(((MainActivity)getActivity()).getmTextView());
+        mainHandler=((MainActivity) getActivity()).mainHandler;
 
 
 
@@ -271,6 +279,42 @@ public class PlaylistsFragment extends BaseFragment implements
         String id=youTubePlaylist.getId();
         Log.d("kandabashi","PlaylistsFragment-onItemClicked-id:"+id);
         acquirePlaylistVideos(youTubePlaylist.getId());
+    }
+
+    public void onDeleteClicked(final YouTubePlaylist playlist){
+         /*削除の確認のダイアログを出す。*/
+        AlertDialog.Builder dialog=new AlertDialog.Builder(getContext());
+        dialog.setTitle("削除").setMessage("プレイリスト "+playlist.getTitle()+" を削除しますか？")
+                .setNegativeButton("Cancel",null)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try{
+                                   YouTubeSingleton.getYouTubeWithCredentials().playlists().delete(playlist.getId()).execute();
+                                }catch (Exception e){
+                                    Log.d(TAG,"PlaylistDetailFragment-onAddClicked-delete-error-:"+e.getMessage());
+                                    mainHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getContext(), "削除に失敗しました。", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                    return;
+                                }
+                                mainHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getContext(), "削除に成功しました。", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                        }).start();
+                    }
+                }).show();
+
     }
 
 }

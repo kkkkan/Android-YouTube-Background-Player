@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.smedic.tubtub.R;
 import com.smedic.tubtub.fragments.PlaylistDetailFragment;
+import com.smedic.tubtub.fragments.PlaylistsFragment;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.model.YouTubePlaylist;
 import com.squareup.picasso.Picasso;
@@ -76,6 +77,15 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
                 }
             }
         });
+
+        holder.deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (itemEventsListener != null) {
+                    ((PlaylistsFragment)itemEventsListener).onDeleteClicked(playlist);
+                }
+            }
+        });
         holder.itemView.setTag(playlist);
 
         /*プレイリストの曲一覧を表示*/
@@ -113,6 +123,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
         TextView privacy;
         ImageView shareButton;
         ImageView playlistDetail;
+        ImageView deleteButton;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -122,6 +133,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             privacy = (TextView) itemView.findViewById(R.id.privacy);
             shareButton = (ImageView) itemView.findViewById(R.id.share_button);
             playlistDetail=(ImageView)itemView.findViewById(R.id.detail_button);
+            deleteButton=(ImageView)itemView.findViewById(R.id.delete_button);
         }
     }
 
