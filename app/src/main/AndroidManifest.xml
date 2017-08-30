@@ -35,9 +35,5 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".BackgroundAudioService"
-            android:process=":youtube" />
-
     </application>
 </manifest>

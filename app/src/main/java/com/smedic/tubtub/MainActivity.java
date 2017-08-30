@@ -127,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private final Context mainContext = this;
 
     private static final String TAG = "SMEDIC MAIN ACTIVITY";
+    private static final String TAG_NAME="kandabashi";
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -201,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-/*mediaplayer関係開始*/
+
 
         // スクリーンセーバをオフにする
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -209,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         mPreview = (SurfaceView) findViewById(R.id.surface);
         if (mPreview == null) {
-            Log.d("kandabashi", "Surface is null!");
+            Log.d("TAG_NAME", "Surface is null!");
         }
         mHolder = mPreview.getHolder();
         mHolder.addCallback(this);
@@ -226,10 +227,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mPreview.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                Log.d("kandabashi", "onTouch");
+                Log.d(TAG_NAME, "onTouch");
                 boolean r = v instanceof SurfaceView;
                 boolean y = mMediaPlayer != null;
-                Log.d("kandabashi", String.valueOf(r) + String.valueOf(y));
+                Log.d(TAG_NAME, String.valueOf(r) + String.valueOf(y));
                 if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView && mMediaPlayer != null) {
                     if (!mMediaController.isShowing()) {
                         mMediaController.show();
@@ -246,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mTitleDlg=new AlertDialog.Builder(this);
         mProgressDialog = new ProgressDialog(this);
 
- /*Mediaplayer関係ここまで*/
+
 
 
         YouTubeSqlDb.getInstance().init(this);
@@ -274,10 +275,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         requestPermissions();
     }
 
-    /*mediaplayer関係*/
+
     @SuppressLint("NewApi")
     protected void onResume() {
-        Log.d("kandabashi", "onResume");
+        Log.d(TAG_NAME, "onResume");
         super.onResume();
         // allow to continue playing media in the background.
         // バックグラウンド再生を許可する
@@ -290,40 +291,40 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void onPause() {
         super.onPause();
-        Log.d("kandabashi", "onPause");
+        Log.d(TAG_NAME, "onPause");
     }
 
     public boolean onDestroy(MediaPlayer mp, int what, int extra) {
-        Log.d("kandabashi", "onDestroy");
+        Log.d(TAG_NAME, "onDestroy");
         if (mp != null) {
             mp.release();
-            mp = null;/*元は全部mp*/
+            mp = null;
         }
         return false;
     }
 
     public void onStart() {
         super.onStart();
-        Log.d("kandabashi", "onStart");
+        Log.d(TAG_NAME, "onStart");
 
     }
 
     public void onRestart() {
         super.onRestart();
-        Log.d("kandabashi", "onRestart");
+        Log.d(TAG_NAME, "onRestart");
     }
 
     public void onStop() {
         super.onStop();
-        Log.d("kandabashi", "onStop");
+        Log.d(TAG_NAME, "onStop");
     }
 
 
 
     @Override
     public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
-        Log.d("kandabashi", "surfaceCreated");
-        Log.d("kandabashi","START_INITIAL:"+String.valueOf(START_INITIAL)+"\nmMediaplayer.isPlying:"+String.valueOf(mMediaPlayer.isPlaying()));
+        Log.d(TAG_NAME, "surfaceCreated");
+        Log.d(TAG_NAME,"START_INITIAL:"+String.valueOf(START_INITIAL)+"\nmMediaplayer.isPlying:"+String.valueOf(mMediaPlayer.isPlaying()));
         if((!START_INITIAL)){
             setMediaStartTime(mMediaPlayer.getCurrentPosition());
         }
@@ -337,14 +338,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 /*音声だけ再生が動いてるときはまずそれを止める。→2重再生を防ぐため*/
                 /*ホームボタン→画面off→画面on→アプリに戻るをしたときにここに制御が来る。*/
                 if (mAudioMediaPlayer.isPlaying()) {
-                    Log.d("kandabashi", "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()");
-                    Log.d("kandabashi", "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()"+mAudioMediaPlayer.getCurrentPosition());
+                    Log.d(TAG_NAME, "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()");
+                    Log.d(TAG_NAME, "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()"+mAudioMediaPlayer.getCurrentPosition());
                     setMediaStartTime(mAudioMediaPlayer.getCurrentPosition());
                 }
                 mAudioMediaPlayer.reset();
-                Log.d("kandabashi", "surfaceCreated-1");
+                Log.d(TAG_NAME, "surfaceCreated-1");
                 mMediaPlayer.setDataSource(this, mediaPath);
-                Log.d("kandabashi", "surfaceCreated-2");
+                Log.d(TAG_NAME, "surfaceCreated-2");
                 mMediaPlayer.setDisplay(paramSurfaceHolder);
                 if(VideoTitle!=null) {
                     mTextView.setText(VideoTitle);
@@ -353,7 +354,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
                     public void onPrepared(MediaPlayer mp) {
-                        Log.d("kandabashi", "onPrepared");
+                        Log.d(TAG_NAME, "onPrepared");
                         mp.seekTo(getMediaStartTime());
                         mp.start();
                         setMediaStartTime(0);
@@ -361,22 +362,19 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         mProgressDialog.dismiss();
                     }
                 });
-               // mMediaPlayer.setOnPreparedListener(this);
-                Log.d("kandabashi", "surfaceCreated-3");
+                Log.d(TAG_NAME, "surfaceCreated-3");
                 mMediaPlayer.prepare();
-                //setMediaStartTime(0);
-                Log.d("kandabashi", "surfaceCreated-4");
+                Log.d(TAG_NAME, "surfaceCreated-4");
             } catch (IllegalArgumentException e) {
-                Log.d("kakndabashi", "surfaceCreated-IllegalArgumentException" + e.getMessage());
+                Log.d(TAG_NAME, "surfaceCreated-IllegalArgumentException" + e.getMessage());
                 e.printStackTrace();
             } catch (IllegalStateException e) {
-                Log.d("kakndabashi", "surfaceCreated-IllegalStateException" + e.getMessage());
+                Log.d(TAG_NAME, "surfaceCreated-IllegalStateException" + e.getMessage());
                 e.printStackTrace();
             } catch (IOException e) {
-                Log.d("kakndabashi", "surfaceCreated-IOException" + e.getMessage());
+                Log.d(TAG_NAME, "surfaceCreated-IOException" + e.getMessage());
                 e.printStackTrace();
             }
-      /*mediaplayer関係ここまで*/
         }
 
     }
@@ -384,35 +382,35 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     /*Homeボタンでバックグラウンド再生の時は音声だけのメディアプレイヤー使っちゃう*/
     public void audioCreated() {
-        Log.d("kandabashi", "audioCreated");
+        Log.d(TAG_NAME, "audioCreated");
         mMediaPlayer.reset();
         mAudioMediaPlayer.reset();
         if (audioUrl != null) {
             Uri mediaPath = Uri.parse(audioUrl);
             try {
                 mAudioMediaPlayer.setDataSource(this, mediaPath);
-                Log.d("kandabashi", "audioCreated-1");
+                Log.d(TAG_NAME, "audioCreated-1");
                 mAudioMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
              /*prepareに時間かかることを想定し直接startせずにLister使う*/
                 mAudioMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
                     public void onPrepared(MediaPlayer mp) {
-                        Log.d("kandabashi", "onPrepared");
+                        Log.d(TAG_NAME, "onPrepared");
                         mp.start();
                         setMediaStartTime(0);
                     }
                 });
-                Log.d("kandabashi", "audioCreated-2");
+                Log.d(TAG_NAME, "audioCreated-2");
                 mAudioMediaPlayer.prepare();
-                Log.d("kandabashi", "audioCreated-3");
+                Log.d(TAG_NAME, "audioCreated-3");
             } catch (IllegalArgumentException e) {
-                Log.d("kakndabashi", "audioCreated-IllegalArgumentException:" + e.getMessage());
+                Log.d(TAG_NAME, "audioCreated-IllegalArgumentException:" + e.getMessage());
                 e.printStackTrace();
             } catch (IllegalStateException e) {
-                Log.d("kakndabashi", "audioCreated-IllegalStateException:" + e.getMessage());
+                Log.d(TAG_NAME, "audioCreated-IllegalStateException:" + e.getMessage());
                 e.printStackTrace();
             } catch (IOException e) {
-                Log.d("kakndabashi", "audioCreated-IOException:" + e.getMessage());
+                Log.d(TAG_NAME, "audioCreated-IOException:" + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -423,12 +421,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void surfaceChanged(SurfaceHolder paramSurfaceHolder, int paramInt1,
                                int paramInt2, int paramInt3) {
-        Log.d("kandabashi", "surfaceChanged");
+        Log.d(TAG_NAME, "surfaceChanged");
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder paramSurfaceHolder) {
-        Log.d("kandabashi", "surfaceDestroyed");
+        Log.d(TAG_NAME, "surfaceDestroyed");
         HOME_BUTTON_PAUSE = true;
     }
 
@@ -489,7 +487,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         return 0;
     }
 
-    /*mediaplayer関係ここまで*/
+
 
     /**
      * Attempts to set the account used with the API credentials. If an account
@@ -544,7 +542,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             if (resultCode == RESULT_OK && data != null && data.getExtras() != null) {
                 String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
                 if (accountName != null) {
-                    Log.d("kandabashi", "onActivityResult account");
+                    Log.d(TAG_NAME, "onActivityResult account");
                     /*SharedPreference:アプリの設定データをデバイス内に保存するための仕組み。*/
                     SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = settings.edit();
@@ -560,11 +558,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         protected String doInBackground(Void... params) {
                             String token = null;
                             try {
-
+                                /*youtube:YouTube アカウントの管理
+                                * youtube.readonly:YouTube アカウントの表示
+                                * youtube.upload:YouTube の動画のアップロード、YouTube の動画の管理
+                                * youtubepartner-channel-audio:channel リソース内の auditDetails のリトリーブ*/
                                 token = GoogleAuthUtil.getToken(
                                         MainActivity.this,
                                         getCredential().getSelectedAccountName(),
-                                        "oauth2:" + " " + "https://www.googleapis.com/auth/youtube" + " " + "https://www.googleapis.com/auth/youtube.readonly" + " " + "https://www.googleapis.com/auth/youtube.upload" + " " + "https://www.googleapis.com/auth/youtubepartner-channel-audit"+"https://www.googleapis.com/auth/youtubepartner");
+                                        "oauth2:" + " " + "https://www.googleapis.com/auth/youtube" + " " + "https://www.googleapis.com/auth/youtube.readonly" + " " + "https://www.googleapis.com/auth/youtube.upload" + " " + "https://www.googleapis.com/auth/youtubepartner-channel-audit"/*+"https://www.googleapis.com/auth/youtubepartner"*/);
                                 mainHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -573,23 +574,24 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 });
                             } catch (IOException transientEx) {
                                 // Network or server error, try later
-                                Log.e("kandabashi", transientEx.toString());
+                                Log.e(TAG_NAME, transientEx.toString());
                             } catch (UserRecoverableAuthException e) {
                                 // Recover (with e.getIntent())
-                                Log.e("kandabashi", e.toString());
+                                Log.e(TAG_NAME, e.toString());
                                 Intent recover = e.getIntent();
                                 startActivityForResult(recover, REQUEST_CODE_TOKEN_AUTH);
                             } catch (GoogleAuthException authEx) {
                                 // The call is not ever expected to succeed
                                 // assuming you have already verified that
                                 // Google Play services is installed.
-                                Log.e("kandabashi", getCredential().getSelectedAccountName() + ":" + authEx.toString());
+                                Log.e(TAG_NAME, getCredential().getSelectedAccountName() + ":" + authEx.toString());
                             }
                             return token;
                         }
 
                         @Override
                         protected void onPostExecute(String token) {
+                            /*tokenの文字列の表示*/
                             Log.i(TAG, "Access token retrieved:" + token);
                         }
 
@@ -690,7 +692,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
-        Log.d("kandabashi", "onPlaylistSelected");
+        Log.d(TAG_NAME, "onPlaylistSelected");
         /*読み込み中ダイアログ表示*/
         /*進捗状況は表示しない*/
         mProgressDialog.setIndeterminate(true);
@@ -703,7 +705,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
 
         final List<YouTubeVideo> playList = playlist;
-        final YouTubeVideo video = ((ArrayList<YouTubeVideo>) playlist).get(position);
+        final YouTubeVideo video =  playlist.get(position);
         final int currentSongIndex = position;
         /*surfaceDetroy時に自動的に2回連続でonplaylistselected呼ばれるっぽい*/
         /*homeボタンによるバックグラウンド再生ではない又はhomeボタンによるバックグラウンド再生で再生中の曲が終わって呼ばれた時*/
@@ -713,12 +715,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             new YouTubeExtractor(this) {
                 @Override
                 protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
-                    Log.d("kandabashi", "onExtractionComplete");
-                    if (ytFiles == null /*|| video.getThumbnailURL().equals("")*/) {
+                    Log.d(TAG_NAME, "onExtractionComplete");
+                    if (ytFiles == null ) {
                         Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
                         mProgressDialog.dismiss();
                         onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
-                        //return;
+                        return;
                     }
                 /*Videoでは形式を変えて360p（ノーマル画質）で試す。アプリを軽くするため高画質は非対応にした。これ以上落とすと音声が含まれなくなっちゃう。*/
                     int[] itagVideo = {18, 134, 243};
@@ -740,32 +742,35 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                             }
 
 
-                        Log.d("kandabashi","video name:"+video.getTitle()+"\ntagAudio:"+String.valueOf(tagAudio)+"\ntagVideo"+String.valueOf(tagVideo));
+                        Log.d(TAG_NAME,"video name:"+video.getTitle()+"\ntagAudio:"+String.valueOf(tagAudio)+"\ntagVideo"+String.valueOf(tagVideo));
                         if (tagVideo != 0 && tagAudio!=0) {
                         /*最近見たリストに追加*/
                             YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
 
-                            Log.d("kandabashi", "ytFile-not-null-tagVideo:" + String.valueOf(tagVideo));
-                            Log.d("kandabashi", "ytFile-not-null-tagAudio:" + String.valueOf(tagAudio));
+                            Log.d(TAG_NAME, "ytFile-not-null-tagVideo:" + String.valueOf(tagVideo));
+                            Log.d(TAG_NAME, "ytFile-not-null-tagAudio:" + String.valueOf(tagAudio));
                             String videoDownloadUrl = ytFiles.get(tagVideo).getUrl();
                             String audioDownloadUrl=ytFiles.get(tagAudio).getUrl();
-                            Log.d("kandabashi", "VideoURL:" + videoDownloadUrl);
-                            Log.d("kandabashi", "audioURL:" + audioDownloadUrl);
+                            Log.d(TAG_NAME, "VideoURL:" + videoDownloadUrl);
+                            Log.d(TAG_NAME, "audioURL:" + audioDownloadUrl);
                     /*resetとかここでやらないとダメ（非同期処理だから外でやると追いつかない）*/
                     /*ポーズから戻ったときのためMovieUrlも変えとく*/
                             videoUrl=videoDownloadUrl;
                             audioUrl=audioDownloadUrl;
                             VideoTitle=video.getTitle();
                             START_INITIAL=true;
+                            /*バックグランド再生以外の時は動画画面付きで再生*/
                             if (!HOME_BUTTON_PAUSE) {
-                                Log.d("kandabashi","mMediaPlayer.isPlaying:"+String.valueOf(mMediaPlayer.isPlaying()));
+                                Log.d(TAG_NAME,"mMediaPlayer.isPlaying:"+String.valueOf(mMediaPlayer.isPlaying()));
+                                /*Progressダイアログ消すのはsurfaceviewのなかでやってる。*/
                                 surfaceCreated(mHolder);
                             } else {
+                                /*バックグラウンド再生の時は音だけの再生*/
                                 mProgressDialog.dismiss();
                                 audioCreated();
                             }
                         } else if (currentSongIndex + 1 < playList.size()) {
-                            Log.d("kandabashi", "ytFile-null-next:" + video.getId());
+                            Log.d(TAG_NAME, "ytFile-null-next:" + video.getId());
                             Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
                             mProgressDialog.dismiss();
                             onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
@@ -776,17 +781,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 }
             }.execute(youtubeLink);
         }else{
-            Log.d("kandabashi","COMPLETION_COUNT:"+String.valueOf(COMPLETION_COUNT));
+            Log.d(TAG_NAME,"COMPLETION_COUNT:"+String.valueOf(COMPLETION_COUNT));
             return;
         }
 
  /*終了後次の曲に行くためのリスナー*/
-        /*再帰呼び出しになってしまってる？*/
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 if (currentSongIndex + 1 < playList.size()) {
-                    Log.d("kandabashi", " mMediaController.setOnCompletionListener");
+                    Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
                     /*ホームボタンを押すと最初に2回無条件にmediaPlayer.oncompletion呼ばれる。そのための対策*/
                     if (HOME_BUTTON_PAUSE) {
                         /*COMPLETION_COUNTが0～2の時は増やす必要があるがその後は変化させる必要がない。*/
@@ -806,7 +810,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             @Override
             public void onCompletion(MediaPlayer mp) {
                 if (currentSongIndex + 1 < playList.size()) {
-                    Log.d("kandabashi", " mMediaController.setOnCompletionListener");
+                    Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
                     onPlaylistSelected(playList, (currentSongIndex + 1));
                 }else{
                     START_INITIAL=true;
@@ -822,7 +826,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 //next button clicked
                 //if (currentSongIndex + 1 < playList.size()) {
                 /*一周できるようにした*/
-                Log.d("kandabashi", " mMediaController.setPrevNextListeners");
+                Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
                 START_INITIAL=true;
                 onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
                 // }
@@ -833,7 +837,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 //previous button clicked
                 // if (currentSongIndex - 1 > 0) {
                 /*一周できるようにした*/
-                Log.d("kandabashi", " mMediaController.setPrevNextListeners");
+                Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
                 START_INITIAL=true;
                 onPlaylistSelected(playList, (currentSongIndex - 1 + playList.size()) % playList.size());
                 // }
@@ -872,6 +876,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 playlist.setStatus(status);
                 try {
                     String playlistid=youtubeWithCredential.playlists().insert("snippet,status", playlist).execute().getId();
+                    /*作ったプレイリストにvideoを追加*/
                     AddVideoToPlayList(playlistid,video,false);
                 } catch (Exception e) {
                     mainHandler.post(new Runnable() {
@@ -921,7 +926,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 try {
                     getYouTubeWithCredentials().playlistItems().insert("snippet", playlistItem).execute();
                 } catch (Exception e) {
-                    Log.d("kandabashi", "AddPlaylist Error:" + e.getMessage());
+                    Log.d(TAG_NAME, "AddPlaylist Error:" + e.getMessage());
                     if(resultShow){
                     mainHandler.post(new Runnable() {
                         @Override
@@ -944,16 +949,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }).start();
 
     }
-    /*プレイリストに追加したり*/
+    /*プレイリストに追加したり、プレイリストを新規作成したうえで追加したり*/
     @Override
     public void onAddSelected(final YouTubeVideo video){
-        Log.d("kandabashi","onAddSelected");
+        Log.d(TAG_NAME,"onAddSelected");
         /*video タイトル取得*/
         final String videoTitle=video.getTitle();
 
         /*プレイリストを取得*/
         final ArrayList<YouTubePlaylist> allPlaylist=YouTubeSqlDb.getInstance().playlists().readAll();
-        Log.d("kandabashi","AddPlaylistDialog-1-which:"+String.valueOf(allPlaylist.size()));
+        Log.d(TAG_NAME,"AddPlaylistDialog-1-which:"+String.valueOf(allPlaylist.size()));
 
         /*プレイリストタイトルを取得*/
         final CharSequence[] playlists=new CharSequence[allPlaylist.size()+1];
@@ -980,7 +985,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mListDlg.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Log.d("kandabashi", "AddPlaylistDialog-1-which:" + String.valueOf(which));
+                Log.d(TAG_NAME, "AddPlaylistDialog-1-which:" + String.valueOf(which));
                 if (!checkedItems.isEmpty()) {
                     if (checkedItems.get(0) == (playlists.length - 1)) {
                         //新しいプレイリスト作って追加
@@ -1030,12 +1035,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     /*プレイリスト詳細を見るためのリスナーの中身実装*/
 public void onDetailClick(YouTubePlaylist playlist){
-    Log.d("kandabashi", "playlist-detail-checked!!!\n\n");
-    /*playlistDetailFragment追加用*/
+    Log.d(TAG_NAME, "playlist-detail-checked!!!\n\n");
+    /*ビデオ一覧表示Fragment追加用*/
     PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();
     playlistDetailFragment.setPlaylist(playlist);
 
-    /*プレイリストタイトル表示用*/
+    /*プレイリストタイトル表示Fragment用*/
     PlaylistTitleFragment playlistTitleFragment=new PlaylistTitleFragment();
     playlistTitleFragment.setPlaylistTitle(playlist.getTitle());
 
@@ -1052,7 +1057,8 @@ public void onDetailClick(YouTubePlaylist playlist){
             return false;
         }
     });
-    /*tabも見えるし触れちゃうのでoffにする。*/
+    /*tabも見えるし触れちゃうのでoffにする。
+    * playlistTitleFragmentのdestroyで可視化＆タッチ有効化*/
     tabLayout.setVisibility(View.INVISIBLE);
     tabLayout.setOnTouchListener(new View.OnTouchListener() {
         @Override
@@ -1358,13 +1364,6 @@ public void onDetailClick(YouTubePlaylist playlist){
         return viewPager;
     }
 
-    public ProgressDialog getmProgressDialog() {
-        return mProgressDialog;
-    }
-
-    public TextView getmTextView() {
-        return mTextView;
-    }
 
     public TabLayout getTabLayout() {
         return tabLayout;

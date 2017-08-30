@@ -64,31 +64,27 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
             playlistItemRequest.setFields("items(contentDetails/videoId,snippet/title,snippet/thumbnails/default/url)"/*,nextPageToken"*/);
             // Call API one or more times to retrieve all items in the list. As long as API
             // response returns a nextPageToken, there are still more items to retrieve.
-            // do {
-            // playlistItemRequest.setPageToken(nextToken);
+
 
             PlaylistItemListResponse playlistItemResult = playlistItemRequest.execute();
 
             for(PlaylistItem p:playlistItemResult.getItems()){
                 Log.d("kandabashi","title:"+p.getSnippet().getTitle());
             }
-            //List  str= playlistItemResult.getItems();
+
             playlistItemList.addAll(playlistItemResult.getItems());
-            //nextToken = playlistItemResult.getNextPageToken();
-            //} while (nextToken != null);
+
 
             /*削除されたビデオも含めての数表示*/
             Log.d(TAG, "all items size: " + playlistItemList.size());
         } catch (GoogleJsonResponseException e) {
             if (e.getStatusCode() == 404) {
-                //youTubeVideosReceiver.onPlaylistNotFound(playlistId, e.getStatusCode());
                 Log.d(TAG, "loadInBackground: 404 error");
                 return Collections.emptyList();
             } else {
                 e.printStackTrace();
             }
         } catch (UnknownHostException e) {
-            //Toast.makeText(activity.getApplicationContext(), "Check internet connection", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
             return Collections.emptyList();
         } catch (IOException e) {
@@ -102,7 +98,6 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
         int ii = 0;
         try {
             videosList = youtube.videos().list("id,contentDetails");
-            //videosList.setKey("ee");
             /*動画の長さを取ってくる*/
             videosList.setFields("items(contentDetails/duration)");
 
@@ -112,7 +107,6 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
             /*videoIdをつなげたものをIdとしてvideosListにセット*/
 
             for (PlaylistItem result : playlistItemList) {
-                //String aa = result.getContentDetails().getVideoId();
                 contentDetails.append(result.getContentDetails().getVideoId());
                 if (ii < playlistItemList.size() - 1)
                     contentDetails.append(",");
@@ -156,32 +150,19 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
             YouTubeVideo youTubeVideo = new YouTubeVideo();
             youTubeVideo.setId(playlistItem.getContentDetails().getVideoId());
             youTubeVideo.setTitle(playlistItem.getSnippet().getTitle());
-           /* Log.d("kandabashi", "YTPVL-loadInBackground-19");
-            playlistItem.getSnippet();
-            Log.d("kandabashi", "YTPVL-loadInBackground-19-1");*/
+
             ThumbnailDetails thumbnailDetails = playlistItem.getSnippet().getThumbnails();
 
             if (thumbnailDetails != null) {
-               /* Thumbnail a = playlistItem.getSnippet().getThumbnails().getDefault();
-                Log.d("kandabashi", "YTPVL-loadInBackground-19-3");
-                playlistItem.getSnippet().getThumbnails().getDefault().getUrl();*/
-
                 youTubeVideo.setThumbnailURL(playlistItem.getSnippet().getThumbnails().getDefault().getUrl());
 
                 /*削除されたビデオではないときのみビデオも進める。*/
                 Video videoItem = vit.next();
                 //video info
-                /*ビデオがnullなことはあり得ない。*/
-               /* if (videoItem != null) {*/
                     String isoTime = videoItem.getContentDetails().getDuration();
                     String time = Utils.convertISO8601DurationToNormalTime(isoTime);
                     youTubeVideo.setDuration(time);
                     Log.d("kandabashi",String.valueOf(++count)+"-"+playlistItem.getSnippet().getTitle());
-               /* } else {
-                    Log.d("kandabashi", "YTPVL-loadInBackground-14");
-                    youTubeVideo.setDuration("NA");
-                }*/
-                //playlistItems.add(youTubeVideo);
             }else{
                 youTubeVideo.setThumbnailURL(null);
                 youTubeVideo.setDuration("00:00");
