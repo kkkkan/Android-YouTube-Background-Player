@@ -216,22 +216,37 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                     public void run() {
                         try{
                     /*playlistItemId(playlistidとvideoidの両方の情報が入ったid）を取得*/
-                            YouTube.PlaylistItems.List playlistItemRequest = youTubeWithCredential.playlistItems().list("id");
+                            YouTube.PlaylistItems.List playlistItemRequest = youTubeWithCredential.playlistItems().list("id,snippet");
                             playlistItemRequest.setPlaylistId(playlist.getId());
                             playlistItemRequest.setVideoId(video.getId());
                             List<PlaylistItem> playlistItemResult =playlistItemRequest.execute().getItems();
-                            /*int index=playlistItemResult.size();*/
-                            String id=playlistItemResult.get(deleteVideoIndex).getId();
+                            /*deleted video の含まれるプレイリストでは、最初のdelete video以下のvideoはpositionが正しく取ってこれない（恐らくAPIバグ）ので、
+                            同じdeleted videoが一つのプレイリストに含まれていた場合削除ができない仕様になってる。*/
+                            String id=null;
+                            if(playlistItemResult.size()>1) {
+                                for (PlaylistItem p : playlistItemResult) {
+                                    if (p.getSnippet().getPosition() == deleteVideoIndex) {
+                                        id = p.getId();
+                                        break;
+                                    }
+                                }
+                            }else{
+                                id=playlistItemResult.get(0).getId();
+                            }
+                            if(id==null||id.isEmpty()){
+                                throw new Exception("ID IS EMPTY");
+                            }
                             youTubeWithCredential.playlistItems().delete(id).execute();
+
                         }catch (Exception e){
                             Log.d(TAG,"PlaylistDetailFragment-onAddClicked-delete-error-:"+e.getMessage());
                             mainHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     Toast.makeText(getContext(), "削除に失敗しました。", Toast.LENGTH_LONG).show();
-                                    return;
                                 }
                             });
+                            return;
                         }
                         mainHandler.post(new Runnable() {
                             @Override

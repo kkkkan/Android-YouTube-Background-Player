@@ -140,6 +140,8 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
         /*resp(videoList)の方は削除されたビデオは含まない。*/
         List<Video> videoResults = resp.getItems();
         /*50個videoIdを入れても、videoぃstでは50個全部取ってこれるとは限らないようである。*/
+        /*<ーdeleted videoの含まれるリストを取得する際にちゃんととってこれないのはphpで同様のバグが報告されてるのでバグであるようである。
+        * https://stackoverflow.com/questions/21189885/youtube-api-playlistitems-deleted-videos*/
         Log.d("kandabashi",String.valueOf(ii)+"NUMBER OF VIDEOS:"+videoResults.size());
         /*playlistItemListの方は削除されたビデオも要素として持ってしまってる。*/
         Iterator<PlaylistItem> pit = playlistItemList.iterator();
