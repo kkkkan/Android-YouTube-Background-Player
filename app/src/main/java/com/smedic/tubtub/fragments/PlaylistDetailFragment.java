@@ -63,6 +63,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         private YouTube youTubeWithCredential;
         private SwipeRefreshLayout swipeToRefresh;
         private YouTubePlaylist playlist;
+        private int deleteVideoIndex;
         final private Handler mainHandler=((MainActivity)getActivity()).mainHandler;
 
 
@@ -219,8 +220,8 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                             playlistItemRequest.setPlaylistId(playlist.getId());
                             playlistItemRequest.setVideoId(video.getId());
                             List<PlaylistItem> playlistItemResult =playlistItemRequest.execute().getItems();
-                            int index=playlistItemResult.size();
-                            String id=playlistItemResult.get(index-1).getId();
+                            /*int index=playlistItemResult.size();*/
+                            String id=playlistItemResult.get(deleteVideoIndex).getId();
                             youTubeWithCredential.playlistItems().delete(id).execute();
                         }catch (Exception e){
                             Log.d(TAG,"PlaylistDetailFragment-onAddClicked-delete-error-:"+e.getMessage());
@@ -269,6 +270,10 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
     public void setPlaylist(YouTubePlaylist playlist) {
         this.playlist = playlist;
+    }
+
+    public void setDeleteVideoIndex(int deleteVideoIndex) {
+        this.deleteVideoIndex = deleteVideoIndex;
     }
 }
 
