@@ -9,7 +9,6 @@ import java.util.List;
  */
 
 public interface OnItemSelected {
-    //void onVideoSelected(YouTubeVideo video);
 
     void onPlaylistSelected(List<YouTubeVideo> playlist, int position);
 }

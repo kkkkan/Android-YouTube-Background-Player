@@ -55,8 +55,6 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         private RecyclerView detailFoundListView;
         static private ArrayList<YouTubeVideo> playlistDetailList;
         private PlaylistDetailAdapter detailListAdapter;
-        private ProgressBar loadingProgressBar;
-        private NetworkConf networkConf;
         private Context context;
         private OnItemSelected itemSelected;
         private OnFavoritesSelected onFavoritesSelected;
@@ -68,51 +66,6 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
 
 
-
-    private  void acquirePlaylistVideos(final String playlistId) {
-        Log.d("kandabashi","acquirePlaylistVideos");
-        getLoaderManager().restartLoader(3, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
-
-
-            @Override
-            public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
-                Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:"+playlistId);
-                return new YouTubePlaylistVideosLoader(context, playlistId);
-            }
-
-            @Override
-            public void onLoadFinished(Loader<List<YouTubeVideo>> loader, List<YouTubeVideo> data) {
-                Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onLoadFinished");
-                if (data == null || data.isEmpty()) {
-                    Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onLoadFinished-empty");
-                    /*更新中のクルクルを止める*/
-                    if(swipeToRefresh.isRefreshing()){
-                        swipeToRefresh.setRefreshing(false);
-                    }
-                    return ;
-                }
-
-                 /*データ変更したことをお知らせする。*/
-                playlistDetailList.clear();
-                playlistDetailList.addAll(data);
-                detailListAdapter.notifyDataSetChanged();
-                 /*更新中のクルクルを止める*/
-                if(swipeToRefresh.isRefreshing()){
-                    swipeToRefresh.setRefreshing(false);
-                }
-                for (YouTubeVideo video : playlistDetailList) {
-                    Log.d(TAG, "onLoadFinished: >>> " + video.getTitle());
-                }
-            }
-
-            @Override
-            public void onLoaderReset(Loader<List<YouTubeVideo>> loader) {
-                Log.d("kandabashi","PlaylistsFragment.acquirePlaylistVideos.onLoaderReset");
-                playlistDetailList.clear();
-                playlistDetailList.addAll(Collections.<YouTubeVideo>emptyList());
-            }
-        }).forceLoad();
-    }
 
     public PlaylistDetailFragment() {
         // Required empty public constructor
@@ -126,7 +79,6 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         playlistDetailList = new ArrayList<>();
-        //networkConf = new NetworkConf(getActivity());
     }
 
     @Override
@@ -138,7 +90,6 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         View v = inflater.inflate(R.layout.fragment_list, container, false);
         detailFoundListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
         detailFoundListView.setLayoutManager(new LinearLayoutManager(context));
-       // loadingProgressBar = (ProgressBar) v.findViewById(R.id.fragment_progress_bar);
         detailListAdapter = new PlaylistDetailAdapter(context, playlistDetailList);
         detailListAdapter.setOnItemEventsListener(this);
         detailFoundListView.setAdapter(detailListAdapter);
@@ -165,8 +116,6 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         Log.d("kandabashi","PlaylistDetailFragment-onResume");
         /*playlistDetailListにデータ詰める。*/
         acquirePlaylistVideos(playlist.getId());
-       //detailListAdapter.notifyDataSetChanged();
-
     }
 
     @Override
@@ -260,7 +209,50 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         }).show();
 
     }
+    private  void acquirePlaylistVideos(final String playlistId) {
+        Log.d("kandabashi", "acquirePlaylistVideos");
+        getLoaderManager().restartLoader(3, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
 
+
+            @Override
+            public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
+                Log.d("kandabashi", "PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:" + playlistId);
+                return new YouTubePlaylistVideosLoader(context, playlistId);
+            }
+
+            @Override
+            public void onLoadFinished(Loader<List<YouTubeVideo>> loader, List<YouTubeVideo> data) {
+                Log.d("kandabashi", "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished");
+                if (data == null || data.isEmpty()) {
+                    Log.d("kandabashi", "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished-empty");
+                    /*更新中のクルクルを止める*/
+                    if (swipeToRefresh.isRefreshing()) {
+                        swipeToRefresh.setRefreshing(false);
+                    }
+                    return;
+                }
+
+                 /*データ変更したことをお知らせする。*/
+                playlistDetailList.clear();
+                playlistDetailList.addAll(data);
+                detailListAdapter.notifyDataSetChanged();
+                 /*更新中のクルクルを止める*/
+                if (swipeToRefresh.isRefreshing()) {
+                    swipeToRefresh.setRefreshing(false);
+                }
+                for (YouTubeVideo video : playlistDetailList) {
+                    Log.d(TAG, "onLoadFinished: >>> " + video.getTitle());
+                }
+            }
+
+            @Override
+            public void onLoaderReset(Loader<List<YouTubeVideo>> loader) {
+                Log.d("kandabashi", "PlaylistsFragment.acquirePlaylistVideos.onLoaderReset");
+                playlistDetailList.clear();
+                playlistDetailList.addAll(Collections.<YouTubeVideo>emptyList());
+            }
+        }).forceLoad();
+    }
 
     @Override
     public void onItemClick(YouTubeVideo video) {

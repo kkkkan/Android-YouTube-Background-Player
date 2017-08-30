@@ -47,7 +47,6 @@ import java.util.List;
  */
 public class SearchFragment extends BaseFragment implements ItemEventsListener<YouTubeVideo> {
 
-    private static final String TAG = "SMEDIC search frag";
     private RecyclerView videosFoundListView;
     private List<YouTubeVideo> searchResultsList;
     private VideosAdapter videoListAdapter;
@@ -116,6 +115,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
      */
     public void searchQuery(final String query) {
         //check network connectivity
+        /*検索するにあたって、ネットワークにつながってなかったらerrorを出す。*/
         if (!networkConf.isNetworkAvailable()) {
             networkConf.createNetErrorDialog();
             return;

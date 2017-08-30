@@ -40,7 +40,7 @@ public class PlaylistTitleFragment extends Fragment {
         this.playlistTitle = playlistTitle;
     }
 
-    /*tabの可視化と触れるようにする。*/
+    /*tabの可視化とタッチの復活。*/
     public void onDestroy(){
         super.onDestroy();
         TabLayout tabLayout=((MainActivity)getActivity()).getTabLayout();

@@ -183,7 +183,6 @@ public class YouTubeSqlDb {
 
             Cursor c = null;
             try {
-                //db.rawQuery(SELECT_QUERY_ORDER_DESC, null);
                 c=db.query(tableName,null,null,null,null,null,YouTubeVideoEntry.COLUMN_ENTRY_ID + " DESC");
                 while (c.moveToNext()) {
                     String videoId = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_VIDEO_ID));
@@ -266,8 +265,6 @@ public class YouTubeSqlDb {
 
             Cursor c =null;
             try {
-               // db.rawQuery(YouTubePlaylistEntry.SELECT_QUERY_ORDER_DESC, null);
-               // "SELECT * FROM " + TABLE_NAME + " ORDER BY " + COLUMN_ENTRY_ID + " DESC";
                 c=db.query(YouTubePlaylistEntry.TABLE_NAME,null,null,null,null,null,YouTubePlaylistEntry.COLUMN_ENTRY_ID+" DESC");
                 while (c.moveToNext()) {
                     String playlistId = c.getString(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_PLAYLIST_ID));

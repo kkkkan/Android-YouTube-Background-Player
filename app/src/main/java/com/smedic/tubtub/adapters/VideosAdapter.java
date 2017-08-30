@@ -47,7 +47,6 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
     private Context context;
     private final List<YouTubeVideo> list;
     private ArrayList<Boolean> itemCheck;
-    //private boolean[] itemChecked;
     private ItemEventsListener<YouTubeVideo> itemEventsListener;
 
     public VideosAdapter(Context context, List<YouTubeVideo> list) {
@@ -55,7 +54,6 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
         this.list = list;
         this.context = context;
         this.itemCheck=new ArrayList<>();
-        //this.itemChecked = new boolean[(int)getItemCount() /*Config.NUMBER_OF_VIDEOS_RETURNED*/];
     }
 
     @Override
@@ -71,10 +69,8 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
         final YouTubeVideo video = list.get(position);
         if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).checkIfExists(video.getId())) {
             itemCheck.add(true);
-            //itemChecked[position] = true;
         } else {
             itemCheck.add(false);
-            //itemChecked[position] = false;
         }
 
         Picasso.with(context).load(video.getThumbnailURL()).into(holder.thumbnail);
@@ -90,7 +86,6 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
                 if (!(itemEventsListener instanceof FavoritesFragment)) {
                     itemCheck.set(position, isChecked);
                 }
-                    //itemChecked[position] = isChecked;
                     if (itemEventsListener != null) {
                         itemEventsListener.onFavoriteClicked(video, isChecked);
                     }

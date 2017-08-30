@@ -113,7 +113,6 @@ public class PlaylistsFragment extends BaseFragment implements
         playlistsAdapter.setOnItemEventsListener(this);
         playlistsListView.setAdapter(playlistsAdapter);
         playlistsAdapter.setOnDetailClickListener((PlaylistsAdapter.OnDetailClickListener) getActivity());
-        //playlistsAdapter.setmTextView(((MainActivity)getActivity()).getmTextView());
         mainHandler=((MainActivity) getActivity()).mainHandler;
 
 
@@ -221,43 +220,7 @@ public class PlaylistsFragment extends BaseFragment implements
         }).forceLoad();
     }
 
-    /**
-     * Remove playlist with specific ID from DB and list TODO
-     *
-     * @param playlistId
-     */
-    private void removePlaylist(final String playlistId) {
-        Log.d("kandabashi","removePlaylist");
-        YouTubeSqlDb.getInstance().playlists().delete(playlistId);
 
-        for (YouTubePlaylist playlist : playlists) {
-            if (playlist.getId().equals(playlistId)) {
-                playlists.remove(playlist);
-                break;
-            }
-        }
-
-        playlistsAdapter.notifyDataSetChanged();
-    }
-
-    /**
-     * Extracts user name from email address
-     *
-     * @param emailAddress
-     * @return
-     */
-    private String extractUserName(String emailAddress) {
-        Log.d("kandabsahi","extraUserName");
-        if (emailAddress != null) {
-            String[] parts = emailAddress.split("@");
-            if (parts.length > 0) {
-                if (parts[0] != null) {
-                    return parts[0];
-                }
-            }
-        }
-        return "";
-    }
 
     @Override
     public void onShareClicked(String itemId) {

@@ -155,7 +155,6 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
     }
     @Override
     public void onItemClick(YouTubeVideo video) {
-        //YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
         itemSelected.onPlaylistSelected(favoriteVideos, favoriteVideos.indexOf(video));
     }
 }

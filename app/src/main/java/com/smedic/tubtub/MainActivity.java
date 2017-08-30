@@ -565,7 +565,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 token = GoogleAuthUtil.getToken(
                                         MainActivity.this,
                                         getCredential().getSelectedAccountName(),
-                                        "oauth2:" + " " + "https://www.googleapis.com/auth/youtube" + " " + "https://www.googleapis.com/auth/youtube.readonly" + " " + "https://www.googleapis.com/auth/youtube.upload" + " " + "https://www.googleapis.com/auth/youtubepartner-channel-audit"/*+"https://www.googleapis.com/auth/youtubepartner"*/);
+                                        "oauth2:" + " " + "https://www.googleapis.com/auth/youtube" + " " + "https://www.googleapis.com/auth/youtube.readonly" + " " + "https://www.googleapis.com/auth/youtube.upload" + " " + "https://www.googleapis.com/auth/youtubepartner-channel-audit");
                                 mainHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -669,13 +669,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         recentlyPlayedFragment = RecentlyWatchedFragment.newInstance();
         favoritesFragment = FavoritesFragment.newInstance();
         PlaylistsFragment playlistsFragment = PlaylistsFragment.newInstance();
-        PlaylistDetailFragment playlistDetailFragment=PlaylistDetailFragment.newInstance();
 
         adapter.addFragment(favoritesFragment, null);/*0*/
         adapter.addFragment(recentlyPlayedFragment, null);/*1*/
         adapter.addFragment(searchFragment, null);/*2*/
         adapter.addFragment(playlistsFragment, null);/*3*/
-        //adapter.addFragment(playlistDetailFragment,null);
+
         viewPager.setAdapter(adapter);
     }
 
@@ -744,6 +743,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                         Log.d(TAG_NAME,"video name:"+video.getTitle()+"\ntagAudio:"+String.valueOf(tagAudio)+"\ntagVideo"+String.valueOf(tagVideo));
                         if (tagVideo != 0 && tagAudio!=0) {
+
                         /*最近見たリストに追加*/
                             YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
 

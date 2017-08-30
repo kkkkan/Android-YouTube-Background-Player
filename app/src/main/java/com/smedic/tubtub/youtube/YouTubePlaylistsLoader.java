@@ -35,6 +35,7 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
     private  int UserRecoverableAuthIOException=100;
 
     private static final String TAG = "SMEDIC";
+    private static final String TAG_NAME="kandabashi";
     /*googleのYouTubeAPIの登場*/
     private YouTube youtube = getYouTubeWithCredentials();
 
@@ -46,16 +47,15 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
     @Override
     public List<YouTubePlaylist> loadInBackground() {
 
-        Log.d("kandabshi","playlistLoading");
-        /*アカウントが設定されてなかったら？*/
+        Log.d(TAG_NAME,"playlistLoading");
+        /*アカウントが設定されてなかったら*/
         if (getCredential().getSelectedAccountName() == null) {
             Log.d(TAG, "loadInBackground: account not picked!");
             return Collections.emptyList();
         }
 
         try {
-            /*setMineまでは大丈夫。execute()で例外発生->execute()が実行命令だから当たり前。*/
-            /*setmine→アカウントに登録されたチャンネルだけ返す。*/
+            /*setMine→アカウントに登録されたチャンネルだけ返す。*/
             ChannelListResponse channelListResponse = youtube.channels().list("snippet").setMine(true).execute();
 
             List<Channel> channelList = channelListResponse.getItems();
@@ -87,7 +87,7 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
                 while (iteratorPlaylistResults.hasNext()) {
                     Playlist playlist = iteratorPlaylistResults.next();
                     String id=playlist.getId();
-                    Log.d("kandabshi","YouTubePlaylistLoader-"+id);
+                    Log.d(TAG_NAME,"YouTubePlaylistLoader-"+id);
 
                     YouTubePlaylist playlistItem = new YouTubePlaylist(playlist.getSnippet().getTitle(),
                             playlist.getSnippet().getThumbnails().getDefault().getUrl(),
@@ -96,11 +96,11 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
                             playlist.getStatus().getPrivacyStatus());
                     youTubePlaylistList.add(playlistItem);
                 }
-                Log.d("kandabshi","YouTubePlaylistLoader-11");
+                Log.d(TAG_NAME,"YouTubePlaylistLoader-11");
                 return youTubePlaylistList;
             }
         }catch (UserRecoverableAuthIOException e) {
-            Log.d("kandabashi","YouTubePlaylistLoader-"+e.toString());
+            Log.d(TAG_NAME,"YouTubePlaylistLoader-"+e.toString());
             Log.d(TAG, "loadInBackground: exception REQUEST_AUTHORIZATION");
             mainHandler.post(new Runnable() {
                 @Override
@@ -111,7 +111,7 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
             cancelLoad();
             e.printStackTrace();
         } catch (IOException e) {
-            Log.d("kandabshi","YouTubePlaylistLoadrer-error");
+            Log.d(TAG_NAME,"YouTubePlaylistLoadrer-error");
             Log.d(TAG, "loadInBackground: " + e.getMessage());
             cancelLoad();
             e.printStackTrace();

@@ -37,14 +37,12 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
         this.list = list;
         this.context = context;
         this.itemCheck=new ArrayList<>();
-        //this.itemChecked = new boolean[(int)getItemCount() /*Config.NUMBER_OF_VIDEOS_RETURNED*/];
     }
 
     @Override
     public RecentlyVideosAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recently_video_item, null);
         view.setOnClickListener(this);
-        //itemCheck.add(false);
         return new RecentlyVideosAdapter.ViewHolder(view);
     }
 
@@ -53,10 +51,8 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
         final YouTubeVideo video = list.get(position);
         if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).checkIfExists(video.getId())) {
             itemCheck.add(true);
-            //itemChecked[position] = true;
         } else {
             itemCheck.add(false);
-            //itemChecked[position] = false;
         }
 
         Picasso.with(context).load(video.getThumbnailURL()).into(holder.thumbnail);
@@ -69,7 +65,6 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
         holder.favoriteCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton btn, boolean isChecked) {
                 itemCheck.set(position,isChecked);
-                //itemChecked[position] = isChecked;
                 if (itemEventsListener != null) {
                     itemEventsListener.onFavoriteClicked(video, isChecked);
                 }
