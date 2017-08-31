@@ -365,7 +365,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     }
                 });
                 Log.d(TAG_NAME, "surfaceCreated-3");
-                mMediaPlayer.prepare();
+                mMediaPlayer.prepareAsync();
                 Log.d(TAG_NAME, "surfaceCreated-4");
             } catch (IllegalArgumentException e) {
                 Log.d(TAG_NAME, "surfaceCreated-IllegalArgumentException" + e.getMessage());
@@ -403,7 +403,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     }
                 });
                 Log.d(TAG_NAME, "audioCreated-2");
-                mAudioMediaPlayer.prepare();
+                mAudioMediaPlayer.prepareAsync();
                 Log.d(TAG_NAME, "audioCreated-3");
             } catch (IllegalArgumentException e) {
                 Log.d(TAG_NAME, "audioCreated-IllegalArgumentException:" + e.getMessage());
