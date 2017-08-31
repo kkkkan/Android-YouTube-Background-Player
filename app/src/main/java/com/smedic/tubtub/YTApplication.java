@@ -2,6 +2,8 @@ package com.smedic.tubtub;
 
 import android.app.Application;
 import android.content.Context;
+import com.crashlytics.android.Crashlytics;
+import io.fabric.sdk.android.Fabric;
 
 /**
  * Created by smedic on 5.3.17..
@@ -14,6 +16,7 @@ public class YTApplication extends Application {
 
     public void onCreate() {
         super.onCreate();
+        Fabric.with(this, new Crashlytics());
         mContext = getApplicationContext();
     }
 
