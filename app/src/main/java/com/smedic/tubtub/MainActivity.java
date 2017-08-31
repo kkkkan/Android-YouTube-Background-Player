@@ -178,8 +178,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
    /*フラグたち*/
+    /*他のアプリがフォアグランドに来たときのみtrue
+    * surfaceDestroy()でtrueにする。onResumeでfalseにする。*/
     private boolean HOME_BUTTON_PAUSE = false;
+    /*フォアグランド再生から他のアプリがフォアグランドに来る時にmMadiaplayer.setOnCompleteListner()が2回呼ばれるので、その時にインクリメント。
+    *onResume()で0にセット*/
     private int COMPLETION_COUNT = 0;
+    /*ビデオの頭から再生を開始するか否かのフラグ。
+    * surfaceCreated()でfalse
+    * mMediaController.setPrevNextListners()/onPlaylistSelected()/mAudioMediaPlayer.setOnCompleteListner()<再生中のリストに次の曲がないなら>/mMediaplayer.setOnCompleteListener()<再生中のリストに次の曲がないなら>でtrue*/
     private boolean START_INITIAL=true;
 
 
@@ -327,6 +334,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
         Log.d(TAG_NAME, "surfaceCreated");
         Log.d(TAG_NAME,"START_INITIAL:"+String.valueOf(START_INITIAL)+"\nmMediaplayer.isPlying:"+String.valueOf(mMediaPlayer.isPlaying()));
+        /*ネット環境にちゃんとつながってるかチェック*/
+        if (!networkConf.isNetworkAvailable()) {
+            networkConf.createNetErrorDialog();
+            return;
+        }
+        /*一つのビデオの再生中にフォアグランド再生→バックグラウンド再生→フォアグランド再生とするとSTART_INITIAL=falseでここまでくる*/
         if((!START_INITIAL)){
             setMediaStartTime(mMediaPlayer.getCurrentPosition());
         }
@@ -347,11 +360,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 mAudioMediaPlayer.reset();
                 Log.d(TAG_NAME, "surfaceCreated-1");
                 mMediaPlayer.setDataSource(this, mediaPath);
-                Log.d(TAG_NAME, "surfaceCreated-2");
                 mMediaPlayer.setDisplay(paramSurfaceHolder);
+                /*videoTitleをセット*/
                 if(VideoTitle!=null) {
                     mTextView.setText(VideoTitle);
                 }
+
              /*prepareに時間かかることを想定し直接startせずにLister使う*/
                 mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
@@ -364,9 +378,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         mProgressDialog.dismiss();
                     }
                 });
-                Log.d(TAG_NAME, "surfaceCreated-3");
                 mMediaPlayer.prepareAsync();
-                Log.d(TAG_NAME, "surfaceCreated-4");
             } catch (IllegalArgumentException e) {
                 Log.d(TAG_NAME, "surfaceCreated-IllegalArgumentException" + e.getMessage());
                 e.printStackTrace();
@@ -382,9 +394,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
 
-    /*Homeボタンでバックグラウンド再生の時は音声だけのメディアプレイヤー使っちゃう*/
+    /*Homeボタンでバックグラウンド再生の時に使う音声だけのメディアプレイヤーにvideoのurlをセットしたりstart()したりする関数*/
     public void audioCreated() {
         Log.d(TAG_NAME, "audioCreated");
+        /*ネット環境にちゃんとつながってるかチェック*/
+        if (!networkConf.isNetworkAvailable()) {
+            networkConf.createNetErrorDialog();
+            return;
+        }
         mMediaPlayer.reset();
         mAudioMediaPlayer.reset();
         if (audioUrl != null) {
@@ -399,12 +416,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     public void onPrepared(MediaPlayer mp) {
                         Log.d(TAG_NAME, "onPrepared");
                         mp.start();
+                        /*MediaStartTimeを0にリセット*/
                         setMediaStartTime(0);
                     }
                 });
-                Log.d(TAG_NAME, "audioCreated-2");
                 mAudioMediaPlayer.prepareAsync();
-                Log.d(TAG_NAME, "audioCreated-3");
             } catch (IllegalArgumentException e) {
                 Log.d(TAG_NAME, "audioCreated-IllegalArgumentException:" + e.getMessage());
                 e.printStackTrace();
@@ -507,7 +523,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         /*permissionがあれば*/
         if (EasyPermissions.hasPermissions(this, perms)) {
             // Already have permission, do the thing
-            /*ビルド環境が低かったりするとスルーされてきてしまうのでここでもう一度チェック？*/
+            /*ビルド環境が低かったりするとスルーされてきてしまうのでここでもう一度チェック?*/
             if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
                 /*自アプリのみ書き込み可能で開いてアカウントネームを拾ってくる*/
                 String accountName = getPreferences(Context.MODE_PRIVATE).getString(PREF_ACCOUNT_NAME, null);
@@ -691,6 +707,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
 
+    /*選んだビデオをmediaplayerで再生するためのurlをvideoUrl,audioUrlにセットし、バックグラウンド再生かフォアグランド再生かによって
+    * 次の制御をsurfaceCreated()/audioCreated()に割り振る*/
     @Override
     public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
         Log.d(TAG_NAME, "onPlaylistSelected");
@@ -700,6 +718,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mProgressDialog.setMessage("Loading...");
         mProgressDialog.show();
 
+        /*ネット環境にちゃんとつながってるかチェック*/
         if (!networkConf.isNetworkAvailable()) {
             networkConf.createNetErrorDialog();
             return;
@@ -708,7 +727,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         final List<YouTubeVideo> playList = playlist;
         final YouTubeVideo video =  playlist.get(position);
         final int currentSongIndex = position;
-        /*surfaceDetroy時に自動的に2回連続でonplaylistselected呼ばれるっぽい*/
+        /*surfaceDetroy時に自動的に2回連続でmMediaplayer.setOnCompleteListner→onplaylistselectedが呼ばれるうようである*/
         /*homeボタンによるバックグラウンド再生ではない又はhomeボタンによるバックグラウンド再生で再生中の曲が終わって呼ばれた時*/
         if (!HOME_BUTTON_PAUSE || (COMPLETION_COUNT != 1 && COMPLETION_COUNT != 2)) {
             START_INITIAL=true;
@@ -787,7 +806,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             return;
         }
 
- /*終了後次の曲に行くためのリスナー*/
+     /*終了後次の曲に行くためのリスナー*/
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {

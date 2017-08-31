@@ -32,7 +32,7 @@ import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentia
  */
 
 public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist>> {
-    private  int UserRecoverableAuthIOException=100;
+
 
     private static final String TAG = "SMEDIC";
     private static final String TAG_NAME="kandabashi";

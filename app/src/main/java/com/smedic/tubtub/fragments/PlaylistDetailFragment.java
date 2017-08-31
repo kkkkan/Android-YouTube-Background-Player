@@ -52,6 +52,7 @@ import java.util.List;
 public class PlaylistDetailFragment extends BaseFragment implements ItemEventsListener<YouTubeVideo> {
 
         private static final String TAG = "SMEDIC search frag";
+        private static final String TAG_NAME="kandabashi";
         private RecyclerView detailFoundListView;
         static private ArrayList<YouTubeVideo> playlistDetailList;
         private PlaylistDetailAdapter detailListAdapter;
@@ -113,7 +114,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     public void onResume() {
         super.onResume();
         playlistDetailList.clear();
-        Log.d("kandabashi","PlaylistDetailFragment-onResume");
+        Log.d(TAG_NAME,"PlaylistDetailFragment-onResume");
         /*playlistDetailListにデータ詰める。*/
         acquirePlaylistVideos(playlist.getId());
     }
@@ -210,21 +211,21 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
     }
     private  void acquirePlaylistVideos(final String playlistId) {
-        Log.d("kandabashi", "acquirePlaylistVideos");
+        Log.d(TAG_NAME, "acquirePlaylistVideos");
         getLoaderManager().restartLoader(3, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
 
 
             @Override
             public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
-                Log.d("kandabashi", "PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:" + playlistId);
+                Log.d(TAG_NAME, "PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:" + playlistId);
                 return new YouTubePlaylistVideosLoader(context, playlistId);
             }
 
             @Override
             public void onLoadFinished(Loader<List<YouTubeVideo>> loader, List<YouTubeVideo> data) {
-                Log.d("kandabashi", "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished");
+                Log.d(TAG_NAME, "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished");
                 if (data == null || data.isEmpty()) {
-                    Log.d("kandabashi", "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished-empty");
+                    Log.d(TAG_NAME, "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished-empty");
                     /*更新中のクルクルを止める*/
                     if (swipeToRefresh.isRefreshing()) {
                         swipeToRefresh.setRefreshing(false);
@@ -247,7 +248,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
             @Override
             public void onLoaderReset(Loader<List<YouTubeVideo>> loader) {
-                Log.d("kandabashi", "PlaylistsFragment.acquirePlaylistVideos.onLoaderReset");
+                Log.d(TAG_NAME, "PlaylistsFragment.acquirePlaylistVideos.onLoaderReset");
                 playlistDetailList.clear();
                 playlistDetailList.addAll(Collections.<YouTubeVideo>emptyList());
             }
