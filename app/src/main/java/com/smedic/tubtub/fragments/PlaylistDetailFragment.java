@@ -1,7 +1,6 @@
 package com.smedic.tubtub.fragments;
 
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -19,28 +18,21 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.PlaylistItem;
-import com.google.api.services.youtube.model.PlaylistItemSnippet;
-import com.google.api.services.youtube.model.ResourceId;
 import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.R;
 import com.smedic.tubtub.adapters.PlaylistDetailAdapter;
-import com.smedic.tubtub.adapters.VideosAdapter;
-import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.interfaces.OnFavoritesSelected;
 import com.smedic.tubtub.interfaces.OnItemSelected;
 import com.smedic.tubtub.model.YouTubePlaylist;
 import com.smedic.tubtub.model.YouTubeVideo;
 import com.smedic.tubtub.utils.Config;
-import com.smedic.tubtub.utils.NetworkConf;
 import com.smedic.tubtub.youtube.YouTubePlaylistVideosLoader;
 import com.smedic.tubtub.youtube.YouTubeSingleton;
-import com.smedic.tubtub.youtube.YouTubeVideosLoader;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +41,11 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
+
+/*Recycleviewを持つ
+* adapter:PlaylistDetailAdapter
+* dataの型:YoutubeVideo*/
+
 public class PlaylistDetailFragment extends BaseFragment implements ItemEventsListener<YouTubeVideo> {
 
         private static final String TAG = "SMEDIC search frag";

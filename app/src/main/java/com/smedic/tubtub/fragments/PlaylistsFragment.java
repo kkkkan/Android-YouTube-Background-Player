@@ -17,8 +17,6 @@ package com.smedic.tubtub.fragments;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.LoaderManager;
@@ -31,16 +29,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.Channel;
-import com.google.api.services.youtube.model.ChannelListResponse;
-import com.google.api.services.youtube.model.Playlist;
-import com.google.api.services.youtube.model.PlaylistItem;
-import com.google.api.services.youtube.model.PlaylistListResponse;
+
 import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.R;
 import com.smedic.tubtub.adapters.PlaylistsAdapter;
@@ -54,18 +45,21 @@ import com.smedic.tubtub.youtube.YouTubePlaylistVideosLoader;
 import com.smedic.tubtub.youtube.YouTubePlaylistsLoader;
 import com.smedic.tubtub.youtube.YouTubeSingleton;
 
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
-import static com.smedic.tubtub.youtube.YouTubeSingleton.getCredential;
 
 /**
  * Class that handles list of the playlists acquired from YouTube
  * Created by smedic on 7.3.16..
  */
+
+
+/*Recycleviewを持つ
+* adapter:playlistadapter
+* dataの型:YoutubePlaylist*/
 public class PlaylistsFragment extends BaseFragment implements
         ItemEventsListener<YouTubePlaylist> {
 

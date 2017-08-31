@@ -6,12 +6,8 @@ import android.util.Log;
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.Channel;
-import com.google.api.services.youtube.model.ChannelListResponse;
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
-import com.google.api.services.youtube.model.PlaylistListResponse;
-import com.google.api.services.youtube.model.Thumbnail;
 import com.google.api.services.youtube.model.ThumbnailDetails;
 import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoListResponse;
@@ -27,7 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static com.smedic.tubtub.youtube.YouTubeSingleton.getInstance;
-import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentials;
+
 
 /**
  * Created by smedic on 5.3.17..

@@ -45,6 +45,11 @@ import java.util.List;
  * Class that handles list of the videos searched on YouTube
  * Created by smedic on 7.3.16..
  */
+
+/*Recycleviewを持つ
+* adapter:VideosAdapter
+* dataの型:YoutubeVideot*/
+
 public class SearchFragment extends BaseFragment implements ItemEventsListener<YouTubeVideo> {
 
     private RecyclerView videosFoundListView;

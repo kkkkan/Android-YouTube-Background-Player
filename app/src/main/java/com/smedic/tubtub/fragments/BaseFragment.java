@@ -17,6 +17,8 @@ public class BaseFragment extends Fragment {
         startActivity(Intent.createChooser(intent, "Share"));
     }
 
+    /*ViewPager時は非選択時にあらかじめページ生成されているので選択された（ユーザーが見えるようになる）
+    と同時に処理開始したいときはsetUserVisibleHintを使う*/
     @Override
     public void setUserVisibleHint(boolean visible) {
         super.setUserVisibleHint(visible);

@@ -40,6 +40,11 @@ import java.util.List;
 /**
  * Created by Stevan Medic on 21.3.16..
  */
+
+/*Recycleviewを持つ
+* adapter:VideosAdapter
+* dataの型:YoutubeVideo*/
+
 public class FavoritesFragment extends BaseFragment implements ItemEventsListener<YouTubeVideo> {
 
     private static final String TAG = "SMEDIC Favorites";

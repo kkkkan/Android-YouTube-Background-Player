@@ -30,7 +30,6 @@ import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.fragments.FavoritesFragment;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.model.YouTubeVideo;
-import com.smedic.tubtub.utils.Config;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;

@@ -29,12 +29,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.PlaylistItem;
+
 import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.R;
 import com.smedic.tubtub.adapters.RecentlyVideosAdapter;
-import com.smedic.tubtub.adapters.VideosAdapter;
 import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.interfaces.OnFavoritesSelected;
@@ -43,18 +41,22 @@ import com.smedic.tubtub.model.YouTubeVideo;
 import com.smedic.tubtub.utils.Config;
 
 import java.util.ArrayList;
-import java.util.List;
+
 
 /**
  * Class that handles list of the recently watched YouTube
  * Created by smedic on 7.3.16..
  */
+
+/*Recycleviewを持つ
+* adapter:RecentlyVideosAdapter
+* dataの型:YoutubeVideot*/
 public class RecentlyWatchedFragment extends BaseFragment implements
         ItemEventsListener<YouTubeVideo> {
 
     private static final String TAG = "SMEDIC RecentlyWatched";
-    private ArrayList<YouTubeVideo> recentlyPlayedVideos;
 
+    private ArrayList<YouTubeVideo> recentlyPlayedVideos;
     private RecyclerView recentlyPlayedListView;
     private RecentlyVideosAdapter videoListAdapter;
     private OnItemSelected itemSelected;

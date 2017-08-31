@@ -14,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.smedic.tubtub.R;
-import com.smedic.tubtub.fragments.PlaylistDetailFragment;
 import com.smedic.tubtub.fragments.PlaylistsFragment;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.model.YouTubePlaylist;

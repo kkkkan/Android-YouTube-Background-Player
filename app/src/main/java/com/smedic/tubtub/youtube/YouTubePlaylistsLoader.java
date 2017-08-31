@@ -1,8 +1,6 @@
 package com.smedic.tubtub.youtube;
 
 import android.content.Context;
-import android.content.Intent;
-import android.os.Handler;
 import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
 import android.widget.Toast;
