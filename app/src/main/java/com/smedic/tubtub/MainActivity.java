@@ -321,6 +321,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
 
+    /*アプリが一番上で動いているときに新しいビデオを再生したいときに呼ばれる。
+    * */
     @Override
     public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
         Log.d(TAG_NAME, "surfaceCreated");
@@ -824,23 +826,19 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             @Override
             public void onClick(View v) {
                 //next button clicked
-                //if (currentSongIndex + 1 < playList.size()) {
                 /*一周できるようにした*/
                 Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
                 START_INITIAL=true;
                 onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
-                // }
             }
         }, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //previous button clicked
-                // if (currentSongIndex - 1 > 0) {
                 /*一周できるようにした*/
                 Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
                 START_INITIAL=true;
                 onPlaylistSelected(playList, (currentSongIndex - 1 + playList.size()) % playList.size());
-                // }
             }
         });
     }
@@ -1021,8 +1019,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                     } else {
                        AddVideoToPlayList(allPlaylist.get(checkedItems.get(0)).getId(),video,true);
-                          // Toast.makeText(mainContext,"プレイリスト "+allPlaylist.get(checkedItems.get(0)).getTitle()+" に "+videoTitle+" を追加しました。",Toast.LENGTH_LONG).show();
-
                     }
                 }
             }
