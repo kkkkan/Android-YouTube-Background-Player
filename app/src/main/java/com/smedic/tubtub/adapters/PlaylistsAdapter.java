@@ -26,6 +26,7 @@ import java.util.List;
  */
 public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.ViewHolder>
         implements View.OnClickListener {
+    private final static String TAG_NAME="kandabashi";
 
     private Context context;
     private List<YouTubePlaylist> playlists;
@@ -91,8 +92,9 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             @Override
             public void onClick(View v) {
                 if(onDetailClickListener!=null) {
+                    /*onDetailClickListener:MainActivity*/
                     onDetailClickListener.onDetailClick(playlist);
-                    Log.d("kandabashi","onDetailClickListener-playlistId:"+String.valueOf(playlist.getId())+String.valueOf(playlist.getTitle()));
+                    Log.d(TAG_NAME,"onDetailClickListener-playlistId:"+String.valueOf(playlist.getId())+String.valueOf(playlist.getTitle()));
                 }
             }
         });
@@ -107,6 +109,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
     public void onClick(View v) {
         if (itemEventsListener != null) {
             YouTubePlaylist item = (YouTubePlaylist) v.getTag();
+            /*itemEventListener:playlistFrragment*/
             itemEventsListener.onItemClick(item);
         }
     }

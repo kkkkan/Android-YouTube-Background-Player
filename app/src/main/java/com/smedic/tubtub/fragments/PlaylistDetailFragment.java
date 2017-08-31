@@ -1,6 +1,8 @@
 package com.smedic.tubtub.fragments;
 
 
+
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -61,6 +63,8 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         private YouTubePlaylist playlist;
         private int deleteVideoIndex;
         final private Handler mainHandler=((MainActivity)getActivity()).mainHandler;
+        private  ProgressDialog progressDialog;
+
 
 
 
@@ -92,6 +96,9 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         detailListAdapter.setOnItemEventsListener(this);
         detailFoundListView.setAdapter(detailListAdapter);
         youTubeWithCredential = YouTubeSingleton.getYouTubeWithCredentials();
+        progressDialog=new ProgressDialog(getActivity());
+
+
 
         /*swipeで更新*/
         swipeToRefresh = (SwipeRefreshLayout) v.findViewById(R.id.swipe_to_refresh);
@@ -112,6 +119,9 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         super.onResume();
         playlistDetailList.clear();
         Log.d(TAG_NAME,"PlaylistDetailFragment-onResume");
+        /*Loading…のダイアログ出す。*/
+        progressDialog.setMessage("Loading…");
+        progressDialog.show();
         /*playlistDetailListにデータ詰める。*/
         acquirePlaylistVideos(playlist.getId());
     }
@@ -223,6 +233,10 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                 Log.d(TAG_NAME, "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished");
                 if (data == null || data.isEmpty()) {
                     Log.d(TAG_NAME, "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished-empty");
+                    /*もしLoading…出てたら消す。*/
+                    if(progressDialog.isShowing()){
+                        progressDialog.dismiss();
+                    }
                     /*更新中のクルクルを止める*/
                     if (swipeToRefresh.isRefreshing()) {
                         swipeToRefresh.setRefreshing(false);
@@ -234,6 +248,10 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                 playlistDetailList.clear();
                 playlistDetailList.addAll(data);
                 detailListAdapter.notifyDataSetChanged();
+               /*もしLoading…出てたら消す。*/
+                if(progressDialog.isShowing()){
+                    progressDialog.dismiss();
+                }
                  /*更新中のクルクルを止める*/
                 if (swipeToRefresh.isRefreshing()) {
                     swipeToRefresh.setRefreshing(false);
@@ -246,6 +264,14 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
             @Override
             public void onLoaderReset(Loader<List<YouTubeVideo>> loader) {
                 Log.d(TAG_NAME, "PlaylistsFragment.acquirePlaylistVideos.onLoaderReset");
+                /*もしLoading…出てたら消す。*/
+                if(progressDialog.isShowing()){
+                    progressDialog.dismiss();
+                }
+                 /*更新中のクルクルを止める*/
+                if (swipeToRefresh.isRefreshing()) {
+                    swipeToRefresh.setRefreshing(false);
+                }
                 playlistDetailList.clear();
                 playlistDetailList.addAll(Collections.<YouTubeVideo>emptyList());
             }

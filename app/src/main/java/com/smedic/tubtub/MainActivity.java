@@ -375,7 +375,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         mp.start();
                         setMediaStartTime(0);
                         /*読み込み中ダイアログ消す*/
-                        mProgressDialog.dismiss();
+                        setProgressDialogDismiss();
                     }
                 });
                 mMediaPlayer.prepareAsync();
@@ -713,10 +713,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
         Log.d(TAG_NAME, "onPlaylistSelected");
         /*読み込み中ダイアログ表示*/
-        /*進捗状況は表示しない*/
-        mProgressDialog.setIndeterminate(true);
-        mProgressDialog.setMessage("Loading...");
-        mProgressDialog.show();
+        setProgressDialogShow();
 
         /*ネット環境にちゃんとつながってるかチェック*/
         if (!networkConf.isNetworkAvailable()) {
@@ -738,7 +735,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     Log.d(TAG_NAME, "onExtractionComplete");
                     if (ytFiles == null ) {
                         Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
-                        mProgressDialog.dismiss();
+                        setProgressDialogDismiss();
                         onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
                         return;
                     }
@@ -787,13 +784,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 surfaceCreated(mHolder);
                             } else {
                                 /*バックグラウンド再生の時は音だけの再生*/
-                                mProgressDialog.dismiss();
+                                setProgressDialogDismiss();
                                 audioCreated();
                             }
                         } else if (currentSongIndex + 1 < playList.size()) {
                             Log.d(TAG_NAME, "ytFile-null-next:" + video.getId());
                             Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
-                            mProgressDialog.dismiss();
+                            setProgressDialogDismiss();
                             onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
                         }
 
@@ -860,6 +857,20 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 onPlaylistSelected(playList, (currentSongIndex - 1 + playList.size()) % playList.size());
             }
         });
+    }
+
+    /*progressDialog表示*/
+    public void setProgressDialogShow(){
+        /*進捗状況は表示しない*/
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setMessage("Loading...");
+        mProgressDialog.show();
+
+    }
+    public void setProgressDialogDismiss(){
+        if(mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
+        }
     }
 
     /*お気に入りfragmentにビデオを追加したり削除したり*/

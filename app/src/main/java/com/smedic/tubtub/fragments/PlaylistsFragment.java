@@ -15,6 +15,7 @@
  */
 package com.smedic.tubtub.fragments;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -245,8 +246,10 @@ public class PlaylistsFragment extends BaseFragment implements
         dialog.setTitle("削除").setMessage("プレイリスト "+playlist.getTitle()+"("+playlist.getNumberOfVideos()+")\nを削除しますか？")
                 .setNegativeButton("Cancel",null)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
