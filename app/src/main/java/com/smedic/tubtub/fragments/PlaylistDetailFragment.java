@@ -5,6 +5,7 @@ package com.smedic.tubtub.fragments;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -16,10 +17,13 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.google.api.services.youtube.YouTube;
@@ -120,7 +124,27 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         playlistDetailList.clear();
         Log.d(TAG_NAME,"PlaylistDetailFragment-onResume");
         /*Loading…のダイアログ出す。*/
+        progressDialog.setIndeterminate(true);
         progressDialog.setMessage("Loading…");
+        /*ダイアログの裏の色を透明にする。*/
+        progressDialog.getWindow().setFlags(0,WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+
+        /*ダイアログの出す場所をplaylistDetailFragmentの真ん中にする。*/
+        /*画面の高さを取得*/
+        Point size=new Point();
+        getActivity().getWindowManager().getDefaultDisplay().getSize(size);
+        int windowHeight=size.y;
+
+        /*playlistDetailFragmentの高さを取得*/
+        FrameLayout frameLayout=(FrameLayout)(getActivity()).findViewById(R.id.frame_layout);
+        int framelayoutHeight=frameLayout.getHeight();
+
+        /*playlistDetailFragmentの真ん中にセット
+        * WindowManager.LayoutParams.yに指定したpx分画面真ん中から下にずらされて表示される。*/
+        WindowManager.LayoutParams layoutParams=progressDialog.getWindow().getAttributes();
+        layoutParams.y=(windowHeight-framelayoutHeight)/2;
+        progressDialog.getWindow().setAttributes(layoutParams);
+        /*ダイアログ表示*/
         progressDialog.show();
         /*playlistDetailListにデータ詰める。*/
         acquirePlaylistVideos(playlist.getId());
