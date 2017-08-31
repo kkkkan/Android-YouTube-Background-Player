@@ -883,9 +883,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
-    /*新規プレイリスト作成してvideo追加*/
+    /*新規プレイリスト作成する。
+    * 作成が終わったら、AddVideoToPlayList()に作ったプレイリストと追加したいビデオを渡して追加する。*/
     private void AddPlaylist(final String title, final String privacyStatus,final YouTubeVideo video) {
-        final List<String> errorCatcher=new ArrayList<>();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -902,36 +902,33 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 Playlist playlist = new Playlist();
                 playlist.setSnippet(playlistSnippet);
                 playlist.setStatus(status);
+
+
                 try {
                     String playlistid=youtubeWithCredential.playlists().insert("snippet,status", playlist).execute().getId();
                     /*作ったプレイリストにvideoを追加*/
-                    AddVideoToPlayList(playlistid,video,false);
+                    AddVideoToPlayList(playlistid,video,false,title,privacyStatus);
                 } catch (Exception e) {
+                    /*プレイリストの新規作成に失敗したとき*/
                     mainHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             Toast.makeText(mainContext, "プレイリスト作成に失敗しました。", Toast.LENGTH_LONG).show();
-                            errorCatcher.add("error");
                         }
                     });
 
                 }
-                mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(mainContext,privacyStatus+"リスト "+title+" を新規作成し\n"+video.getTitle()+" を追加しました。",Toast.LENGTH_LONG).show();
-                    }
-                });
-
             }
         }).start();
 
     }
 
-    /*プレイリストにビデオ追加*/
-    private void AddVideoToPlayList (final String playlistId, final YouTubeVideo video, final boolean resultShow){
-        final List<String> errorChacher=new ArrayList<String>();
-        new Thread(new Runnable() {
+    /*プレイリストにビデオ追加
+      引数:boolean resultShow:プレイリストの新規作成してそこに追加するときはfalseが渡ってくる。
+     */
+    private void AddVideoToPlayList (final String playlistId, final YouTubeVideo video, final boolean resultShow,final String title,final String privacyStatus){
+
+       new Thread(new Runnable() {
             @Override
             public void run() {
                 //プレイリストに追加
@@ -950,32 +947,36 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 PlaylistItem playlistItem = new PlaylistItem();
                 playlistItem.setSnippet(snippet);
 
-
+                String toastText="";
                 try {
                     getYouTubeWithCredentials().playlistItems().insert("snippet", playlistItem).execute();
+                    if(resultShow){
+                        toastText=" 追加に成功しました。";
+                    }else{
+                     /*新規作成およびビデオ追加ともに成功した場合*/
+                     toastText=privacyStatus+"リスト\n"+title+" を新規作成し\n"+video.getTitle()+" を追加しました。";
+                    }
                 } catch (Exception e) {
                     Log.d(TAG_NAME, "AddPlaylist Error:" + e.getMessage());
-                    if(resultShow){
-                    mainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(mainContext, "追加に失敗しました。", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                    });
+                    if(resultShow) {
+                        toastText="追加に失敗しました。";
+                    }else{
+                        /*プレイリスト新規作成には成功したがビデオ追加に失敗した場合*/
+                        toastText="新規"+privacyStatus+"リスト\n"+title+" の作成には成功しましたがビデオの追加に失敗しました。";
                     }
-                }
-                if(resultShow){
-                    mainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(mainContext," 追加に成功しました。", Toast.LENGTH_LONG).show();
-                        }
-                    });
-                }
-            }
-        }).start();
 
+                }
+                final String finalToastText=toastText;
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(mainContext,finalToastText,Toast.LENGTH_LONG).show();
+                    }
+                });
+
+            }
+
+        }).start();
     }
     /*プレイリストに追加したり、プレイリストを新規作成したうえで追加したり*/
     @Override
@@ -1048,7 +1049,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
                     } else {
-                       AddVideoToPlayList(allPlaylist.get(checkedItems.get(0)).getId(),video,true);
+                       AddVideoToPlayList(allPlaylist.get(checkedItems.get(0)).getId(),video,true,"","");
                     }
                 }
             }
