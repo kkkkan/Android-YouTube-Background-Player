@@ -40,7 +40,7 @@ import java.util.List;
  * Created by smedic on 8.2.16..
  */
 public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder>
-        implements View.OnClickListener {
+        {
 
     private Context context;
     private final List<YouTubeVideo> list;
@@ -57,7 +57,6 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.video_item, null);
-        view.setOnClickListener(this);
         //itemCheck.add(false);
         return new ViewHolder(view);
     }
@@ -126,13 +125,6 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
         return (null != list ? list.size() : 0);
     }
 
-    @Override
-    public void onClick(View v) {
-        /*if (itemEventsListener != null) {
-            YouTubeVideo item = (YouTubeVideo) v.getTag();
-            itemEventsListener.onItemClick(item);
-        }*/
-    }
 
     class ViewHolder extends RecyclerView.ViewHolder {
         ImageView thumbnail;

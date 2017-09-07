@@ -25,7 +25,7 @@ import java.util.List;
  * Custom array adapter class
  */
 public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.ViewHolder>
-        implements View.OnClickListener {
+        {
     private final static String TAG_NAME="PlaylistsAdapter";
 
     private Context context;
@@ -48,7 +48,6 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.playlist_item, null);
-        v.setOnClickListener(this);
         return new ViewHolder(v);
     }
 
@@ -119,15 +118,6 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
         return (null != playlists ? playlists.size() : 0);
     }
 
-    @Override
-    public void onClick(View v) {
-        /*if (itemEventsListener != null) {
-            YouTubePlaylist item = (YouTubePlaylist) v.getTag();
-            /*itemEventListener:playlistFrragment*/
-           /* itemEventsListener.onItemClick(item);
-        }*/
-
-}
 
     class ViewHolder extends RecyclerView.ViewHolder {
         ImageView thumbnail;

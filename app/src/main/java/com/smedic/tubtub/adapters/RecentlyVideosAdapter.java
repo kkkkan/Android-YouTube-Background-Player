@@ -24,7 +24,7 @@ import java.util.List;
  * Created by admin on 2017/08/30.
  */
 
-public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAdapter.ViewHolder>implements View.OnClickListener {
+public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAdapter.ViewHolder> {
     private Context context;
     private final List<YouTubeVideo> list;
     private ArrayList<Boolean> itemCheck;
@@ -41,7 +41,6 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
     @Override
     public RecentlyVideosAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recently_video_item, null);
-        view.setOnClickListener(this);
         return new RecentlyVideosAdapter.ViewHolder(view);
     }
 
@@ -116,13 +115,6 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
         return (null != list ? list.size() : 0);
     }
 
-    @Override
-    public void onClick(View v) {
-      /*  if (itemEventsListener != null) {
-            YouTubeVideo item = (YouTubeVideo) v.getTag();
-            itemEventsListener.onItemClick(item);
-        }*/
-    }
 
     class ViewHolder extends RecyclerView.ViewHolder {
         ImageView thumbnail;

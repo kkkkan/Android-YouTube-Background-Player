@@ -26,7 +26,7 @@ import java.util.List;
  */
 
 public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAdapter.ViewHolder>
-        implements View.OnClickListener {
+         {
 
     private static final String TAG = "PlaylistDetailAdapter";
     private Context context;
@@ -44,7 +44,6 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_playlist_detail, null);
-        view.setOnClickListener(this);
         return new ViewHolder(view);
     }
 
@@ -113,14 +112,6 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
         return (null != list ? list.size() : 0);
     }
 
-    @Override
-    public void onClick(View v) {
-       /*if (itemEventsListener != null) {
-            Log.d(TAG, "onClick");
-            YouTubeVideo item = (YouTubeVideo) v.getTag();
-            itemEventsListener.onItemClick(item);
-        }*/
-    }
 
     class ViewHolder extends RecyclerView.ViewHolder {
         ImageView thumbnail;
