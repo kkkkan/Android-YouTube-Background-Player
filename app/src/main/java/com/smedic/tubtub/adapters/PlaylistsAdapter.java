@@ -100,6 +100,17 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             }
         });
 
+        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (itemEventsListener != null) {
+                   // YouTubePlaylist item = (YouTubePlaylist) v.getTag();
+            /*itemEventListener:playlistFrragment*/
+                    itemEventsListener.onItemClick(playlist);
+                }
+            }
+        });
+
 
     }
 
@@ -110,13 +121,11 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
 
     @Override
     public void onClick(View v) {
-        Log.d(TAG_NAME,"1");
-        if (itemEventsListener != null) {
-            Log.d(TAG_NAME,"2");
+        /*if (itemEventsListener != null) {
             YouTubePlaylist item = (YouTubePlaylist) v.getTag();
             /*itemEventListener:playlistFrragment*/
-            itemEventsListener.onItemClick(item);
-        }
+           /* itemEventsListener.onItemClick(item);
+        }*/
 
 }
 

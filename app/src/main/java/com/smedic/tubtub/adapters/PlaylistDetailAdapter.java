@@ -18,6 +18,7 @@ import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.model.YouTubeVideo;
 import com.smedic.tubtub.utils.Config;
 import com.squareup.picasso.Picasso;
+
 import java.util.List;
 
 /**
@@ -27,7 +28,7 @@ import java.util.List;
 public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAdapter.ViewHolder>
         implements View.OnClickListener {
 
-    private static final String TAG = "kandabashi-PlaylistDetailAdapter";
+    private static final String TAG = "PlaylistDetailAdapter";
     private Context context;
     private final List<YouTubeVideo> list;
     private boolean[] itemChecked;
@@ -84,16 +85,25 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
         });
 
 
-        holder.DeleteButton.setOnClickListener(new View.OnClickListener(){
+        holder.DeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (itemEventsListener != null) {
-                    ((PlaylistDetailFragment)itemEventsListener).setDeleteVideoIndex(position);
+                    ((PlaylistDetailFragment) itemEventsListener).setDeleteVideoIndex(position);
                     itemEventsListener.onAddClicked(video);
                 }
             }
         });
 
+        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (itemEventsListener != null) {
+                    Log.d(TAG, "onClick");
+                    itemEventsListener.onItemClick(video);
+                }
+            }
+        });
         holder.itemView.setTag(video);
 
     }
@@ -105,11 +115,11 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
 
     @Override
     public void onClick(View v) {
-        if (itemEventsListener != null) {
-            Log.d(TAG,"onClick");
+       /*if (itemEventsListener != null) {
+            Log.d(TAG, "onClick");
             YouTubeVideo item = (YouTubeVideo) v.getTag();
             itemEventsListener.onItemClick(item);
-        }
+        }*/
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -129,7 +139,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
             viewCount = (TextView) itemView.findViewById(R.id.views_number);
             favoriteCheckBox = (CheckBox) itemView.findViewById(R.id.favoriteButton);
             shareButton = (ImageView) itemView.findViewById(R.id.shareButton);
-            DeleteButton=(ImageView)itemView.findViewById(R.id.musicDeleteButton);
+            DeleteButton = (ImageView) itemView.findViewById(R.id.musicDeleteButton);
         }
     }
 
