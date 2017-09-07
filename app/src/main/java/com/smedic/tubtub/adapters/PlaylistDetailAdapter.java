@@ -27,12 +27,11 @@ import java.util.List;
 public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAdapter.ViewHolder>
         implements View.OnClickListener {
 
-    private static final String TAG = "kandabashi";
+    private static final String TAG = "kandabashi-PlaylistDetailAdapter";
     private Context context;
     private final List<YouTubeVideo> list;
     private boolean[] itemChecked;
     private ItemEventsListener<YouTubeVideo> itemEventsListener;
-
 
     public PlaylistDetailAdapter(Context context, List<YouTubeVideo> list) {
         super();

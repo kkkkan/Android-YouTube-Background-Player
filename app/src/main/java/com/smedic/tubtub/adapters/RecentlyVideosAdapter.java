@@ -25,7 +25,6 @@ import java.util.List;
  */
 
 public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAdapter.ViewHolder>implements View.OnClickListener {
-    private static final String TAG = "SMEDIC";
     private Context context;
     private final List<YouTubeVideo> list;
     private ArrayList<Boolean> itemCheck;

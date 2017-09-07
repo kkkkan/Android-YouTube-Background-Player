@@ -117,7 +117,7 @@ import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentia
  * Activity that manages fragments and action bar
  */
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
-        OnItemSelected, OnFavoritesSelected,SurfaceHolder.Callback, MediaController.MediaPlayerControl,PlaylistsAdapter.OnDetailClickListener {
+        OnItemSelected, OnFavoritesSelected, SurfaceHolder.Callback, MediaController.MediaPlayerControl, PlaylistsAdapter.OnDetailClickListener {
     public static Handler mainHandler = new Handler();
 
     public Context getMainContext() {
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private final Context mainContext = this;
 
     private static final String TAG = "SMEDIC MAIN ACTIVITY";
-    private static final String TAG_NAME="kandabashi";
+    private static final String TAG_NAME = "kandabashi-MainActivity";
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -148,7 +148,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private RecentlyWatchedFragment recentlyPlayedFragment;
     private FavoritesFragment favoritesFragment;
 
-    public final String YouTubeFragment = "YouTubeFragment";
 
     private String videoUrl;
     private String audioUrl;
@@ -167,17 +166,18 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private String VideoTitle;
 
 
-
     /*途中から再生のための再生位置入れとく変数*/
-    private int MediaStartTime=0;
+    private int MediaStartTime = 0;
+
     public int getMediaStartTime() {
         return MediaStartTime;
     }
+
     public void setMediaStartTime(int mediaStartTime) {
         MediaStartTime = mediaStartTime;
     }
 
-   /*フラグたち*/
+    /*フラグたち*/
     /*他のアプリがフォアグランドに来たときのみtrue
     * surfaceDestroy()でtrueにする。onResumeでfalseにする。*/
     private boolean HOME_BUTTON_PAUSE = false;
@@ -187,14 +187,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     /*ビデオの頭から再生を開始するか否かのフラグ。
     * surfaceCreated()でfalse
     * mMediaController.setPrevNextListners()/onPlaylistSelected()/mAudioMediaPlayer.setOnCompleteListner()<再生中のリストに次の曲がないなら>/mMediaplayer.setOnCompleteListener()<再生中のリストに次の曲がないなら>でtrue*/
-    private boolean START_INITIAL=true;
+    private boolean START_INITIAL = true;
 
-
-
-
-    public SurfaceHolder getmHolder() {
-        return this.mHolder;
-    }
 
     private int[] tabIcons = {
             R.drawable.ic_action_heart,
@@ -230,6 +224,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mMediaController.setMediaPlayer(this);
         mMediaController.setAnchorView(mPreview);
 
+
+
         /*mMediaController表示のためのtouchlistener*/
         mPreview.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -249,12 +245,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
         });
 
-        mTextView=(TextView)findViewById(R.id.title_view);
-        mListDlg=new AlertDialog.Builder(this);
-        mTitleDlg=new AlertDialog.Builder(this);
+        mTextView = (TextView) findViewById(R.id.title_view);
+        mListDlg = new AlertDialog.Builder(this);
+        mTitleDlg = new AlertDialog.Builder(this);
         mProgressDialog = new ProgressDialog(this);
-
-
 
 
         YouTubeSqlDb.getInstance().init(this);
@@ -301,14 +295,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Log.d(TAG_NAME, "onPause");
     }
 
-    public boolean onDestroy(MediaPlayer mp, int what, int extra) {
-        Log.d(TAG_NAME, "onDestroy");
-        if (mp != null) {
-            mp.release();
-            mp = null;
-        }
-        return false;
-    }
 
     public void onStart() {
         super.onStart();
@@ -327,23 +313,26 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
 
-
     /*アプリが一番上で動いているときに新しいビデオを再生したいときに呼ばれる。
     * */
     @Override
     public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
         Log.d(TAG_NAME, "surfaceCreated");
-        Log.d(TAG_NAME,"START_INITIAL:"+String.valueOf(START_INITIAL)+"\nmMediaplayer.isPlying:"+String.valueOf(mMediaPlayer.isPlaying()));
-        /*ネット環境にちゃんとつながってるかチェック*/
+        Log.d(TAG_NAME, "START_INITIAL:" + String.valueOf(START_INITIAL) + "\nmMediaplayer.isPlying:" + String.valueOf(mMediaPlayer.isPlaying()));
+        videoCreate();
+    }
+
+    public void videoCreate() {
+         /*ネット環境にちゃんとつながってるかチェック*/
         if (!networkConf.isNetworkAvailable()) {
             networkConf.createNetErrorDialog();
             return;
         }
         /*一つのビデオの再生中にフォアグランド再生→バックグラウンド再生→フォアグランド再生とするとSTART_INITIAL=falseでここまでくる*/
-        if((!START_INITIAL)){
+        if ((!START_INITIAL)) {
             setMediaStartTime(mMediaPlayer.getCurrentPosition());
         }
-        START_INITIAL=false;
+        START_INITIAL = false;
         mMediaPlayer.reset();
         /*mediaplayer関係*/
         // URLの先にある動画を再生する
@@ -354,15 +343,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 /*ホームボタン→画面off→画面on→アプリに戻るをしたときにここに制御が来る。*/
                 if (mAudioMediaPlayer.isPlaying()) {
                     Log.d(TAG_NAME, "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()");
-                    Log.d(TAG_NAME, "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()"+mAudioMediaPlayer.getCurrentPosition());
+                    Log.d(TAG_NAME, "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()" + mAudioMediaPlayer.getCurrentPosition());
                     setMediaStartTime(mAudioMediaPlayer.getCurrentPosition());
                 }
                 mAudioMediaPlayer.reset();
-                Log.d(TAG_NAME, "surfaceCreated-1");
+                Log.d(TAG_NAME, "videoCreate-1");
                 mMediaPlayer.setDataSource(this, mediaPath);
-                mMediaPlayer.setDisplay(paramSurfaceHolder);
+                mMediaPlayer.setDisplay(mHolder);
                 /*videoTitleをセット*/
-                if(VideoTitle!=null) {
+                if (VideoTitle != null) {
                     mTextView.setText(VideoTitle);
                 }
 
@@ -380,23 +369,22 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 });
                 mMediaPlayer.prepareAsync();
             } catch (IllegalArgumentException e) {
-                Log.d(TAG_NAME, "surfaceCreated-IllegalArgumentException" + e.getMessage());
+                Log.d(TAG_NAME, "videoCreate-IllegalArgumentException" + e.getMessage());
                 e.printStackTrace();
             } catch (IllegalStateException e) {
-                Log.d(TAG_NAME, "surfaceCreated-IllegalStateException" + e.getMessage());
+                Log.d(TAG_NAME, "videoCreate-IllegalStateException" + e.getMessage());
                 e.printStackTrace();
             } catch (IOException e) {
-                Log.d(TAG_NAME, "surfaceCreated-IOException" + e.getMessage());
+                Log.d(TAG_NAME, "videoCreate-IOException" + e.getMessage());
                 e.printStackTrace();
             }
         }
 
     }
 
-
     /*Homeボタンでバックグラウンド再生の時に使う音声だけのメディアプレイヤーにvideoのurlをセットしたりstart()したりする関数*/
-    public void audioCreated() {
-        Log.d(TAG_NAME, "audioCreated");
+    public void audioCreate() {
+        Log.d(TAG_NAME, "audioCreate");
         /*ネット環境にちゃんとつながってるかチェック*/
         if (!networkConf.isNetworkAvailable()) {
             networkConf.createNetErrorDialog();
@@ -405,10 +393,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mMediaPlayer.reset();
         mAudioMediaPlayer.reset();
         if (audioUrl != null) {
-            Uri mediaPath = Uri.parse(audioUrl);
             try {
+                Uri mediaPath = Uri.parse(audioUrl);
                 mAudioMediaPlayer.setDataSource(this, mediaPath);
-                Log.d(TAG_NAME, "audioCreated-1");
+                Log.d(TAG_NAME, "audioCreate-1");
                 mAudioMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
              /*prepareに時間かかることを想定し直接startせずにLister使う*/
                 mAudioMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -422,13 +410,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 });
                 mAudioMediaPlayer.prepareAsync();
             } catch (IllegalArgumentException e) {
-                Log.d(TAG_NAME, "audioCreated-IllegalArgumentException:" + e.getMessage());
+                Log.d(TAG_NAME, "audioCreate-IllegalArgumentException:" + e.getMessage());
                 e.printStackTrace();
             } catch (IllegalStateException e) {
-                Log.d(TAG_NAME, "audioCreated-IllegalStateException:" + e.getMessage());
+                Log.d(TAG_NAME, "audioCreate-IllegalStateException:" + e.getMessage());
                 e.printStackTrace();
             } catch (IOException e) {
-                Log.d(TAG_NAME, "audioCreated-IOException:" + e.getMessage());
+                Log.d(TAG_NAME, "audioCreate-IOException:" + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -504,7 +492,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public int getAudioSessionId() {
         return 0;
     }
-
 
 
     /**
@@ -708,7 +695,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
     /*選んだビデオをmediaplayerで再生するためのurlをvideoUrl,audioUrlにセットし、バックグラウンド再生かフォアグランド再生かによって
-    * 次の制御をsurfaceCreated()/audioCreated()に割り振る*/
+    * 次の制御をsurfaceCreated()/audioCreate()に割り振る*/
     @Override
     public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
         Log.d(TAG_NAME, "onPlaylistSelected");
@@ -722,86 +709,111 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
 
         final List<YouTubeVideo> playList = playlist;
-        final YouTubeVideo video =  playlist.get(position);
+        final YouTubeVideo video = playlist.get(position);
         final int currentSongIndex = position;
-        /*surfaceDetroy時に自動的に2回連続でmMediaplayer.setOnCompleteListner→onplaylistselectedが呼ばれるうようである*/
-        /*homeボタンによるバックグラウンド再生ではない又はhomeボタンによるバックグラウンド再生で再生中の曲が終わって呼ばれた時*/
-        if (!HOME_BUTTON_PAUSE || (COMPLETION_COUNT != 1 && COMPLETION_COUNT != 2)) {
-            START_INITIAL=true;
-            String youtubeLink = Config.YOUTUBE_BASE_URL + video.getId();
-            new YouTubeExtractor(this) {
-                @Override
-                protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
-                    Log.d(TAG_NAME, "onExtractionComplete");
-                    if (ytFiles == null ) {
-                        Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
-                        setProgressDialogDismiss();
-                        onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
-                        return;
+
+
+        START_INITIAL = true;
+        String youtubeLink = Config.YOUTUBE_BASE_URL + video.getId();
+        new YouTubeExtractor(this) {
+            @Override
+            protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
+                Log.d(TAG_NAME, "onExtractionComplete");
+                if (ytFiles == null) {
+                    Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
+                    setProgressDialogDismiss();
+                    onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
+                    return;
+                }
+                    /*Videoでは形式を変えて360p（ノーマル画質）で試す。アプリを軽くするため高画質は非対応にした。これ以上落とすと音声が含まれなくなっちゃう。*/
+                    /*18:Non-DASH/MP4/360p
+                     * 134:DASH/MP4/360p
+                     * 243:DASH/WebM/360p*/
+                int[] itagVideo = {18, 134, 243};
+
+
+                    /*251:DASH/WebM/Opus/160kbit/s
+                    * 141:
+                    * 140:DASH/M4A/AAC
+                    * 17:Non-DASH/3GP/144p
+                    * 171:DASH/WebM/Vorbis*/
+                    /*基本は251で再生できているが新しいのは17になることが多い？*/
+                int[] itagAudio = {251, 141, 140, 17, 171};
+
+
+                int tagVideo = 0;
+                int tagAudio = 0;
+                for (int i : itagVideo) {
+                    if (ytFiles.get(i) != null) {
+                        tagVideo = i;
+                        break;
                     }
-                /*Videoでは形式を変えて360p（ノーマル画質）で試す。アプリを軽くするため高画質は非対応にした。これ以上落とすと音声が含まれなくなっちゃう。*/
-                    int[] itagVideo = {18, 134, 243};
-                    int[] itagAudio = {251, 141, 140, 17};
-                    if (ytFiles != null) {
-                        int tagVideo = 0;
-                        int tagAudio = 0;
-                        for (int i : itagVideo) {
-                                if (ytFiles.get(i) != null) {
-                                    tagVideo = i;
-                                    break;
-                                }
-                            }
-                            for (int i : itagAudio) {
-                                if (ytFiles.get(i) != null) {
-                                    tagAudio = i;
-                                    break;
-                                }
-                            }
+                }
+                for (int i : itagAudio) {
+                    if (ytFiles.get(i) != null) {
+                        tagAudio = i;
+                        break;
+                    }
+                }
 
 
-                        Log.d(TAG_NAME,"video name:"+video.getTitle()+"\ntagAudio:"+String.valueOf(tagAudio)+"\ntagVideo"+String.valueOf(tagVideo));
-                        if (tagVideo != 0 && tagAudio!=0) {
+                Log.d(TAG_NAME, "video name:" + video.getTitle() + "\ntagVideo" + String.valueOf(tagVideo) + "\ntagAudio:" + String.valueOf(tagAudio));
+                if (tagVideo != 0 && tagAudio != 0) {
 
                         /*最近見たリストに追加*/
-                            YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
+                    YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
 
-                            Log.d(TAG_NAME, "ytFile-not-null-tagVideo:" + String.valueOf(tagVideo));
-                            Log.d(TAG_NAME, "ytFile-not-null-tagAudio:" + String.valueOf(tagAudio));
-                            String videoDownloadUrl = ytFiles.get(tagVideo).getUrl();
-                            String audioDownloadUrl=ytFiles.get(tagAudio).getUrl();
-                            Log.d(TAG_NAME, "VideoURL:" + videoDownloadUrl);
-                            Log.d(TAG_NAME, "audioURL:" + audioDownloadUrl);
+                    String videoDownloadUrl = ytFiles.get(tagVideo).getUrl();
+                    String audioDownloadUrl = ytFiles.get(tagAudio).getUrl();
+                    Log.d(TAG_NAME, "VideoURL:" + videoDownloadUrl);
+                    Log.d(TAG_NAME, "audioURL:" + audioDownloadUrl);
                     /*resetとかここでやらないとダメ（非同期処理だから外でやると追いつかない）*/
                     /*ポーズから戻ったときのためMovieUrlも変えとく*/
-                            videoUrl=videoDownloadUrl;
-                            audioUrl=audioDownloadUrl;
-                            VideoTitle=video.getTitle();
-                            START_INITIAL=true;
+                    videoUrl = videoDownloadUrl;
+                    audioUrl = audioDownloadUrl;
+                    VideoTitle = video.getTitle();
+                    START_INITIAL = true;
                             /*バックグランド再生以外の時は動画画面付きで再生*/
-                            if (!HOME_BUTTON_PAUSE) {
-                                Log.d(TAG_NAME,"mMediaPlayer.isPlaying:"+String.valueOf(mMediaPlayer.isPlaying()));
-                                /*Progressダイアログ消すのはsurfaceviewのなかでやってる。*/
-                                surfaceCreated(mHolder);
-                            } else {
+                    if (!HOME_BUTTON_PAUSE) {
+                        Log.d(TAG_NAME, "mMediaPlayer.isPlaying:" + String.valueOf(mMediaPlayer.isPlaying()));
+                                /*Progressダイアログ消すのはvideoCreate()のなかでやってる。*/
+                        videoCreate();
+                    } else {
                                 /*バックグラウンド再生の時は音だけの再生*/
-                                setProgressDialogDismiss();
-                                audioCreated();
-                            }
-                        } else if (currentSongIndex + 1 < playList.size()) {
-                            Log.d(TAG_NAME, "ytFile-null-next:" + video.getId());
-                            Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
-                            setProgressDialogDismiss();
-                            onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
-                        }
-
+                        setProgressDialogDismiss();
+                        audioCreate();
                     }
-
+                } else if (currentSongIndex + 1 < playList.size()) {
+                    Log.d(TAG_NAME, "ytFile-null-next:" + video.getId());
+                    Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
+                    setProgressDialogDismiss();
+                    onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
+                } else {
+                    //最後の曲のときはprogressbarを消すだけ。
+                    setProgressDialogDismiss();
                 }
-            }.execute(youtubeLink);
-        }else{
-            Log.d(TAG_NAME,"COMPLETION_COUNT:"+String.valueOf(COMPLETION_COUNT));
-            return;
-        }
+
+
+            }
+        }.execute(youtubeLink);
+
+
+
+        /*currentSongIndexとplayListがいるため毎回ここでセットするのが時間はかかるが簡単*/
+         /*homeボタンによるバックグラウンド再生中、再生中の曲が終わったときに次の曲に行くためのリスナー*/
+        mAudioMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                if (currentSongIndex + 1 < playList.size()) {
+                    Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
+                    onPlaylistSelected(playList, (currentSongIndex + 1));
+                } else {
+                    START_INITIAL = true;
+                    setMediaStartTime(0);
+                }
+            }
+        });
+
 
      /*終了後次の曲に行くためのリスナー*/
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -812,30 +824,22 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     /*ホームボタンを押すと最初に2回無条件にmediaPlayer.oncompletion呼ばれる。そのための対策*/
                     if (HOME_BUTTON_PAUSE) {
                         /*COMPLETION_COUNTが0～2の時は増やす必要があるがその後は変化させる必要がない。*/
-                        if (COMPLETION_COUNT < 3) {
+                        if (COMPLETION_COUNT < 2) {
                             ++COMPLETION_COUNT;
+                            //Log.d(TAG_NAME, " mMediaController.setOnCompletionListener-onPlaylistSelected1:"+String.valueOf(COMPLETION_COUNT));
+                            return;
                         }
                     }
+                    //Log.d(TAG_NAME, " mMediaController.setOnCompletionListener-onPlaylistSelected3:"+String.valueOf(COMPLETION_COUNT));
                     onPlaylistSelected(playList, (currentSongIndex + 1));
-                }else{
-                    START_INITIAL=true;
+
+                } else {
+                    START_INITIAL = true;
                 }
             }
         });
 
-        /*homeボタンによるバックグラウンド再生中、再生中の曲が終わったときに次の曲に行くためのリスナー*/
-        mAudioMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                if (currentSongIndex + 1 < playList.size()) {
-                    Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
-                    onPlaylistSelected(playList, (currentSongIndex + 1));
-                }else{
-                    START_INITIAL=true;
-                    setMediaStartTime(0);
-                }
-            }
-        });
+
 
         /*戻るボタン・進むボタン*/
         mMediaController.setPrevNextListeners(new View.OnClickListener() {
@@ -844,7 +848,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 //next button clicked
                 /*一周できるようにした*/
                 Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
-                START_INITIAL=true;
+                START_INITIAL = true;
                 onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
             }
         }, new View.OnClickListener() {
@@ -853,29 +857,31 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 //previous button clicked
                 /*一周できるようにした*/
                 Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
-                START_INITIAL=true;
+                START_INITIAL = true;
                 onPlaylistSelected(playList, (currentSongIndex - 1 + playList.size()) % playList.size());
             }
         });
     }
 
     /*progressDialog表示*/
-    public void setProgressDialogShow(){
+    public void setProgressDialogShow() {
         /*進捗状況は表示しない*/
         mProgressDialog.setIndeterminate(true);
         mProgressDialog.setMessage("Loading...");
         mProgressDialog.show();
 
     }
-    public void setProgressDialogDismiss(){
-        if(mProgressDialog.isShowing()) {
+
+    public void setProgressDialogDismiss() {
+        if (mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
         }
     }
 
+
     /*お気に入りfragmentにビデオを追加したり削除したり*/
     @Override
-    public void onFavoritesSelected(YouTubeVideo video, boolean isChecked){
+    public void onFavoritesSelected(YouTubeVideo video, boolean isChecked) {
         if (isChecked) {
             favoritesFragment.addToFavoritesList(video);
         } else {
@@ -885,7 +891,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     /*新規プレイリスト作成する。
     * 作成が終わったら、AddVideoToPlayList()に作ったプレイリストと追加したいビデオを渡して追加する。*/
-    private void AddPlaylist(final String title, final String privacyStatus,final YouTubeVideo video) {
+    private void AddPlaylist(final String title, final String privacyStatus, final YouTubeVideo video) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -905,9 +911,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
                 try {
-                    String playlistid=youtubeWithCredential.playlists().insert("snippet,status", playlist).execute().getId();
+                    String playlistid = youtubeWithCredential.playlists().insert("snippet,status", playlist).execute().getId();
                     /*作ったプレイリストにvideoを追加*/
-                    AddVideoToPlayList(playlistid,video,false,title,privacyStatus);
+                    AddVideoToPlayList(playlistid, video, false, title, privacyStatus);
                 } catch (Exception e) {
                     /*プレイリストの新規作成に失敗したとき*/
                     mainHandler.post(new Runnable() {
@@ -926,9 +932,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     /*プレイリストにビデオ追加
       引数:boolean resultShow:プレイリストの新規作成してそこに追加するときはfalseが渡ってくる。
      */
-    private void AddVideoToPlayList (final String playlistId, final YouTubeVideo video, final boolean resultShow,final String title,final String privacyStatus){
+    private void AddVideoToPlayList(final String playlistId, final YouTubeVideo video, final boolean resultShow, final String title, final String privacyStatus) {
 
-       new Thread(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 //プレイリストに追加
@@ -947,30 +953,30 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 PlaylistItem playlistItem = new PlaylistItem();
                 playlistItem.setSnippet(snippet);
 
-                String toastText="";
+                String toastText = "";
                 try {
                     getYouTubeWithCredentials().playlistItems().insert("snippet", playlistItem).execute();
-                    if(resultShow){
-                        toastText=" 追加に成功しました。";
-                    }else{
+                    if (resultShow) {
+                        toastText = " 追加に成功しました。";
+                    } else {
                      /*新規作成およびビデオ追加ともに成功した場合*/
-                     toastText=privacyStatus+"リスト\n"+title+" を新規作成し\n"+video.getTitle()+" を追加しました。";
+                        toastText = privacyStatus + "リスト\n" + title + " を新規作成し\n" + video.getTitle() + " を追加しました。";
                     }
                 } catch (Exception e) {
                     Log.d(TAG_NAME, "AddPlaylist Error:" + e.getMessage());
-                    if(resultShow) {
-                        toastText="追加に失敗しました。";
-                    }else{
+                    if (resultShow) {
+                        toastText = "追加に失敗しました。";
+                    } else {
                         /*プレイリスト新規作成には成功したがビデオ追加に失敗した場合*/
-                        toastText="新規"+privacyStatus+"リスト\n"+title+" の作成には成功しましたがビデオの追加に失敗しました。";
+                        toastText = "新規" + privacyStatus + "リスト\n" + title + " の作成には成功しましたがビデオの追加に失敗しました。";
                     }
 
                 }
-                final String finalToastText=toastText;
+                final String finalToastText = toastText;
                 mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(mainContext,finalToastText,Toast.LENGTH_LONG).show();
+                        Toast.makeText(mainContext, finalToastText, Toast.LENGTH_LONG).show();
                     }
                 });
 
@@ -978,33 +984,34 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         }).start();
     }
+
     /*プレイリストに追加したり、プレイリストを新規作成したうえで追加したり*/
     @Override
-    public void onAddSelected(final YouTubeVideo video){
-        Log.d(TAG_NAME,"onAddSelected");
+    public void onAddSelected(final YouTubeVideo video) {
+        Log.d(TAG_NAME, "onAddSelected");
         /*video タイトル取得*/
-        final String videoTitle=video.getTitle();
+        final String videoTitle = video.getTitle();
 
         /*プレイリストを取得*/
-        final ArrayList<YouTubePlaylist> allPlaylist=YouTubeSqlDb.getInstance().playlists().readAll();
-        Log.d(TAG_NAME,"AddPlaylistDialog-1-which:"+String.valueOf(allPlaylist.size()));
+        final ArrayList<YouTubePlaylist> allPlaylist = YouTubeSqlDb.getInstance().playlists().readAll();
+        Log.d(TAG_NAME, "AddPlaylistDialog-1-which:" + String.valueOf(allPlaylist.size()));
 
         /*プレイリストタイトルを取得*/
-        final CharSequence[] playlists=new CharSequence[allPlaylist.size()+1];
-        int i=0;
-        for(YouTubePlaylist p:allPlaylist){
-           playlists[i++]=p.getTitle()+"("+String.valueOf(p.getNumberOfVideos())+")";
+        final CharSequence[] playlists = new CharSequence[allPlaylist.size() + 1];
+        int i = 0;
+        for (YouTubePlaylist p : allPlaylist) {
+            playlists[i++] = p.getTitle() + "(" + String.valueOf(p.getNumberOfVideos()) + ")";
         }
-        playlists[i++]="新規作成して追加";
+        playlists[i++] = "新規作成して追加";
 
         /*チェックされたやつの番号を入れておく。*/
         final ArrayList<Integer> checkedItems = new ArrayList<Integer>();
         checkedItems.add(0);
 
 /*ダイアログ表示のための準備*/
-        mListDlg.setTitle("プレイリスト追加：\n"+videoTitle);
+        mListDlg.setTitle("プレイリスト追加：\n" + videoTitle);
 
-        mListDlg.setSingleChoiceItems(playlists,0, new DialogInterface.OnClickListener() {
+        mListDlg.setSingleChoiceItems(playlists, 0, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 checkedItems.clear();
@@ -1018,16 +1025,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 if (!checkedItems.isEmpty()) {
                     if (checkedItems.get(0) == (playlists.length - 1)) {
                         //新しいプレイリスト作って追加
-                        final EditText titleEdit=new EditText(mainContext);
+                        final EditText titleEdit = new EditText(mainContext);
                         mTitleDlg.setTitle("新規プレイリスト名入力");
                         mTitleDlg.setView(titleEdit);
                         mTitleDlg.setPositiveButton("非公開で作成", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                final String title=titleEdit.getText().toString();
-                                if(title.length()==0){
-                                    Toast.makeText(mainContext,"プレイリスト名は空白は認められません。",Toast.LENGTH_LONG).show();
-                                }else {
+                                final String title = titleEdit.getText().toString();
+                                if (title.length() == 0) {
+                                    Toast.makeText(mainContext, "プレイリスト名は空白は認められません。", Toast.LENGTH_LONG).show();
+                                } else {
                                     AddPlaylist(title, "private", video);
                                 }
                             }
@@ -1035,71 +1042,70 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         mTitleDlg.setNeutralButton("公開で作成", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                final String title=titleEdit.getText().toString();
-                                if(title.length()==0){
-                                    Toast.makeText(mainContext,"プレイリスト名は空白は認められません。",Toast.LENGTH_LONG).show();
-                                }else {
+                                final String title = titleEdit.getText().toString();
+                                if (title.length() == 0) {
+                                    Toast.makeText(mainContext, "プレイリスト名は空白は認められません。", Toast.LENGTH_LONG).show();
+                                } else {
                                     AddPlaylist(title, "public", video);
                                 }
                             }
                         });
 
-                        mTitleDlg.setNegativeButton("cancel",null);
+                        mTitleDlg.setNegativeButton("cancel", null);
                         mTitleDlg.show();
 
 
                     } else {
-                       AddVideoToPlayList(allPlaylist.get(checkedItems.get(0)).getId(),video,true,"","");
+                        AddVideoToPlayList(allPlaylist.get(checkedItems.get(0)).getId(), video, true, "", "");
                     }
                 }
             }
         });
 
-        mListDlg.setNegativeButton("キャンセル",null);
+        mListDlg.setNegativeButton("キャンセル", null);
 
         mListDlg.create().show();
     }
 
     /*プレイリスト詳細を見るためのリスナーの中身実装*/
-public void onDetailClick(YouTubePlaylist playlist){
-    Log.d(TAG_NAME, "playlist-detail-checked!!!\n\n");
+    public void onDetailClick(YouTubePlaylist playlist) {
+        Log.d(TAG_NAME, "playlist-detail-checked!!!\n\n");
     /*ビデオ一覧表示Fragment追加用*/
-    PlaylistDetailFragment playlistDetailFragment=new PlaylistDetailFragment().newInstance();
-    playlistDetailFragment.setPlaylist(playlist);
+        PlaylistDetailFragment playlistDetailFragment = PlaylistDetailFragment.newInstance();
+        playlistDetailFragment.setPlaylist(playlist);
 
     /*プレイリストタイトル表示Fragment用*/
-    PlaylistTitleFragment playlistTitleFragment=new PlaylistTitleFragment();
-    playlistTitleFragment.setPlaylistTitle(playlist.getTitle());
+        PlaylistTitleFragment playlistTitleFragment = new PlaylistTitleFragment();
+        playlistTitleFragment.setPlaylistTitle(playlist.getTitle());
 
-    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-    ft.add(R.id.frame_layout,playlistDetailFragment);
-    ft.add(R.id.frame_layout_tab,playlistTitleFragment);
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.add(R.id.frame_layout, playlistDetailFragment);
+        ft.add(R.id.frame_layout_tab, playlistTitleFragment);
        /*このままだと下のviewpageが見えていて且つタッチできてしまうので対策*
        playlistdetailのdestroyで、可視化＆タッチ有効化
         */
-    viewPager.setVisibility(View.INVISIBLE);
-    viewPager.setOnTouchListener(new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            return false;
-        }
-    });
+        viewPager.setVisibility(View.INVISIBLE);
+        viewPager.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return false;
+            }
+        });
     /*tabも見えるし触れちゃうのでoffにする。
     * playlistTitleFragmentのdestroyで可視化＆タッチ有効化*/
-    tabLayout.setVisibility(View.INVISIBLE);
-    tabLayout.setOnTouchListener(new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            return false;
-        }
-    });
+        tabLayout.setVisibility(View.INVISIBLE);
+        tabLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return false;
+            }
+        });
     /*複数addしてもcommit()呼び出しまでを一つとしてスタックに入れてくれる。*/
-    ft.addToBackStack(null);
-    ft.commit();
+        ft.addToBackStack(null);
+        ft.commit();
 
 
-
-}
+    }
 
     /**
      * Class which provides adapter for fragment pager
@@ -1384,7 +1390,6 @@ public void onDetailClick(YouTubePlaylist playlist){
             window.setStatusBarColor(color);
         }
     }
-
 
 
     public ViewPager getViewPager() {

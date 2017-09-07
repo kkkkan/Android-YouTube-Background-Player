@@ -1,7 +1,6 @@
 package com.smedic.tubtub.fragments;
 
 
-
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -54,24 +53,20 @@ import java.util.List;
 
 public class PlaylistDetailFragment extends BaseFragment implements ItemEventsListener<YouTubeVideo> {
 
-        private static final String TAG = "SMEDIC search frag";
-        private static final String TAG_NAME="kandabashi";
-        private RecyclerView detailFoundListView;
-        static private ArrayList<YouTubeVideo> playlistDetailList;
-        private PlaylistDetailAdapter detailListAdapter;
-        private Context context;
-        private OnItemSelected itemSelected;
-        private OnFavoritesSelected onFavoritesSelected;
-        private YouTube youTubeWithCredential;
-        private SwipeRefreshLayout swipeToRefresh;
-        private YouTubePlaylist playlist;
-        private int deleteVideoIndex;
-        final private Handler mainHandler=((MainActivity)getActivity()).mainHandler;
-        private  ProgressDialog progressDialog;
-
-
-
-
+    private static final String TAG = "SMEDIC search frag";
+    private static final String TAG_NAME = "kandabashi-PlaylistDetailFragment";
+    private RecyclerView detailFoundListView;
+    static private ArrayList<YouTubeVideo> playlistDetailList;
+    private PlaylistDetailAdapter detailListAdapter;
+    private Context context;
+    private OnItemSelected itemSelected;
+    private OnFavoritesSelected onFavoritesSelected;
+    private YouTube youTubeWithCredential;
+    private SwipeRefreshLayout swipeToRefresh;
+    private YouTubePlaylist playlist;
+    private int deleteVideoIndex;
+    final private Handler mainHandler = ((MainActivity) getActivity()).mainHandler;
+    private ProgressDialog progressDialog;
 
     public PlaylistDetailFragment() {
         // Required empty public constructor
@@ -100,7 +95,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         detailListAdapter.setOnItemEventsListener(this);
         detailFoundListView.setAdapter(detailListAdapter);
         youTubeWithCredential = YouTubeSingleton.getYouTubeWithCredentials();
-        progressDialog=new ProgressDialog(getActivity());
+        progressDialog = new ProgressDialog(getActivity());
 
 
 
@@ -109,7 +104,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         swipeToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Log.d(TAG,"onRefresh");
+                Log.d(TAG, "onRefresh");
                 acquirePlaylistVideos(playlist.getId());
             }
         });
@@ -122,27 +117,27 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     public void onResume() {
         super.onResume();
         playlistDetailList.clear();
-        Log.d(TAG_NAME,"PlaylistDetailFragment-onResume");
+        Log.d(TAG_NAME, "PlaylistDetailFragment-onResume");
         /*Loading…のダイアログ出す。*/
         progressDialog.setIndeterminate(true);
         progressDialog.setMessage("Loading…");
         /*ダイアログの裏の色を透明にする。*/
-        progressDialog.getWindow().setFlags(0,WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        progressDialog.getWindow().setFlags(0, WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 
         /*ダイアログの出す場所をplaylistDetailFragmentの真ん中にする。*/
         /*画面の高さを取得*/
-        Point size=new Point();
+        Point size = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getSize(size);
-        int windowHeight=size.y;
+        int windowHeight = size.y;
 
         /*playlistDetailFragmentの高さを取得*/
-        FrameLayout frameLayout=(FrameLayout)(getActivity()).findViewById(R.id.frame_layout);
-        int framelayoutHeight=frameLayout.getHeight();
+        FrameLayout frameLayout = (FrameLayout) (getActivity()).findViewById(R.id.frame_layout);
+        int framelayoutHeight = frameLayout.getHeight();
 
         /*playlistDetailFragmentの真ん中にセット
         * WindowManager.LayoutParams.yに指定したpx分画面真ん中から下にずらされて表示される。*/
-        WindowManager.LayoutParams layoutParams=progressDialog.getWindow().getAttributes();
-        layoutParams.y=(windowHeight-framelayoutHeight)/2;
+        WindowManager.LayoutParams layoutParams = progressDialog.getWindow().getAttributes();
+        layoutParams.y = (windowHeight - framelayoutHeight) / 2;
         progressDialog.getWindow().setAttributes(layoutParams);
         /*ダイアログ表示*/
         progressDialog.show();
@@ -183,65 +178,65 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
     /*プレイリストから曲を除く*/
     @Override
-    public void onAddClicked(final YouTubeVideo video){
-
-       /*削除の確認のダイアログを出す。*/
-        AlertDialog.Builder dialog=new AlertDialog.Builder(getContext());
-        dialog.setTitle("削除").setMessage(video.getTitle()+" を\nプレイリスト"+playlist.getTitle()+"から削除しますか？")
-                .setNegativeButton("Cancel",null)
+    public void onAddClicked(final YouTubeVideo video) {
+        /*削除の確認のダイアログを出す。*/
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
+        dialog.setTitle("削除").setMessage(video.getTitle() + " を\nプレイリスト" + playlist.getTitle() + "から削除しますか？")
+                .setNegativeButton("Cancel", null)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                new Thread(new Runnable() {
                     @Override
-                    public void run() {
-                        try{
-                    /*playlistItemId(playlistidとvideoidの両方の情報が入ったid）を取得*/
-                            YouTube.PlaylistItems.List playlistItemRequest = youTubeWithCredential.playlistItems().list("id,snippet");
-                            playlistItemRequest.setPlaylistId(playlist.getId());
-                            playlistItemRequest.setVideoId(video.getId());
-                            List<PlaylistItem> playlistItemResult =playlistItemRequest.execute().getItems();
-                            /*deleted video の含まれるプレイリストでは、最初のdelete video以下のvideoはpositionが正しく取ってこれない（恐らくAPIバグ）ので、
-                            同じdeleted videoが一つのプレイリストに含まれていた場合削除ができない仕様になってる。*/
-                            String id=null;
-                            if(playlistItemResult.size()>1) {
-                                for (PlaylistItem p : playlistItemResult) {
-                                    if (p.getSnippet().getPosition() == deleteVideoIndex) {
-                                        id = p.getId();
-                                        break;
-                                    }
-                                }
-                            }else{
-                                id=playlistItemResult.get(0).getId();
-                            }
-                            if(id==null||id.isEmpty()){
-                                throw new Exception("ID IS EMPTY");
-                            }
-                            youTubeWithCredential.playlistItems().delete(id).execute();
-
-                        }catch (Exception e){
-                            Log.d(TAG,"PlaylistDetailFragment-onAddClicked-delete-error-:"+e.getMessage());
-                            mainHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(getContext(), "削除に失敗しました。", Toast.LENGTH_LONG).show();
-                                }
-                            });
-                            return;
-                        }
-                        mainHandler.post(new Runnable() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(getContext(), "削除に成功しました。", Toast.LENGTH_LONG).show();
+                                try {
+                    /*playlistItemId(playlistidとvideoidの両方の情報が入ったid）を取得*/
+                                    YouTube.PlaylistItems.List playlistItemRequest = youTubeWithCredential.playlistItems().list("id,snippet");
+                                    playlistItemRequest.setPlaylistId(playlist.getId());
+                                    playlistItemRequest.setVideoId(video.getId());
+                                    List<PlaylistItem> playlistItemResult = playlistItemRequest.execute().getItems();
+                            /*deleted video の含まれるプレイリストでは、最初のdelete video以下のvideoはpositionが正しく取ってこれない（恐らくAPIバグ）ので、
+                            同じdeleted videoが一つのプレイリストに含まれていた場合削除ができない仕様になってる。*/
+                                    String id = null;
+                                    if (playlistItemResult.size() > 1) {
+                                        for (PlaylistItem p : playlistItemResult) {
+                                            if (p.getSnippet().getPosition() == deleteVideoIndex) {
+                                                id = p.getId();
+                                                break;
+                                            }
+                                        }
+                                    } else {
+                                        id = playlistItemResult.get(0).getId();
+                                    }
+                                    if (id == null || id.isEmpty()) {
+                                        throw new Exception("ID IS EMPTY");
+                                    }
+                                    youTubeWithCredential.playlistItems().delete(id).execute();
+
+                                } catch (Exception e) {
+                                    Log.d(TAG, "PlaylistDetailFragment-onAddClicked-delete-error-:" + e.getMessage());
+                                    mainHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getContext(), "削除に失敗しました。", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                    return;
+                                }
+                                mainHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getContext(), "削除に成功しました。", Toast.LENGTH_LONG).show();
+                                    }
+                                });
                             }
-                        });
+                        }).start();
                     }
-                }).start();
-            }
-        }).show();
+                }).show();
 
     }
-    private  void acquirePlaylistVideos(final String playlistId) {
+
+    private void acquirePlaylistVideos(final String playlistId) {
         Log.d(TAG_NAME, "acquirePlaylistVideos");
         getLoaderManager().restartLoader(3, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
 
@@ -258,7 +253,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                 if (data == null || data.isEmpty()) {
                     Log.d(TAG_NAME, "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished-empty");
                     /*もしLoading…出てたら消す。*/
-                    if(progressDialog.isShowing()){
+                    if (progressDialog.isShowing()) {
                         progressDialog.dismiss();
                     }
                     /*更新中のクルクルを止める*/
@@ -273,7 +268,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                 playlistDetailList.addAll(data);
                 detailListAdapter.notifyDataSetChanged();
                /*もしLoading…出てたら消す。*/
-                if(progressDialog.isShowing()){
+                if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }
                  /*更新中のクルクルを止める*/
@@ -289,7 +284,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
             public void onLoaderReset(Loader<List<YouTubeVideo>> loader) {
                 Log.d(TAG_NAME, "PlaylistsFragment.acquirePlaylistVideos.onLoaderReset");
                 /*もしLoading…出てたら消す。*/
-                if(progressDialog.isShowing()){
+                if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }
                  /*更新中のクルクルを止める*/
@@ -309,9 +304,9 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     }
 
     /*viewPager見えるようにし、タッチイベントも復活させる*/
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
-        ViewPager viewPager=((MainActivity)getActivity()).getViewPager();
+        ViewPager viewPager = ((MainActivity) getActivity()).getViewPager();
         viewPager.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -320,7 +315,6 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         });
         viewPager.setVisibility(View.VISIBLE);
     }
-
 
 
     public void setPlaylist(YouTubePlaylist playlist) {

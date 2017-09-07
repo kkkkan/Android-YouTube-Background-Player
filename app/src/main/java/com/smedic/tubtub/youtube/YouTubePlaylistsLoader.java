@@ -33,7 +33,7 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
 
 
     private static final String TAG = "SMEDIC";
-    private static final String TAG_NAME="kandabashi";
+    private static final String TAG_NAME="kandabashi-YouTubePlaylistsLoader";
     /*googleのYouTubeAPIの登場*/
     private YouTube youtube = getYouTubeWithCredentials();
 

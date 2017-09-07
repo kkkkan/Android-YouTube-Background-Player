@@ -65,7 +65,7 @@ public class PlaylistsFragment extends BaseFragment implements
         ItemEventsListener<YouTubePlaylist> {
 
     private static final String TAG = "SMEDIC PlaylistsFrag";
-    private static final String TAG_NAME="kandabashi";
+    private static final String TAG_NAME="kandabashi-PlaylistsFragment";
 
     private ArrayList<YouTubePlaylist> playlists;
     private RecyclerView playlistsListView;

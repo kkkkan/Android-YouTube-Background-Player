@@ -26,7 +26,7 @@ import java.util.List;
  */
 public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.ViewHolder>
         implements View.OnClickListener {
-    private final static String TAG_NAME="kandabashi";
+    private final static String TAG_NAME="kandabashi-PlaylistsAdapter";
 
     private Context context;
     private List<YouTubePlaylist> playlists;
