@@ -111,15 +111,6 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
 
         holder.itemView.setTag(video);
 
-        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (itemEventsListener != null) {
-                    YouTubeVideo item = (YouTubeVideo) v.getTag();
-                    itemEventsListener.onItemClick(item);
-                }
-            }
-        });
     }
 
     @Override
@@ -129,10 +120,10 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
 
     @Override
     public void onClick(View v) {
-        /*if (itemEventsListener != null) {
+        if (itemEventsListener != null) {
             YouTubeVideo item = (YouTubeVideo) v.getTag();
             itemEventsListener.onItemClick(item);
-        }*/
+        }
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

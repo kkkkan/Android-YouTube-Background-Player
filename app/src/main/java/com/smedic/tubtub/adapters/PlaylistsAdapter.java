@@ -85,6 +85,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
                 }
             }
         });
+
         holder.itemView.setTag(playlist);
 
         /*プレイリストの曲一覧を表示*/
@@ -99,16 +100,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             }
         });
 
-        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (itemEventsListener != null) {
-                    YouTubePlaylist item = (YouTubePlaylist) v.getTag();
-            /*itemEventListener:playlistFrragment*/
-                    itemEventsListener.onItemClick(item);
-                }
-            }
-        });
+
     }
 
     @Override
@@ -118,12 +110,15 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
 
     @Override
     public void onClick(View v) {
-        /*if (itemEventsListener != null) {
+        Log.d(TAG_NAME,"1");
+        if (itemEventsListener != null) {
+            Log.d(TAG_NAME,"2");
             YouTubePlaylist item = (YouTubePlaylist) v.getTag();
             /*itemEventListener:playlistFrragment*/
-           /* itemEventsListener.onItemClick(item);
-        }*/
-    }
+            itemEventsListener.onItemClick(item);
+        }
+
+}
 
     class ViewHolder extends RecyclerView.ViewHolder {
         ImageView thumbnail;

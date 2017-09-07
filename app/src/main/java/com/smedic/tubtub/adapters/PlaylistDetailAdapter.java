@@ -96,16 +96,6 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
 
         holder.itemView.setTag(video);
 
-        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (itemEventsListener != null) {
-                    Log.d(TAG,"onClick");
-                    YouTubeVideo item = (YouTubeVideo) v.getTag();
-                    itemEventsListener.onItemClick(item);
-                }
-            }
-        });
     }
 
     @Override
@@ -115,11 +105,11 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
 
     @Override
     public void onClick(View v) {
-        /*if (itemEventsListener != null) {
+        if (itemEventsListener != null) {
             Log.d(TAG,"onClick");
             YouTubeVideo item = (YouTubeVideo) v.getTag();
             itemEventsListener.onItemClick(item);
-        }*/
+        }
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

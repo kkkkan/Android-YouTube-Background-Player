@@ -54,7 +54,7 @@ import java.util.List;
 public class PlaylistDetailFragment extends BaseFragment implements ItemEventsListener<YouTubeVideo> {
 
     private static final String TAG = "SMEDIC search frag";
-    private static final String TAG_NAME = "kandabashi-PlaylistDetailFragment";
+    private static final String TAG_NAME = "PlaylistDetailFragment";
     private RecyclerView detailFoundListView;
     static private ArrayList<YouTubeVideo> playlistDetailList;
     private PlaylistDetailAdapter detailListAdapter;
