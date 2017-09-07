@@ -26,7 +26,7 @@ import java.util.List;
  */
 public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.ViewHolder>
         implements View.OnClickListener {
-    private final static String TAG_NAME="kandabashi-PlaylistsAdapter";
+    private final static String TAG_NAME="PlaylistsAdapter";
 
     private Context context;
     private List<YouTubePlaylist> playlists;
@@ -98,6 +98,17 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
                 }
             }
         });
+
+        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (itemEventsListener != null) {
+                    YouTubePlaylist item = (YouTubePlaylist) v.getTag();
+            /*itemEventListener:playlistFrragment*/
+                    itemEventsListener.onItemClick(item);
+                }
+            }
+        });
     }
 
     @Override
@@ -107,11 +118,11 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
 
     @Override
     public void onClick(View v) {
-        if (itemEventsListener != null) {
+        /*if (itemEventsListener != null) {
             YouTubePlaylist item = (YouTubePlaylist) v.getTag();
             /*itemEventListener:playlistFrragment*/
-            itemEventsListener.onItemClick(item);
-        }
+           /* itemEventsListener.onItemClick(item);
+        }*/
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -134,6 +145,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             deleteButton=(ImageView)itemView.findViewById(R.id.delete_button);
         }
     }
+
 
     public void setOnItemEventsListener(ItemEventsListener<YouTubePlaylist> listener) {
         itemEventsListener = listener;

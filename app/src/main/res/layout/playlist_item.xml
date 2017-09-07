@@ -66,8 +66,7 @@
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
-                android:layout_marginEnd="15dp"
-                android:layout_marginRight="15dp"
+                android:padding="20dp"
                 android:background="@drawable/playlist_detail" />
 
             <ImageView
@@ -75,8 +74,7 @@
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:layout_alignParentBottom="true"
-                android:layout_marginEnd="15dp"
-                android:layout_marginRight="15dp"
+                android:padding="20dp"
                 android:layout_toLeftOf="@id/detail_button"
                 android:layout_toStartOf="@id/detail_button"
                 android:background="@drawable/share_button_selector" />
@@ -85,8 +83,7 @@
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:layout_alignParentBottom="true"
-                android:layout_marginEnd="15dp"
-                android:layout_marginRight="15dp"
+                android:padding="20dp"
                 android:layout_toLeftOf="@id/share_button"
                 android:layout_toStartOf="@id/share_button"
                 android:background="@drawable/delete_music" />
