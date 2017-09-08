@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     /*動画タイトル用*/
     private TextView mTextView;
     private String VideoTitle;
-    
+
     /*フラグたち*/
     /*他のアプリがフォアグランドに来たときのみtrue
     * surfaceDestroy()でtrueにする。onResumeでfalseにする。*/
@@ -189,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG_NAME,"onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
