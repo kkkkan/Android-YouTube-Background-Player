@@ -164,19 +164,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     /*動画タイトル用*/
     private TextView mTextView;
     private String VideoTitle;
-
-
-    /*途中から再生のための再生位置入れとく変数*/
-    private int MediaStartTime = 0;
-
-    public int getMediaStartTime() {
-        return MediaStartTime;
-    }
-
-    public void setMediaStartTime(int mediaStartTime) {
-        MediaStartTime = mediaStartTime;
-    }
-
+    
     /*フラグたち*/
     /*他のアプリがフォアグランドに来たときのみtrue
     * surfaceDestroy()でtrueにする。onResumeでfalseにする。*/
@@ -323,6 +311,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     public void videoCreate() {
+        int MediaStartTime=0;
          /*ネット環境にちゃんとつながってるかチェック*/
         if (!networkConf.isNetworkAvailable()) {
             networkConf.createNetErrorDialog();
@@ -330,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
         /*一つのビデオの再生中にフォアグランド再生→バックグラウンド再生→フォアグランド再生とするとSTART_INITIAL=falseでここまでくる*/
         if ((!START_INITIAL)) {
-            setMediaStartTime(mMediaPlayer.getCurrentPosition());
+            MediaStartTime=mMediaPlayer.getCurrentPosition();
         }
         START_INITIAL = false;
         mMediaPlayer.reset();
@@ -344,7 +333,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 if (mAudioMediaPlayer.isPlaying()) {
                     Log.d(TAG_NAME, "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()");
                     Log.d(TAG_NAME, "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()" + mAudioMediaPlayer.getCurrentPosition());
-                    setMediaStartTime(mAudioMediaPlayer.getCurrentPosition());
+                    MediaStartTime=mAudioMediaPlayer.getCurrentPosition();
                 }
                 mAudioMediaPlayer.reset();
                 Log.d(TAG_NAME, "videoCreate-1");
@@ -355,14 +344,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     mTextView.setText(VideoTitle);
                 }
 
+                final int mMediaStartTime=MediaStartTime;
              /*prepareに時間かかることを想定し直接startせずにLister使う*/
                 mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
                     public void onPrepared(MediaPlayer mp) {
                         Log.d(TAG_NAME, "onPrepared");
-                        mp.seekTo(getMediaStartTime());
+                        //mp.seekTo(getMediaStartTime());
+                        mp.seekTo(mMediaStartTime);
                         mp.start();
-                        setMediaStartTime(0);
                         /*読み込み中ダイアログ消す*/
                         setProgressDialogDismiss();
                     }
@@ -404,8 +394,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     public void onPrepared(MediaPlayer mp) {
                         Log.d(TAG_NAME, "onPrepared");
                         mp.start();
-                        /*MediaStartTimeを0にリセット*/
-                        setMediaStartTime(0);
                     }
                 });
                 mAudioMediaPlayer.prepareAsync();
@@ -695,7 +683,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
     /*選んだビデオをmediaplayerで再生するためのurlをvideoUrl,audioUrlにセットし、バックグラウンド再生かフォアグランド再生かによって
-    * 次の制御をsurfaceCreated()/audioCreate()に割り振る*/
+    * 次の制御をvideoCreate()/audioCreate()に割り振る*/
     @Override
     public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
         Log.d(TAG_NAME, "onPlaylistSelected");
@@ -809,7 +797,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     onPlaylistSelected(playList, (currentSongIndex + 1));
                 } else {
                     START_INITIAL = true;
-                    setMediaStartTime(0);
                 }
             }
         });
