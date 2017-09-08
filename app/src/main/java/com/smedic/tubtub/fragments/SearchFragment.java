@@ -175,4 +175,9 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         /*最近見たリスト追加はplaylistselectedでやる！*/
         itemSelected.onPlaylistSelected(searchResultsList, searchResultsList.indexOf(video));
     }
+
+    @Override
+    public void onDeleteClicked(YouTubeVideo video) {
+
+    }
 }

@@ -15,4 +15,6 @@ public interface ItemEventsListener<Model> {
 
     void onItemClick(Model model); //handle click on a row (video or playlist)
 
+    void onDeleteClicked(YouTubeVideo video);
+
 }

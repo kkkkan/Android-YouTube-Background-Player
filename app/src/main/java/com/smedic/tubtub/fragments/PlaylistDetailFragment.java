@@ -176,64 +176,10 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         onFavoritesSelected.onFavoritesSelected(video, isChecked); // pass event to MainActivity
     }
 
-    /*プレイリストから曲を除く*/
+
     @Override
     public void onAddClicked(final YouTubeVideo video) {
-        /*削除の確認のダイアログを出す。*/
-        AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
-        dialog.setTitle("削除").setMessage(video.getTitle() + " を\nプレイリスト" + playlist.getTitle() + "から削除しますか？")
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                    /*playlistItemId(playlistidとvideoidの両方の情報が入ったid）を取得*/
-                                    YouTube.PlaylistItems.List playlistItemRequest = youTubeWithCredential.playlistItems().list("id,snippet");
-                                    playlistItemRequest.setPlaylistId(playlist.getId());
-                                    playlistItemRequest.setVideoId(video.getId());
-                                    List<PlaylistItem> playlistItemResult = playlistItemRequest.execute().getItems();
-                            /*deleted video の含まれるプレイリストでは、最初のdelete video以下のvideoはpositionが正しく取ってこれない（恐らくAPIバグ）ので、
-                            同じdeleted videoが一つのプレイリストに含まれていた場合削除ができない仕様になってる。*/
-                                    String id = null;
-                                    if (playlistItemResult.size() > 1) {
-                                        for (PlaylistItem p : playlistItemResult) {
-                                            if (p.getSnippet().getPosition() == deleteVideoIndex) {
-                                                id = p.getId();
-                                                break;
-                                            }
-                                        }
-                                    } else {
-                                        id = playlistItemResult.get(0).getId();
-                                    }
-                                    if (id == null || id.isEmpty()) {
-                                        throw new Exception("ID IS EMPTY");
-                                    }
-                                    youTubeWithCredential.playlistItems().delete(id).execute();
-
-                                } catch (Exception e) {
-                                    Log.d(TAG, "PlaylistDetailFragment-onAddClicked-delete-error-:" + e.getMessage());
-                                    mainHandler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(getContext(), "削除に失敗しました。", Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-                                    return;
-                                }
-                                mainHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getContext(), "削除に成功しました。", Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                            }
-                        }).start();
-                    }
-                }).show();
-
+        //何もしない
     }
 
     private void acquirePlaylistVideos(final String playlistId) {
@@ -301,6 +247,65 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     public void onItemClick(YouTubeVideo video) {
         /*最近見たリスト追加はplaylistselectedでやる！*/
         itemSelected.onPlaylistSelected(playlistDetailList, playlistDetailList.indexOf(video));
+    }
+
+    /*プレイリストから曲を除く*/
+    @Override
+    public void onDeleteClicked(final YouTubeVideo video) {
+         /*削除の確認のダイアログを出す。*/
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
+        dialog.setTitle("削除").setMessage(video.getTitle() + " を\nプレイリスト" + playlist.getTitle() + "から削除しますか？")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                    /*playlistItemId(playlistidとvideoidの両方の情報が入ったid）を取得*/
+                                    YouTube.PlaylistItems.List playlistItemRequest = youTubeWithCredential.playlistItems().list("id,snippet");
+                                    playlistItemRequest.setPlaylistId(playlist.getId());
+                                    playlistItemRequest.setVideoId(video.getId());
+                                    List<PlaylistItem> playlistItemResult = playlistItemRequest.execute().getItems();
+                            /*deleted video の含まれるプレイリストでは、最初のdelete video以下のvideoはpositionが正しく取ってこれない（恐らくAPIバグ）ので、
+                            同じdeleted videoが一つのプレイリストに含まれていた場合削除ができない仕様になってる。*/
+                                    String id = null;
+                                    if (playlistItemResult.size() > 1) {
+                                        for (PlaylistItem p : playlistItemResult) {
+                                            if (p.getSnippet().getPosition() == deleteVideoIndex) {
+                                                id = p.getId();
+                                                break;
+                                            }
+                                        }
+                                    } else {
+                                        id = playlistItemResult.get(0).getId();
+                                    }
+                                    if (id == null || id.isEmpty()) {
+                                        throw new Exception("ID IS EMPTY");
+                                    }
+                                    youTubeWithCredential.playlistItems().delete(id).execute();
+
+                                } catch (Exception e) {
+                                    Log.d(TAG, "PlaylistDetailFragment-onAddClicked-delete-error-:" + e.getMessage());
+                                    mainHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getContext(), "削除に失敗しました。", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                    return;
+                                }
+                                mainHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getContext(), "削除に成功しました。", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                        }).start();
+                    }
+                }).show();
     }
 
     /*viewPager見えるようにし、タッチイベントも復活させる*/

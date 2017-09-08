@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG_NAME,"onCreate()");
+        Log.d(TAG_NAME, "onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -312,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     public void videoCreate() {
-        int MediaStartTime=0;
+        int MediaStartTime = 0;
          /*ネット環境にちゃんとつながってるかチェック*/
         if (!networkConf.isNetworkAvailable()) {
             networkConf.createNetErrorDialog();
@@ -320,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
         /*一つのビデオの再生中にフォアグランド再生→バックグラウンド再生→フォアグランド再生とするとSTART_INITIAL=falseでここまでくる*/
         if ((!START_INITIAL)) {
-            MediaStartTime=mMediaPlayer.getCurrentPosition();
+            MediaStartTime = mMediaPlayer.getCurrentPosition();
         }
         START_INITIAL = false;
         mMediaPlayer.reset();
@@ -334,7 +334,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 if (mAudioMediaPlayer.isPlaying()) {
                     Log.d(TAG_NAME, "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()");
                     Log.d(TAG_NAME, "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()" + mAudioMediaPlayer.getCurrentPosition());
-                    MediaStartTime=mAudioMediaPlayer.getCurrentPosition();
+                    MediaStartTime = mAudioMediaPlayer.getCurrentPosition();
                 }
                 mAudioMediaPlayer.reset();
                 Log.d(TAG_NAME, "videoCreate-1");
@@ -345,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     mTextView.setText(VideoTitle);
                 }
 
-                final int mMediaStartTime=MediaStartTime;
+                final int mMediaStartTime = MediaStartTime;
              /*prepareに時間かかることを想定し直接startせずにLister使う*/
                 mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
@@ -1387,5 +1387,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     public TabLayout getTabLayout() {
         return tabLayout;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mMediaPlayer != null) {
+            mMediaPlayer.release();
+        }
+        if (mAudioMediaPlayer != null) {
+            mAudioMediaPlayer.release();
+        }
     }
 }

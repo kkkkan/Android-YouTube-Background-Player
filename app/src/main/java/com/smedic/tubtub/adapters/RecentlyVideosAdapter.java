@@ -92,7 +92,7 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
             @Override
             public void onClick(View v) {
                 if (itemEventsListener != null) {
-                    ((RecentlyWatchedFragment)itemEventsListener).onDeleteClicked(video);
+                    itemEventsListener.onDeleteClicked(video);
                 }
             }
         });

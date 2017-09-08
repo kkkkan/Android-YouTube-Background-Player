@@ -240,6 +240,11 @@ public class PlaylistsFragment extends BaseFragment implements
         acquirePlaylistVideos(youTubePlaylist.getId());
     }
 
+    @Override
+    public void onDeleteClicked(YouTubeVideo video) {
+        //何もしない
+    }
+
     public void onDeleteClicked(final YouTubePlaylist playlist){
          /*削除の確認のダイアログを出す。*/
         AlertDialog.Builder dialog=new AlertDialog.Builder(getContext());

@@ -89,7 +89,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
             public void onClick(View view) {
                 if (itemEventsListener != null) {
                     ((PlaylistDetailFragment) itemEventsListener).setDeleteVideoIndex(position);
-                    itemEventsListener.onAddClicked(video);
+                    itemEventsListener.onDeleteClicked(video);
                 }
             }
         });
