@@ -1,5 +1,6 @@
 package com.smedic.tubtub.interfaces;
 
+import com.smedic.tubtub.model.YouTubePlaylist;
 import com.smedic.tubtub.model.YouTubeVideo;
 
 /**
@@ -16,5 +17,7 @@ public interface ItemEventsListener<Model> {
     void onItemClick(Model model); //handle click on a row (video or playlist)
 
     void onDeleteClicked(YouTubeVideo video);
+
+    void onDeleteClicked(YouTubePlaylist playlist);
 
 }

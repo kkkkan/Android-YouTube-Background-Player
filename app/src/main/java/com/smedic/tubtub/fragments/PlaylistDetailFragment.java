@@ -308,6 +308,11 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                 }).show();
     }
 
+    @Override
+    public void onDeleteClicked(YouTubePlaylist playlist) {
+
+    }
+
     /*viewPager見えるようにし、タッチイベントも復活させる*/
     public void onDestroy() {
         super.onDestroy();

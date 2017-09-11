@@ -80,7 +80,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             @Override
             public void onClick(View v) {
                 if (itemEventsListener != null) {
-                    ((PlaylistsFragment)itemEventsListener).onDeleteClicked(playlist);
+                    itemEventsListener.onDeleteClicked(playlist);
                 }
             }
         });

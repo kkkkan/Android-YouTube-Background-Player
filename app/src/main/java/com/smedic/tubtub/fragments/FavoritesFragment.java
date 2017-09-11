@@ -31,6 +31,7 @@ import com.smedic.tubtub.adapters.VideosAdapter;
 import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.interfaces.OnItemSelected;
+import com.smedic.tubtub.model.YouTubePlaylist;
 import com.smedic.tubtub.model.YouTubeVideo;
 import com.smedic.tubtub.utils.Config;
 
@@ -165,6 +166,11 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
 
     @Override
     public void onDeleteClicked(YouTubeVideo video) {
+
+    }
+
+    @Override
+    public void onDeleteClicked(YouTubePlaylist playlist) {
 
     }
 }

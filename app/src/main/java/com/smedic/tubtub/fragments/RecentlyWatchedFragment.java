@@ -37,6 +37,7 @@ import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.interfaces.OnFavoritesSelected;
 import com.smedic.tubtub.interfaces.OnItemSelected;
+import com.smedic.tubtub.model.YouTubePlaylist;
 import com.smedic.tubtub.model.YouTubeVideo;
 import com.smedic.tubtub.utils.Config;
 
@@ -195,6 +196,11 @@ public class RecentlyWatchedFragment extends BaseFragment implements
                         }).start();
                     }
                 }).show();
+    }
+
+    @Override
+    public void onDeleteClicked(YouTubePlaylist playlist) {
+
     }
 }
 
