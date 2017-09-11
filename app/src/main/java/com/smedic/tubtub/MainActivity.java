@@ -167,13 +167,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     /*フラグたち*/
     /*他のアプリがフォアグランドに来たときのみtrue
-    * surfaceDestroy()でtrueにする。onResumeでfalseにする。*/
-    private boolean HOME_BUTTON_PAUSE = false;
+    * surfaceDestroy()でtrueにする。onSurfaceCreate()でfalseにする。*/
+    private boolean SURFACE_IS_EMPTY = false;
     /*フォアグランド再生から他のアプリがフォアグランドに来る時にmMadiaplayer.setOnCompleteListner()が2回呼ばれるので、その時にインクリメント。
-    *onResume()で0にセット*/
+    *onResume()で0にセット->意味的にはonSurfaceCreate()で0にする方が正しいがintに入りきらなくなるのを防ぐためonResume()で0にする。*/
     private int COMPLETION_COUNT = 0;
     /*ビデオの頭から再生を開始するか否かのフラグ。
-    * surfaceCreated()でfalse
+    * videoCreate()でfalse
     * mMediaController.setPrevNextListners()/onPlaylistSelected()/mAudioMediaPlayer.setOnCompleteListner()<再生中のリストに次の曲がないなら>/mMediaplayer.setOnCompleteListener()<再生中のリストに次の曲がないなら>でtrue*/
     private boolean START_INITIAL = true;
 
@@ -273,8 +273,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         // allow to continue playing media in the background.
         // バックグラウンド再生を許可する
         requestVisibleBehind(true);
-        //HOME_BUTTON_PAUSEをfalse,COMPLETION_COUNTを0に
-        HOME_BUTTON_PAUSE = false;
+        //SURFACE_IS_EMPTYをfalse,COMPLETION_COUNTを0に
         COMPLETION_COUNT = 0;
     }
 
@@ -308,6 +307,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
         Log.d(TAG_NAME, "surfaceCreated");
         Log.d(TAG_NAME, "START_INITIAL:" + String.valueOf(START_INITIAL) + "\nmMediaplayer.isPlying:" + String.valueOf(mMediaPlayer.isPlaying()));
+        SURFACE_IS_EMPTY = false;
         videoCreate();
     }
 
@@ -422,7 +422,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void surfaceDestroyed(SurfaceHolder paramSurfaceHolder) {
         Log.d(TAG_NAME, "surfaceDestroyed");
-        HOME_BUTTON_PAUSE = true;
+        SURFACE_IS_EMPTY = true;
     }
 
     // ここから先はMediaController向け --------------------------
@@ -761,9 +761,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     videoUrl = videoDownloadUrl;
                     audioUrl = audioDownloadUrl;
                     VideoTitle = video.getTitle();
-                    START_INITIAL = true;
                             /*バックグランド再生以外の時は動画画面付きで再生*/
-                    if (!HOME_BUTTON_PAUSE) {
+                    if (!SURFACE_IS_EMPTY) {
                         Log.d(TAG_NAME, "mMediaPlayer.isPlaying:" + String.valueOf(mMediaPlayer.isPlaying()));
                                 /*Progressダイアログ消すのはvideoCreate()のなかでやってる。*/
                         videoCreate();
@@ -810,7 +809,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 if (currentSongIndex + 1 < playList.size()) {
                     Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
                     /*ホームボタンを押すと最初に2回無条件にmediaPlayer.oncompletion呼ばれる。そのための対策*/
-                    if (HOME_BUTTON_PAUSE) {
+                    if (SURFACE_IS_EMPTY) {
                         /*COMPLETION_COUNTが0～2の時は増やす必要があるがその後は変化させる必要がない。*/
                         if (COMPLETION_COUNT < 2) {
                             ++COMPLETION_COUNT;
