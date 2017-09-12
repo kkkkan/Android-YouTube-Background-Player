@@ -32,7 +32,7 @@ import static com.smedic.tubtub.youtube.YouTubeSingleton.getInstance;
 public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVideo>> {
 
     private final static String TAG = "SMEDIC";
-    private final static String TAG_NAME="kandabashi-YouTubePlaylistVideosLoader";
+    private final static String TAG_NAME="YouTubePlaylistVideosLoader";
     private YouTube youtube = getInstance().getYouTubeWithCredentials();//getYouTube();
     private String playlistId;
 

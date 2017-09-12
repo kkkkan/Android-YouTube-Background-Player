@@ -19,8 +19,11 @@ import android.Manifest;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -29,6 +32,9 @@ import android.database.MatrixCursor;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.RemoteControlClient;
+import android.media.session.MediaSession;
+import android.media.session.MediaSessionManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -43,6 +49,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
@@ -65,6 +73,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.MediaController;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -97,6 +106,7 @@ import com.smedic.tubtub.model.YouTubeVideo;
 import com.smedic.tubtub.utils.Config;
 import com.smedic.tubtub.utils.NetworkConf;
 import com.smedic.tubtub.youtube.SuggestionsLoader;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -159,6 +169,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private AlertDialog.Builder mListDlg;
     private AlertDialog.Builder mTitleDlg;
     private ProgressDialog mProgressDialog;
+    private NotificationCompat.Builder mNotificationCompatBuilder;
+    private NotificationManagerCompat mNotificationManagerCompat;
 
 
     /*動画タイトル用*/
@@ -170,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     * surfaceDestroy()でtrueにする。onSurfaceCreate()でfalseにする。*/
     private boolean SURFACE_IS_EMPTY = false;
     /*フォアグランド再生から他のアプリがフォアグランドに来る時にmMadiaplayer.setOnCompleteListner()が2回呼ばれるので、その時にインクリメント。
-    *onResume()で0にセット->意味的にはonSurfaceCreate()で0にする方が正しいがintに入りきらなくなるのを防ぐためonResume()で0にする。*/
+    *SurfaceDestroy()で0にセット。*/
     private int COMPLETION_COUNT = 0;
     /*ビデオの頭から再生を開始するか否かのフラグ。
     * videoCreate()でfalse
@@ -209,10 +221,20 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mMediaPlayer = new MediaPlayer();
         mAudioMediaPlayer = new MediaPlayer();
         // MediaControllerを利用する
+
         mMediaController = new MediaController(this);
         mMediaController.setMediaPlayer(this);
         mMediaController.setAnchorView(mPreview);
 
+
+        /*通知欄・ロック画面で今再生中のビデオの情報を見れるよう,に、通知タップでアプリに行けるようにします。*/
+        mNotificationCompatBuilder=new NotificationCompat.Builder(getApplicationContext());
+        mNotificationCompatBuilder.setSmallIcon(R.mipmap.youtube_icon);
+       // mNotificationCompatBuilder.setIcon(R.mipmap.ic_play_circle_outline_black_24dp);
+        mNotificationManagerCompat=NotificationManagerCompat.from(this);
+        Intent intent=new Intent(this,MainActivity.class);
+        PendingIntent pendingIntent=PendingIntent.getActivity(this,0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+        mNotificationCompatBuilder.setContentIntent(pendingIntent);
 
 
         /*mMediaController表示のためのtouchlistener*/
@@ -273,8 +295,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         // allow to continue playing media in the background.
         // バックグラウンド再生を許可する
         requestVisibleBehind(true);
-        //SURFACE_IS_EMPTYをfalse,COMPLETION_COUNTを0に
-        COMPLETION_COUNT = 0;
     }
 
     @Override
@@ -422,6 +442,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void surfaceDestroyed(SurfaceHolder paramSurfaceHolder) {
         Log.d(TAG_NAME, "surfaceDestroyed");
+        //SURFACE_IS_EMPTYをfalse,COMPLETION_COUNTを0に
+        COMPLETION_COUNT = 0;
         SURFACE_IS_EMPTY = true;
     }
 
@@ -761,6 +783,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     videoUrl = videoDownloadUrl;
                     audioUrl = audioDownloadUrl;
                     VideoTitle = video.getTitle();
+
+                    mNotificationCompatBuilder.setContentTitle(VideoTitle);
+                    mNotificationCompatBuilder.setContentText(video.getDuration());
+                    //Picasso.with(mainContext).load(video.getThumbnailURL()).into(mNotificationCompatBuilder.getContentView(),0,0,mNotificationCompatBuilder.build());
+                    mNotificationManagerCompat.notify(0,mNotificationCompatBuilder.build());
+
                             /*バックグランド再生以外の時は動画画面付きで再生*/
                     if (!SURFACE_IS_EMPTY) {
                         Log.d(TAG_NAME, "mMediaPlayer.isPlaying:" + String.valueOf(mMediaPlayer.isPlaying()));
