@@ -29,6 +29,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.MatrixCursor;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -91,6 +92,9 @@ import com.google.api.services.youtube.model.PlaylistItemSnippet;
 import com.google.api.services.youtube.model.PlaylistSnippet;
 import com.google.api.services.youtube.model.PlaylistStatus;
 import com.google.api.services.youtube.model.ResourceId;
+import com.smedic.tubtub.BroadcastReceiver.NextReceiver;
+import com.smedic.tubtub.BroadcastReceiver.PauseStartReceiver;
+import com.smedic.tubtub.BroadcastReceiver.PrevReceiver;
 import com.smedic.tubtub.adapters.PlaylistsAdapter;
 import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.fragments.FavoritesFragment;
@@ -109,6 +113,7 @@ import com.smedic.tubtub.youtube.SuggestionsLoader;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -171,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private ProgressDialog mProgressDialog;
     private NotificationCompat.Builder mNotificationCompatBuilder;
     private NotificationManagerCompat mNotificationManagerCompat;
+    private RemoteViews mRemoteViews;
 
 
     /*動画タイトル用*/
@@ -221,20 +227,48 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mMediaPlayer = new MediaPlayer();
         mAudioMediaPlayer = new MediaPlayer();
         // MediaControllerを利用する
-
         mMediaController = new MediaController(this);
         mMediaController.setMediaPlayer(this);
         mMediaController.setAnchorView(mPreview);
 
+        /*
+        *Notificationの設定
+        */
 
         /*通知欄・ロック画面で今再生中のビデオの情報を見れるよう,に、通知タップでアプリに行けるようにします。*/
-        mNotificationCompatBuilder=new NotificationCompat.Builder(getApplicationContext());
-        mNotificationCompatBuilder.setSmallIcon(R.mipmap.youtube_icon);
-       // mNotificationCompatBuilder.setIcon(R.mipmap.ic_play_circle_outline_black_24dp);
-        mNotificationManagerCompat=NotificationManagerCompat.from(this);
+        mRemoteViews=new RemoteViews(getApplicationContext().getPackageName(),R.layout.notification_layout);
+
+        /*サムネイルタッチでアプリに飛ぶ*/
         Intent intent=new Intent(this,MainActivity.class);
         PendingIntent pendingIntent=PendingIntent.getActivity(this,0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
-        mNotificationCompatBuilder.setContentIntent(pendingIntent);
+        mRemoteViews.setOnClickPendingIntent(R.id.video_thumbnail,pendingIntent);
+
+        /*pause_startタッチでpause/start*/
+        intent=new Intent(this, PauseStartReceiver.class);
+        pendingIntent=PendingIntent.getBroadcast(this,1,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+        mRemoteViews.setOnClickPendingIntent(R.id.pause_start,pendingIntent);
+        mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_pause_black_24dp);
+
+        /*prevタッチで前のビデオに行く*/
+        intent=new Intent(this, PrevReceiver.class);
+        pendingIntent=PendingIntent.getBroadcast(this,2,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+        mRemoteViews.setOnClickPendingIntent(R.id.pause_start,pendingIntent);
+
+         /*nextタッチで次のビデオに行く*/
+        intent=new Intent(this, NextReceiver.class);
+        pendingIntent=PendingIntent.getBroadcast(this,3,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+        mRemoteViews.setOnClickPendingIntent(R.id.next,pendingIntent);
+
+        mRemoteViews.setTextColor(R.id.title_view,Color.BLACK);
+        mRemoteViews.setTextColor(R.id.video_duration,Color.BLACK);
+
+
+        mNotificationCompatBuilder=new NotificationCompat.Builder(getApplicationContext());
+        mNotificationCompatBuilder.setCustomContentView(mRemoteViews);
+        mNotificationCompatBuilder.setSmallIcon(R.mipmap.youtube_icon);
+        //mNotificationCompatBuilder.setContentIntent(null);
+        mNotificationManagerCompat=NotificationManagerCompat.from(this);
+
 
 
         /*mMediaController表示のためのtouchlistener*/
@@ -713,6 +747,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         /*読み込み中ダイアログ表示*/
         setProgressDialogShow();
 
+
         /*ネット環境にちゃんとつながってるかチェック*/
         if (!networkConf.isNetworkAvailable()) {
             networkConf.createNetErrorDialog();
@@ -784,9 +819,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     audioUrl = audioDownloadUrl;
                     VideoTitle = video.getTitle();
 
-                    mNotificationCompatBuilder.setContentTitle(VideoTitle);
-                    mNotificationCompatBuilder.setContentText(video.getDuration());
-                    //Picasso.with(mainContext).load(video.getThumbnailURL()).into(mNotificationCompatBuilder.getContentView(),0,0,mNotificationCompatBuilder.build());
+                    /*Notificationの設定*/
+                    /*サムネイルの設定*/
+                    Picasso.with(mainContext).load(video.getThumbnailURL()).into(mRemoteViews,R.id.video_thumbnail,0,mNotificationCompatBuilder.build());
+
+                    mRemoteViews.setTextViewText(R.id.title_view,VideoTitle);
+                    mRemoteViews.setTextViewText(R.id.video_duration,video.getDuration());
                     mNotificationManagerCompat.notify(0,mNotificationCompatBuilder.build());
 
                             /*バックグランド再生以外の時は動画画面付きで再生*/
