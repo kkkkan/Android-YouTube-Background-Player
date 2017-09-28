@@ -24,7 +24,7 @@
         <receiver android:name=".BroadcastReceiver.PauseStartReceiver"/>
         <receiver android:name=".BroadcastReceiver.PrevReceiver"/>
         <activity
-            android:name=".mMainActivity"
+            android:name=".MainActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait">
             <meta-data
