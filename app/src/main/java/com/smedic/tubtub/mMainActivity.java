@@ -23,25 +23,17 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
-import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.MatrixCursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.graphics.drawable.Icon;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.RemoteControlClient;
-import android.media.session.MediaSession;
-import android.media.session.MediaSessionManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -119,9 +111,6 @@ import com.smedic.tubtub.youtube.SuggestionsLoader;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -132,7 +121,6 @@ import at.huber.youtubeExtractor.YtFile;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
-import static android.graphics.drawable.Icon.createWithContentUri;
 import static com.smedic.tubtub.R.layout.suggestions;
 import static com.smedic.tubtub.youtube.YouTubeSingleton.getCredential;
 import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentials;
@@ -140,7 +128,7 @@ import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentia
 /**
  * Activity that manages fragments and action bar
  */
-public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
+public class mMainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
         OnItemSelected, OnFavoritesSelected, SurfaceHolder.Callback, MediaController.MediaPlayerControl, PlaylistsAdapter.OnDetailClickListener {
     public static Handler mainHandler = new Handler();
 
@@ -174,11 +162,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
     private String videoUrl;
-    private String audioUrl;
     private SurfaceHolder mHolder;
     private SurfaceView mPreview;
     private MediaPlayer mMediaPlayer = null;
-    private MediaPlayer mAudioMediaPlayer = null;
     private MediaController mMediaController;
     private AlertDialog.Builder mListDlg;
     private AlertDialog.Builder mTitleDlg;
@@ -198,12 +184,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
     /*フラグたち*/
-    /*他のアプリがフォアグランドに来たときのみtrue
-    * surfaceDestroy()でtrueにする。onSurfaceCreate()でfalseにする。*/
-    private boolean SURFACE_IS_EMPTY = false;
-    /*フォアグランド再生から他のアプリがフォアグランドに来る時にmMadiaplayer.setOnCompleteListner()が2回呼ばれるので、その時にインクリメント。
-    *SurfaceDestroy()で0にセット。*/
-    private int COMPLETION_COUNT = 0;
     /*ビデオの頭から再生を開始するか否かのフラグ。
     * videoCreate()でfalse
     * mMediaController.setPrevNextListners()/onPlaylistSelected()/mAudioMediaPlayer.setOnCompleteListner()<再生中のリストに次の曲がないなら>/mMediaplayer.setOnCompleteListener()<再生中のリストに次の曲がないなら>でtrue*/
@@ -239,7 +219,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         // MediaPlayerを利用する
         mMediaPlayer = new MediaPlayer();
-        mAudioMediaPlayer = new MediaPlayer();
 
         // MediaControllerを利用する
         mMediaController = new MediaController(this);
@@ -264,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
         /*サムネイルタッチでアプリに飛ぶ*/
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, mMainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mRemoteViews.setOnClickPendingIntent(R.id.video_thumbnail, pendingIntent);
 
@@ -373,17 +352,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
          /*currentSongIndexとplayListがいるため毎回ここでセットするのが時間はかかるが簡単*/
          /*homeボタンによるバックグラウンド再生中、再生中の曲が終わったときに次の曲に行くためのリスナー*/
-        mAudioMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                if (currentVideoIndex + 1 < playlist.size()) {
-                    Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
-                    onPlaylistSelected(playlist, (currentVideoIndex + 1));
-                } else {
-                    START_INITIAL = true;
-                }
-            }
-        });
+
 
 
      /*終了後次の曲に行くためのリスナー*/
@@ -466,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
         Log.d(TAG_NAME, "surfaceCreated");
         Log.d(TAG_NAME, "START_INITIAL:" + String.valueOf(START_INITIAL) + "\nmMediaplayer.isPlying:" + String.valueOf(mMediaPlayer.isPlaying()));
-        SURFACE_IS_EMPTY = false;
+        mHolder=mPreview.getHolder();
         videoCreate();
     }
 
@@ -490,12 +459,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             try {
                 /*音声だけ再生が動いてるときはまずそれを止める。→2重再生を防ぐため*/
                 /*ホームボタン→画面off→画面on→アプリに戻るをしたときにここに制御が来る。*/
-                if (mAudioMediaPlayer.isPlaying()) {
+                if (mMediaPlayer.isPlaying()) {
                     Log.d(TAG_NAME, "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()");
-                    Log.d(TAG_NAME, "mAudioMediaPlayer.isPlaying-mAudioMediaPlayer.getCurrentPosition()" + mAudioMediaPlayer.getCurrentPosition());
-                    MediaStartTime = mAudioMediaPlayer.getCurrentPosition();
+                    MediaStartTime = mMediaPlayer.getCurrentPosition();
                 }
-                mAudioMediaPlayer.reset();
+                mMediaPlayer.reset();
                 Log.d(TAG_NAME, "videoCreate-1");
                 mMediaPlayer.setDataSource(this, mediaPath);
                 mMediaPlayer.setDisplay(mHolder);
@@ -532,44 +500,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     }
 
-    /*Homeボタンでバックグラウンド再生の時に使う音声だけのメディアプレイヤーにvideoのurlをセットしたりstart()したりする関数*/
-    public void audioCreate() {
-        Log.d(TAG_NAME, "audioCreate");
-        /*ネット環境にちゃんとつながってるかチェック*/
-        if (!networkConf.isNetworkAvailable()) {
-            networkConf.createNetErrorDialog();
-            return;
-        }
-        mMediaPlayer.reset();
-        mAudioMediaPlayer.reset();
-        if (audioUrl != null) {
-            try {
-                Uri mediaPath = Uri.parse(audioUrl);
-                mAudioMediaPlayer.setDataSource(this, mediaPath);
-                Log.d(TAG_NAME, "audioCreate-1");
-                mAudioMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-             /*prepareに時間かかることを想定し直接startせずにLister使う*/
-                mAudioMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-                        Log.d(TAG_NAME, "onPrepared");
-                        mp.start();
-                    }
-                });
-                mAudioMediaPlayer.prepareAsync();
-            } catch (IllegalArgumentException e) {
-                Log.d(TAG_NAME, "audioCreate-IllegalArgumentException:" + e.getMessage());
-                e.printStackTrace();
-            } catch (IllegalStateException e) {
-                Log.d(TAG_NAME, "audioCreate-IllegalStateException:" + e.getMessage());
-                e.printStackTrace();
-            } catch (IOException e) {
-                Log.d(TAG_NAME, "audioCreate-IOException:" + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-
-    }
 
 
     @Override
@@ -582,8 +512,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void surfaceDestroyed(SurfaceHolder paramSurfaceHolder) {
         Log.d(TAG_NAME, "surfaceDestroyed");
         //SURFACE_IS_EMPTYをfalse,COMPLETION_COUNTを0に
-        COMPLETION_COUNT = 0;
-        SURFACE_IS_EMPTY = true;
+        mHolder=null;
         mMediaPlayer.setDisplay(null);
     }
 
@@ -723,7 +652,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 * youtube.upload:YouTube の動画のアップロード、YouTube の動画の管理
                                 * youtubepartner-channel-audio:channel リソース内の auditDetails のリトリーブ*/
                                 token = GoogleAuthUtil.getToken(
-                                        MainActivity.this,
+                                        mMainActivity.this,
                                         getCredential().getSelectedAccountName(),
                                         "oauth2:" + " " + "https://www.googleapis.com/auth/youtube" + " " + "https://www.googleapis.com/auth/youtube.readonly" + " " + "https://www.googleapis.com/auth/youtube.upload" + " " + "https://www.googleapis.com/auth/youtubepartner-channel-audit");
                                 mainHandler.post(new Runnable() {
@@ -879,7 +808,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 if (ytFiles == null) {
                     Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
                     setProgressDialogDismiss();
-                    onPlaylistSelected(MainActivity.this.playlist, (currentVideoIndex + 1) % MainActivity.this.playlist.size());
+                    onPlaylistSelected(mMainActivity.this.playlist, (currentVideoIndex + 1) % mMainActivity.this.playlist.size());
                     return;
                 }
                     /*Videoでは形式を変えて360p（ノーマル画質）で試す。アプリを軽くするため高画質は非対応にした。これ以上落とすと音声が含まれなくなっちゃう。*/
@@ -887,47 +816,27 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                      * 134:DASH/MP4/360p
                      * 243:DASH/WebM/360p*/
                 int[] itagVideo = {18, 134, 243};
-
-
-                    /*251:DASH/WebM/Opus/160kbit/s
-                    * 141:
-                    * 140:DASH/M4A/AAC
-                    * 17:Non-DASH/3GP/144p
-                    * 171:DASH/WebM/Vorbis*/
-                    /*基本は251で再生できているが新しいのは17になることが多い？*/
-                int[] itagAudio = {251, 141, 140, 17, 171};
-
-
                 int tagVideo = 0;
-                int tagAudio = 0;
+
                 for (int i : itagVideo) {
                     if (ytFiles.get(i) != null) {
                         tagVideo = i;
                         break;
                     }
                 }
-                for (int i : itagAudio) {
-                    if (ytFiles.get(i) != null) {
-                        tagAudio = i;
-                        break;
-                    }
-                }
 
 
-                Log.d(TAG_NAME, "video name:" + video.getTitle() + "\ntagVideo" + String.valueOf(tagVideo) + "\ntagAudio:" + String.valueOf(tagAudio));
-                if (tagVideo != 0 && tagAudio != 0) {
+                Log.d(TAG_NAME, "video name:" + video.getTitle() + "\ntagVideo" + String.valueOf(tagVideo) );
+                if (tagVideo != 0) {
 
                         /*最近見たリストに追加*/
                     YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
 
                     String videoDownloadUrl = ytFiles.get(tagVideo).getUrl();
-                    String audioDownloadUrl = ytFiles.get(tagAudio).getUrl();
                     Log.d(TAG_NAME, "VideoURL:" + videoDownloadUrl);
-                    Log.d(TAG_NAME, "audioURL:" + audioDownloadUrl);
                     /*resetとかここでやらないとダメ（非同期処理だから外でやると追いつかない）*/
                     /*ポーズから戻ったときのためMovieUrlも変えとく*/
                     videoUrl = videoDownloadUrl;
-                    audioUrl = audioDownloadUrl;
                     VideoTitle = video.getTitle();
 
                     /*サムネイルの設定*/
@@ -940,20 +849,17 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     mNotificationManagerCompat.notify(0, notification);
 
                     /*バックグランド再生以外の時は動画画面付きで再生*/
-                    if (!SURFACE_IS_EMPTY) {
+
                         Log.d(TAG_NAME, "mMediaPlayer.isPlaying:" + String.valueOf(mMediaPlayer.isPlaying()));
                                 /*Progressダイアログ消すのはvideoCreate()のなかでやってる。*/
                         videoCreate();
-                    } else {
-                                /*バックグラウンド再生の時は音だけの再生*/
-                        setProgressDialogDismiss();
-                        audioCreate();
-                    }
-                } else if (currentVideoIndex + 1 < MainActivity.this.playlist.size()) {
+
+
+                } else if (currentVideoIndex + 1 < mMainActivity.this.playlist.size()) {
                     Log.d(TAG_NAME, "ytFile-null-next:" + video.getId());
                     Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
                     setProgressDialogDismiss();
-                    onPlaylistSelected(MainActivity.this.playlist, (currentVideoIndex + 1) % MainActivity.this.playlist.size());
+                    onPlaylistSelected(mMainActivity.this.playlist, (currentVideoIndex + 1) % mMainActivity.this.playlist.size());
                 } else {
                     //最後の曲のときはprogressbarを消すだけ。
                     setProgressDialogDismiss();
@@ -1375,7 +1281,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_about) {
 
-            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+            AlertDialog alertDialog = new AlertDialog.Builder(mMainActivity.this).create();
             alertDialog.setTitle(getString(R.string.myName));
             alertDialog.setIcon(R.mipmap.ic_launcher);
 
@@ -1509,9 +1415,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         if (mMediaPlayer != null) {
             mMediaPlayer.release();
         }
-        if (mAudioMediaPlayer != null) {
-            mAudioMediaPlayer.release();
-        }
     }
 
 
@@ -1519,18 +1422,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG,"pauseStartBroadcastReceiver");
-            if(!mMediaPlayer.isPlaying()&&!mAudioMediaPlayer.isPlaying()){
+            if(!mMediaPlayer.isPlaying()){
                 mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_pause_black_24dp);
                 mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
                 mMediaPlayer.start();
             }else{
                 mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_play_arrow_black_24dp);
                 mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
-                if(mMediaPlayer.isPlaying()){
                     mMediaPlayer.pause();
-                }else{
-                    mAudioMediaPlayer.pause();
-                }
             }
 
 
