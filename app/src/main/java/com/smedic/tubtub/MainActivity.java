@@ -245,6 +245,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mMediaController = new MediaController(this);
         mMediaController.setMediaPlayer(this);
         mMediaController.setAnchorView(mPreview);
+        /*mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                mAudioMediaPlayer.start();
+                return true;
+            }
+        });*/
 
         /*
         *Notificationの設定
@@ -582,11 +589,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void start() {
         mMediaPlayer.start();
+        mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_pause_black_24dp);
+        mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
     }
 
     @Override
     public void pause() {
         mMediaPlayer.pause();
+        mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_play_arrow_black_24dp);
+        mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
     }
 
     @Override
@@ -851,9 +862,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             return;
         }
 
-        final List<YouTubeVideo> playList = playlist;
+        //final List<YouTubeVideo> playList = playlist;
         final YouTubeVideo video = playlist.get(position);
-        final int currentSongIndex = position;
+        //final int currentSongIndex = position;
 
 
         START_INITIAL = true;
@@ -865,7 +876,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 if (ytFiles == null) {
                     Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
                     setProgressDialogDismiss();
-                    onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
+                    onPlaylistSelected(MainActivity.this.playlist, (currentVideoIndex + 1) % MainActivity.this.playlist.size());
                     return;
                 }
                     /*Videoでは形式を変えて360p（ノーマル画質）で試す。アプリを軽くするため高画質は非対応にした。これ以上落とすと音声が含まれなくなっちゃう。*/
@@ -922,6 +933,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                     mRemoteViews.setTextViewText(R.id.title_view, VideoTitle);
                     mRemoteViews.setTextViewText(R.id.video_duration, video.getDuration());
+                    mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_pause_black_24dp);
                     mNotificationManagerCompat.notify(0, notification);
 
                             /*バックグランド再生以外の時は動画画面付きで再生*/
@@ -934,11 +946,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         setProgressDialogDismiss();
                         audioCreate();
                     }
-                } else if (currentSongIndex + 1 < playList.size()) {
+                } else if (currentVideoIndex + 1 < MainActivity.this.playlist.size()) {
                     Log.d(TAG_NAME, "ytFile-null-next:" + video.getId());
                     Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
                     setProgressDialogDismiss();
-                    onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
+                    onPlaylistSelected(MainActivity.this.playlist, (currentVideoIndex + 1) % MainActivity.this.playlist.size());
                 } else {
                     //最後の曲のときはprogressbarを消すだけ。
                     setProgressDialogDismiss();
@@ -1504,9 +1516,24 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG,"pauseStartBroadcastReceiver");
+            if(!mMediaPlayer.isPlaying()&&!mAudioMediaPlayer.isPlaying()){
+                mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_pause_black_24dp);
+                mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
+                mMediaPlayer.start();
+            }else{
+                mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_play_arrow_black_24dp);
+                mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
+                if(mMediaPlayer.isPlaying()){
+                    mMediaPlayer.pause();
+                }else{
+                    mAudioMediaPlayer.pause();
+                }
+            }
+
 
         }
     };
+
 
     private BroadcastReceiver prevBroadcastReceiver=new BroadcastReceiver() {
 
