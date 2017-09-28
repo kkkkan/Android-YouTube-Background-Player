@@ -182,13 +182,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private int currentVideoIndex;
 
 
-    /*フラグたち*/
-    /*ビデオの頭から再生を開始するか否かのフラグ。
-    * videoCreate()でfalse
-    * mMediaController.setPrevNextListners()/onPlaylistSelected()<再生中のリストに次の曲がないなら>/mMediaplayer.setOnCompleteListener()<再生中のリストに次の曲がないなら>でtrue*/
-    private boolean START_INITIAL = true;
-
-
     private int[] tabIcons = {
             R.drawable.ic_action_heart,
             R.drawable.ic_recently_wached,
@@ -228,8 +221,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             public boolean onError(MediaPlayer mp, int what, int extra) {
                 //idel状態でstart()等を呼ぶと
                 //通常は起きない
-                Log.d(TAG_NAME,"onError:\nwhat:"+String.valueOf(what)
-                +"\n extra:"+String.valueOf(extra));
+                Log.d(TAG_NAME, "onError:\nwhat:" + String.valueOf(what)
+                        + "\n extra:" + String.valueOf(extra));
                 return false;//setOnComplateListener呼ぶ
             }
         });
@@ -335,19 +328,19 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         requestVisibleBehind(true);
 
         //PauseStartReceiverからのブロードキャスト受け取れるように
-        IntentFilter intentFilter=new IntentFilter();
+        IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(PauseStartReceiver.ACTION);
-        registerReceiver(pauseStartBroadcastReceiver,intentFilter);
+        registerReceiver(pauseStartBroadcastReceiver, intentFilter);
 
         //PrevReceiverからのブロードキャスト受け取れるように
-        intentFilter=new IntentFilter();
+        intentFilter = new IntentFilter();
         intentFilter.addAction(PrevReceiver.ACTION);
-        registerReceiver(prevBroadcastReceiver,intentFilter);
+        registerReceiver(prevBroadcastReceiver, intentFilter);
 
         //NextReceiverからのブロードキャスト受け取れるように
-        intentFilter=new IntentFilter();
+        intentFilter = new IntentFilter();
         intentFilter.addAction(NextReceiver.ACTION);
-        registerReceiver(nextBroadcastReceiver,intentFilter);
+        registerReceiver(nextBroadcastReceiver, intentFilter);
 
 
 
@@ -358,9 +351,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 if (currentVideoIndex + 1 < playlist.size()) {
                     Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
                     onPlaylistSelected(playlist, (currentVideoIndex + 1));
-                } else {
-                    //最後のビデオだったとき
-                    START_INITIAL = true;
                 }
             }
         });
@@ -420,8 +410,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
         Log.d(TAG_NAME, "surfaceCreated");
-        Log.d(TAG_NAME, "START_INITIAL:" + String.valueOf(START_INITIAL) + "\nmMediaplayer.isPlying:" + String.valueOf(mMediaPlayer.isPlaying()));
-        mHolder=mPreview.getHolder();
+        mHolder = mPreview.getHolder();
         videoCreate();
     }
 
@@ -432,19 +421,18 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             networkConf.createNetErrorDialog();
             return;
         }
-        /*一つのビデオの再生中にフォアグランド再生→バックグラウンド再生→フォアグランド再生とするとSTART_INITIAL=falseでここまでくる*/
-        if ((!START_INITIAL)) {
-            MediaStartTime = mMediaPlayer.getCurrentPosition();
+        if (mMediaPlayer.isPlaying()) {
+            mMediaPlayer.setDisplay(mHolder);
+            /*読み込み中ダイアログ消す*/
+            setProgressDialogDismiss();
+            return;
         }
-        START_INITIAL = false;
-        mMediaPlayer.reset();
         /*mediaplayer関係*/
         // URLの先にある動画を再生する
         if (videoUrl != null) {
             Uri mediaPath = Uri.parse(videoUrl);
             try {
-                /*音声だけ再生が動いてるときはまずそれを止める。→2重再生を防ぐため*/
-                /*ホームボタン→画面off→画面on→アプリに戻るをしたときにここに制御が来る。*/
+                //今ビデオ再生途中の時
                 if (mMediaPlayer.isPlaying()) {
                     MediaStartTime = mMediaPlayer.getCurrentPosition();
                 }
@@ -486,7 +474,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
 
-
     @Override
     public void surfaceChanged(SurfaceHolder paramSurfaceHolder, int paramInt1,
                                int paramInt2, int paramInt3) {
@@ -497,7 +484,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void surfaceDestroyed(SurfaceHolder paramSurfaceHolder) {
         Log.d(TAG_NAME, "surfaceDestroyed");
         //SURFACE_IS_EMPTYをfalse,COMPLETION_COUNTを0に
-        mHolder=null;
+        mHolder = null;
         mMediaPlayer.setDisplay(null);
     }
 
@@ -506,14 +493,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void start() {
         mMediaPlayer.start();
-        mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_pause_black_24dp);
+        mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
         mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
     }
 
     @Override
     public void pause() {
         mMediaPlayer.pause();
-        mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_play_arrow_black_24dp);
+        mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
         mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
     }
 
@@ -770,8 +757,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Log.d(TAG_NAME, "onPlaylistSelected");
         /*読み込み中ダイアログ表示*/
         setProgressDialogShow();
-        this.playlist=playlist;
-        this.currentVideoIndex=position;
+        this.playlist = playlist;
+        this.currentVideoIndex = position;
 
         /*ネット環境にちゃんとつながってるかチェック*/
         if (!networkConf.isNetworkAvailable()) {
@@ -781,8 +768,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         final YouTubeVideo video = playlist.get(position);
 
-
-        START_INITIAL = true;
         String youtubeLink = Config.YOUTUBE_BASE_URL + video.getId();
         new YouTubeExtractor(this) {
             @Override
@@ -809,7 +794,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 }
 
 
-                Log.d(TAG_NAME, "video name:" + video.getTitle() + "\ntagVideo" + String.valueOf(tagVideo) );
+                Log.d(TAG_NAME, "video name:" + video.getTitle() + "\ntagVideo" + String.valueOf(tagVideo));
                 if (tagVideo != 0) {
 
                         /*最近見たリストに追加*/
@@ -828,14 +813,17 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                     mRemoteViews.setTextViewText(R.id.title_view, VideoTitle);
                     mRemoteViews.setTextViewText(R.id.video_duration, video.getDuration());
-                    mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_pause_black_24dp);
+                    mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
                     mNotificationManagerCompat.notify(0, notification);
 
                     /*バックグランド再生以外の時は動画画面付きで再生*/
 
-                        Log.d(TAG_NAME, "mMediaPlayer.isPlaying:" + String.valueOf(mMediaPlayer.isPlaying()));
-                                /*Progressダイアログ消すのはvideoCreate()のなかでやってる。*/
-                        videoCreate();
+                    Log.d(TAG_NAME, "mMediaPlayer.isPlaying:" + String.valueOf(mMediaPlayer.isPlaying()));
+
+                    /*Progressダイアログ消すのはvideoCreate()のなかでやってる。*/
+                    //onPlaylistSelected()呼ぶときは頭から新たなビデオを再生する時なのでreset()してIdleにしちゃう
+                    mMediaPlayer.reset();
+                    videoCreate();
 
 
                 } else if (currentVideoIndex + 1 < MainActivity.this.playlist.size()) {
@@ -1401,18 +1389,18 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
 
-    private BroadcastReceiver pauseStartBroadcastReceiver=new BroadcastReceiver() {
+    private BroadcastReceiver pauseStartBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG,"pauseStartBroadcastReceiver");
-            if(!mMediaPlayer.isPlaying()){
-                mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_pause_black_24dp);
+            Log.d(TAG, "pauseStartBroadcastReceiver");
+            if (!mMediaPlayer.isPlaying()) {
+                mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
                 mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
                 mMediaPlayer.start();
-            }else{
-                mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_play_arrow_black_24dp);
+            } else {
+                mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
                 mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
-                    mMediaPlayer.pause();
+                mMediaPlayer.pause();
             }
 
 
@@ -1420,20 +1408,20 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     };
 
 
-    private BroadcastReceiver prevBroadcastReceiver=new BroadcastReceiver() {
+    private BroadcastReceiver prevBroadcastReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG,"prevBroadcastReceiver");
+            Log.d(TAG, "prevBroadcastReceiver");
             onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
         }
 
     };
 
-    private BroadcastReceiver nextBroadcastReceiver=new BroadcastReceiver() {
+    private BroadcastReceiver nextBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG,"nextStartBroadcastReceiver");
+            Log.d(TAG, "nextStartBroadcastReceiver");
             onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
         }
     };
