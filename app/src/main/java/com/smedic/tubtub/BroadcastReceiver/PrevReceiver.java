@@ -11,8 +11,11 @@ import android.util.Log;
 
 public class PrevReceiver extends BroadcastReceiver {
     static private String TAG=" PrevReceiver";
+    static public String ACTION=" PrevReceiver";
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG,"push");
+        Intent intent1=new Intent(ACTION);
+        context.sendBroadcast(intent1);
     }
 }

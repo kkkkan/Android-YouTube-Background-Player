@@ -20,6 +20,9 @@
         android:supportsRtl="true"
         android:theme="@style/MyMaterialTheme"
         tools:replace="android:allowBackup">
+        <receiver android:name=".BroadcastReceiver.NextReceiver"/>
+        <receiver android:name=".BroadcastReceiver.PauseStartReceiver"/>
+        <receiver android:name=".BroadcastReceiver.PrevReceiver"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

@@ -23,14 +23,20 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
+import android.appwidget.AppWidgetManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.MatrixCursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.Icon;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RemoteControlClient;
@@ -114,6 +120,8 @@ import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -124,6 +132,7 @@ import at.huber.youtubeExtractor.YtFile;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
+import static android.graphics.drawable.Icon.createWithContentUri;
 import static com.smedic.tubtub.R.layout.suggestions;
 import static com.smedic.tubtub.youtube.YouTubeSingleton.getCredential;
 import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentials;
@@ -183,6 +192,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private TextView mTextView;
     private String VideoTitle;
 
+    /*今再生中のプレイリストとその中の何番目のビデオかを入れておく*/
+    private List<YouTubeVideo> playlist;
+    private int currentVideoIndex;
+
+
     /*フラグたち*/
     /*他のアプリがフォアグランドに来たときのみtrue
     * surfaceDestroy()でtrueにする。onSurfaceCreate()でfalseにする。*/
@@ -226,6 +240,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         // MediaPlayerを利用する
         mMediaPlayer = new MediaPlayer();
         mAudioMediaPlayer = new MediaPlayer();
+
         // MediaControllerを利用する
         mMediaController = new MediaController(this);
         mMediaController.setMediaPlayer(this);
@@ -236,39 +251,40 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         */
 
         /*通知欄・ロック画面で今再生中のビデオの情報を見れるよう,に、通知タップでアプリに行けるようにします。*/
-        mRemoteViews=new RemoteViews(getApplicationContext().getPackageName(),R.layout.notification_layout);
+        mRemoteViews = new RemoteViews(getApplicationContext().getPackageName(), R.layout.notification_layout);
+
 
         /*サムネイルタッチでアプリに飛ぶ*/
-        Intent intent=new Intent(this,MainActivity.class);
-        PendingIntent pendingIntent=PendingIntent.getActivity(this,0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
-        mRemoteViews.setOnClickPendingIntent(R.id.video_thumbnail,pendingIntent);
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mRemoteViews.setOnClickPendingIntent(R.id.video_thumbnail, pendingIntent);
 
         /*pause_startタッチでpause/start*/
-        intent=new Intent(this, PauseStartReceiver.class);
-        pendingIntent=PendingIntent.getBroadcast(this,1,intent,PendingIntent.FLAG_UPDATE_CURRENT);
-        mRemoteViews.setOnClickPendingIntent(R.id.pause_start,pendingIntent);
-        mRemoteViews.setImageViewResource(R.id.pause_start,R.drawable.ic_pause_black_24dp);
+        intent = new Intent(this, PauseStartReceiver.class);
+        pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mRemoteViews.setOnClickPendingIntent(R.id.pause_start, pendingIntent);
+        mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
 
         /*prevタッチで前のビデオに行く*/
-        intent=new Intent(this, PrevReceiver.class);
-        pendingIntent=PendingIntent.getBroadcast(this,2,intent,PendingIntent.FLAG_UPDATE_CURRENT);
-        mRemoteViews.setOnClickPendingIntent(R.id.pause_start,pendingIntent);
+        intent = new Intent(this, PrevReceiver.class);
+        pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mRemoteViews.setOnClickPendingIntent(R.id.prev, pendingIntent);
 
          /*nextタッチで次のビデオに行く*/
-        intent=new Intent(this, NextReceiver.class);
-        pendingIntent=PendingIntent.getBroadcast(this,3,intent,PendingIntent.FLAG_UPDATE_CURRENT);
-        mRemoteViews.setOnClickPendingIntent(R.id.next,pendingIntent);
-
-        mRemoteViews.setTextColor(R.id.title_view,Color.BLACK);
-        mRemoteViews.setTextColor(R.id.video_duration,Color.BLACK);
+        intent = new Intent(this, NextReceiver.class);
+        pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mRemoteViews.setOnClickPendingIntent(R.id.next, pendingIntent);
 
 
-        mNotificationCompatBuilder=new NotificationCompat.Builder(getApplicationContext());
-        mNotificationCompatBuilder.setCustomContentView(mRemoteViews);
+        mRemoteViews.setTextColor(R.id.title_view, Color.BLACK);
+        mRemoteViews.setTextColor(R.id.video_duration, Color.BLACK);
+
+
+        mNotificationCompatBuilder = new NotificationCompat.Builder(getApplicationContext());
+        mNotificationCompatBuilder.setContent(mRemoteViews);
         mNotificationCompatBuilder.setSmallIcon(R.mipmap.youtube_icon);
         //mNotificationCompatBuilder.setContentIntent(null);
-        mNotificationManagerCompat=NotificationManagerCompat.from(this);
-
+        mNotificationManagerCompat = NotificationManagerCompat.from(this);
 
 
         /*mMediaController表示のためのtouchlistener*/
@@ -329,6 +345,86 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         // allow to continue playing media in the background.
         // バックグラウンド再生を許可する
         requestVisibleBehind(true);
+
+        //PauseStartReceiverからのブロードキャスト受け取れるように
+        IntentFilter intentFilter=new IntentFilter();
+        intentFilter.addAction(PauseStartReceiver.ACTION);
+        registerReceiver(pauseStartBroadcastReceiver,intentFilter);
+
+        //PrevReceiverからのブロードキャスト受け取れるように
+        intentFilter=new IntentFilter();
+        intentFilter.addAction(PrevReceiver.ACTION);
+        registerReceiver(prevBroadcastReceiver,intentFilter);
+
+        //NextReceiverからのブロードキャスト受け取れるように
+        intentFilter=new IntentFilter();
+        intentFilter.addAction(NextReceiver.ACTION);
+        registerReceiver(nextBroadcastReceiver,intentFilter);
+
+
+         /*currentSongIndexとplayListがいるため毎回ここでセットするのが時間はかかるが簡単*/
+         /*homeボタンによるバックグラウンド再生中、再生中の曲が終わったときに次の曲に行くためのリスナー*/
+        mAudioMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                if (currentVideoIndex + 1 < playlist.size()) {
+                    Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
+                    onPlaylistSelected(playlist, (currentVideoIndex + 1));
+                } else {
+                    START_INITIAL = true;
+                }
+            }
+        });
+
+
+     /*終了後次の曲に行くためのリスナー*/
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                if (currentVideoIndex + 1 < playlist.size()) {
+                    Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
+                    /*ホームボタンを押すと最初に2回無条件にmediaPlayer.oncompletion呼ばれる。そのための対策*/
+                    if (SURFACE_IS_EMPTY) {
+                        /*COMPLETION_COUNTが0～2の時は増やす必要があるがその後は変化させる必要がない。*/
+                        if (COMPLETION_COUNT < 2) {
+                            ++COMPLETION_COUNT;
+                            //Log.d(TAG_NAME, " mMediaController.setOnCompletionListener-onPlaylistSelected1:"+String.valueOf(COMPLETION_COUNT));
+                            return;
+                        }
+                    }
+                    //Log.d(TAG_NAME, " mMediaController.setOnCompletionListener-onPlaylistSelected3:"+String.valueOf(COMPLETION_COUNT));
+                    onPlaylistSelected(playlist, (currentVideoIndex + 1));
+
+                } else {
+                    START_INITIAL = true;
+                }
+            }
+        });
+
+
+
+        /*戻るボタン・進むボタン*/
+        mMediaController.setPrevNextListeners(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //next button clicked
+                /*一周できるようにした*/
+                //START_INITIALのセットはonplaylistselsected()のなかでしている
+                Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
+                onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+            }
+        }, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //previous button clicked
+                /*一周できるようにした*/
+                //START_INITIALのセットはonplaylistselsected()のなかでしている
+                Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
+                onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+
+            }
+        });
+
     }
 
     @Override
@@ -746,7 +842,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Log.d(TAG_NAME, "onPlaylistSelected");
         /*読み込み中ダイアログ表示*/
         setProgressDialogShow();
-
+        this.playlist=playlist;
+        this.currentVideoIndex=position;
 
         /*ネット環境にちゃんとつながってるかチェック*/
         if (!networkConf.isNetworkAvailable()) {
@@ -819,13 +916,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     audioUrl = audioDownloadUrl;
                     VideoTitle = video.getTitle();
 
-                    /*Notificationの設定*/
                     /*サムネイルの設定*/
-                    Picasso.with(mainContext).load(video.getThumbnailURL()).into(mRemoteViews,R.id.video_thumbnail,0,mNotificationCompatBuilder.build());
+                    Notification notification = mNotificationCompatBuilder.build();
+                    Picasso.with(mainContext).load(video.getThumbnailURL()).into(mRemoteViews, R.id.video_thumbnail, 0, notification);
 
-                    mRemoteViews.setTextViewText(R.id.title_view,VideoTitle);
-                    mRemoteViews.setTextViewText(R.id.video_duration,video.getDuration());
-                    mNotificationManagerCompat.notify(0,mNotificationCompatBuilder.build());
+                    mRemoteViews.setTextViewText(R.id.title_view, VideoTitle);
+                    mRemoteViews.setTextViewText(R.id.video_duration, video.getDuration());
+                    mNotificationManagerCompat.notify(0, notification);
 
                             /*バックグランド再生以外の時は動画画面付きで再生*/
                     if (!SURFACE_IS_EMPTY) {
@@ -851,69 +948,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
         }.execute(youtubeLink);
 
-
-
-        /*currentSongIndexとplayListがいるため毎回ここでセットするのが時間はかかるが簡単*/
-         /*homeボタンによるバックグラウンド再生中、再生中の曲が終わったときに次の曲に行くためのリスナー*/
-        mAudioMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                if (currentSongIndex + 1 < playList.size()) {
-                    Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
-                    onPlaylistSelected(playList, (currentSongIndex + 1));
-                } else {
-                    START_INITIAL = true;
-                }
-            }
-        });
-
-
-     /*終了後次の曲に行くためのリスナー*/
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                if (currentSongIndex + 1 < playList.size()) {
-                    Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
-                    /*ホームボタンを押すと最初に2回無条件にmediaPlayer.oncompletion呼ばれる。そのための対策*/
-                    if (SURFACE_IS_EMPTY) {
-                        /*COMPLETION_COUNTが0～2の時は増やす必要があるがその後は変化させる必要がない。*/
-                        if (COMPLETION_COUNT < 2) {
-                            ++COMPLETION_COUNT;
-                            //Log.d(TAG_NAME, " mMediaController.setOnCompletionListener-onPlaylistSelected1:"+String.valueOf(COMPLETION_COUNT));
-                            return;
-                        }
-                    }
-                    //Log.d(TAG_NAME, " mMediaController.setOnCompletionListener-onPlaylistSelected3:"+String.valueOf(COMPLETION_COUNT));
-                    onPlaylistSelected(playList, (currentSongIndex + 1));
-
-                } else {
-                    START_INITIAL = true;
-                }
-            }
-        });
-
-
-
-        /*戻るボタン・進むボタン*/
-        mMediaController.setPrevNextListeners(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //next button clicked
-                /*一周できるようにした*/
-                Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
-                START_INITIAL = true;
-                onPlaylistSelected(playList, (currentSongIndex + 1) % playList.size());
-            }
-        }, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //previous button clicked
-                /*一周できるようにした*/
-                Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
-                START_INITIAL = true;
-                onPlaylistSelected(playList, (currentSongIndex - 1 + playList.size()) % playList.size());
-            }
-        });
     }
 
     /*progressDialog表示*/
@@ -1464,4 +1498,31 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             mAudioMediaPlayer.release();
         }
     }
+
+
+    private BroadcastReceiver pauseStartBroadcastReceiver=new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG,"pauseStartBroadcastReceiver");
+
+        }
+    };
+
+    private BroadcastReceiver prevBroadcastReceiver=new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG,"prevBroadcastReceiver");
+            onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+        }
+
+    };
+
+    private BroadcastReceiver nextBroadcastReceiver=new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG,"nextStartBroadcastReceiver");
+            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+        }
+    };
 }
