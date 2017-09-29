@@ -88,7 +88,7 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
         swipeToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Log.d(TAG,"onRefresh");
+                Log.d(TAG, "onRefresh");
                 favoriteVideos.clear();
                 favoriteVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).readAll());
                 videoListAdapter.notifyDataSetChanged();
@@ -155,10 +155,11 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
     }
 
     @Override
-    public void onAddClicked(YouTubeVideo video){
+    public void onAddClicked(YouTubeVideo video) {
         /*mainactivityのonAddSelected(video)へ*/
-        ((MainActivity)itemSelected).onAddSelected(video);
+        ((MainActivity) itemSelected).onAddSelected(video);
     }
+
     @Override
     public void onItemClick(YouTubeVideo video) {
         itemSelected.onPlaylistSelected(favoriteVideos, favoriteVideos.indexOf(video));

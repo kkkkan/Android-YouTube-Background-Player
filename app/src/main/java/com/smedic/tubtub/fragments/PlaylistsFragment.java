@@ -15,7 +15,6 @@
  */
 package com.smedic.tubtub.fragments;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -32,7 +31,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-
 import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.R;
 import com.smedic.tubtub.adapters.PlaylistsAdapter;
@@ -45,7 +43,6 @@ import com.smedic.tubtub.utils.Config;
 import com.smedic.tubtub.youtube.YouTubePlaylistVideosLoader;
 import com.smedic.tubtub.youtube.YouTubePlaylistsLoader;
 import com.smedic.tubtub.youtube.YouTubeSingleton;
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,7 +62,7 @@ public class PlaylistsFragment extends BaseFragment implements
         ItemEventsListener<YouTubePlaylist> {
 
     private static final String TAG = "SMEDIC PlaylistsFrag";
-    private static final String TAG_NAME="PlaylistsFragment";
+    private static final String TAG_NAME = "PlaylistsFragment";
 
     private ArrayList<YouTubePlaylist> playlists;
     private RecyclerView playlistsListView;
@@ -98,7 +95,7 @@ public class PlaylistsFragment extends BaseFragment implements
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_list, container, false);
 
-        Log.d("kandabshi","Playlistfragment-onCreateView");
+        Log.d("kandabshi", "Playlistfragment-onCreateView");
         /* Setup the ListView */
         playlistsListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
         playlistsListView.setLayoutManager(new LinearLayoutManager(context));
@@ -109,8 +106,7 @@ public class PlaylistsFragment extends BaseFragment implements
         playlistsAdapter.setOnItemEventsListener(this);
         playlistsListView.setAdapter(playlistsAdapter);
         playlistsAdapter.setOnDetailClickListener((PlaylistsAdapter.OnDetailClickListener) getActivity());
-        mainHandler=((MainActivity) getActivity()).mainHandler;
-
+        mainHandler = ((MainActivity) getActivity()).mainHandler;
 
 
         swipeToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -157,7 +153,7 @@ public class PlaylistsFragment extends BaseFragment implements
 
             @Override
             public void onLoadFinished(Loader<List<YouTubePlaylist>> loader, List<YouTubePlaylist> data) {
-                Log.d(TAG_NAME,"onLoadFinished");
+                Log.d(TAG_NAME, "onLoadFinished");
                 if (data == null) {
                     swipeToRefresh.setRefreshing(false);
                     return;
@@ -190,17 +186,17 @@ public class PlaylistsFragment extends BaseFragment implements
     }
 
     private void acquirePlaylistVideos(final String playlistId) {
-        Log.d(TAG_NAME,"acquirePlaylistVideos");
+        Log.d(TAG_NAME, "acquirePlaylistVideos");
         getLoaderManager().restartLoader(3, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
             @Override
             public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
-                Log.d(TAG_NAME,"PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:"+playlistId);
+                Log.d(TAG_NAME, "PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:" + playlistId);
                 return new YouTubePlaylistVideosLoader(context, playlistId);
             }
 
             @Override
             public void onLoadFinished(Loader<List<YouTubeVideo>> loader, List<YouTubeVideo> data) {
-                Log.d(TAG_NAME,"PlaylistsFragment.acquirePlaylistVideos.onLoadFinished");
+                Log.d(TAG_NAME, "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished");
                 if (data == null || data.isEmpty()) {
                     return;
                 }
@@ -209,13 +205,12 @@ public class PlaylistsFragment extends BaseFragment implements
 
             @Override
             public void onLoaderReset(Loader<List<YouTubeVideo>> loader) {
-                Log.d(TAG_NAME,"PlaylistsFragment.acquirePlaylistVideos.onLoaderReset");
+                Log.d(TAG_NAME, "PlaylistsFragment.acquirePlaylistVideos.onLoaderReset");
                 playlists.clear();
                 playlists.addAll(Collections.<YouTubePlaylist>emptyList());
             }
         }).forceLoad();
     }
-
 
 
     @Override
@@ -229,14 +224,15 @@ public class PlaylistsFragment extends BaseFragment implements
     }
 
     @Override
-    public void onAddClicked(YouTubeVideo video){
+    public void onAddClicked(YouTubeVideo video) {
         //何もしない
     }
+
     @Override
     public void onItemClick(YouTubePlaylist youTubePlaylist) {
         //results are in onVideosReceived callback method
-        String id=youTubePlaylist.getId();
-        Log.d(TAG_NAME,"PlaylistsFragment-onItemClicked-id:"+id);
+        String id = youTubePlaylist.getId();
+        Log.d(TAG_NAME, "PlaylistsFragment-onItemClicked-id:" + id);
         acquirePlaylistVideos(youTubePlaylist.getId());
     }
 
@@ -245,11 +241,11 @@ public class PlaylistsFragment extends BaseFragment implements
         //何もしない
     }
 
-    public void onDeleteClicked(final YouTubePlaylist playlist){
+    public void onDeleteClicked(final YouTubePlaylist playlist) {
          /*削除の確認のダイアログを出す。*/
-        AlertDialog.Builder dialog=new AlertDialog.Builder(getContext());
-        dialog.setTitle("削除").setMessage("プレイリスト "+playlist.getTitle()+"("+playlist.getNumberOfVideos()+")\nを削除しますか？")
-                .setNegativeButton("Cancel",null)
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
+        dialog.setTitle("削除").setMessage("プレイリスト " + playlist.getTitle() + "(" + playlist.getNumberOfVideos() + ")\nを削除しますか？")
+                .setNegativeButton("Cancel", null)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
                     @Override
@@ -258,10 +254,10 @@ public class PlaylistsFragment extends BaseFragment implements
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                try{
-                                   YouTubeSingleton.getYouTubeWithCredentials().playlists().delete(playlist.getId()).execute();
-                                }catch (Exception e){
-                                    Log.d(TAG,"PlaylistDetailFragment-onAddClicked-delete-error-:"+e.getMessage());
+                                try {
+                                    YouTubeSingleton.getYouTubeWithCredentials().playlists().delete(playlist.getId()).execute();
+                                } catch (Exception e) {
+                                    Log.d(TAG, "PlaylistDetailFragment-onAddClicked-delete-error-:" + e.getMessage());
                                     mainHandler.post(new Runnable() {
                                         @Override
                                         public void run() {

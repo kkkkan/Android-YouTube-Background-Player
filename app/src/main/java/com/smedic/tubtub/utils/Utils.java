@@ -65,6 +65,7 @@ public class Utils {
 
     /**
      * Prints videos nicely formatted
+     *
      * @param videos
      */
     public static void prettyPrintVideos(List<YouTubeVideo> videos) {
@@ -86,6 +87,7 @@ public class Utils {
 
     /**
      * Prints video nicely formatted
+     *
      * @param playlistEntry
      */
     public static void prettyPrintVideoItem(YouTubeVideo playlistEntry) {

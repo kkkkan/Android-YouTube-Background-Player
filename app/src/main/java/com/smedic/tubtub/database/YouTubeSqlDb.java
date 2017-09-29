@@ -134,7 +134,7 @@ public class YouTubeSqlDb {
          */
         public boolean create(YouTubeVideo video) {
             /*指定したビデオがあったらfalse*/
-            if(checkIfExists(video.getId())){
+            if (checkIfExists(video.getId())) {
                 return false;
             }
             // Gets the data repository in write mode
@@ -153,13 +153,14 @@ public class YouTubeSqlDb {
 
         /**
          * Checks if entry is already present in database
+         *
          * @param videoId
          * @return
          */
         public boolean checkIfExists(String videoId) {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             //String Query = "SELECT * FROM " + tableName + " WHERE " + YouTubeVideoEntry.COLUMN_VIDEO_ID + "='" + videoId + "'";
-            Cursor cursor = db.query(tableName,null,YouTubeVideoEntry.COLUMN_VIDEO_ID + "=?",new String[]{videoId},null,null,null);//db.FQuery(Query, null);
+            Cursor cursor = db.query(tableName, null, YouTubeVideoEntry.COLUMN_VIDEO_ID + "=?", new String[]{videoId}, null, null, null);//db.FQuery(Query, null);
             if (cursor.getCount() <= 0) {
                 cursor.close();
                 return false;
@@ -183,7 +184,7 @@ public class YouTubeSqlDb {
 
             Cursor c = null;
             try {
-                c=db.query(tableName,null,null,null,null,null,YouTubeVideoEntry.COLUMN_ENTRY_ID + " DESC");
+                c = db.query(tableName, null, null, null, null, null, YouTubeVideoEntry.COLUMN_ENTRY_ID + " DESC");
                 while (c.moveToNext()) {
                     String videoId = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_VIDEO_ID));
                     String title = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_TITLE));
@@ -192,10 +193,10 @@ public class YouTubeSqlDb {
                     String viewsNumber = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_VIEWS_NUMBER));
                     list.add(new YouTubeVideo(videoId, title, thumbnailUrl, duration, viewsNumber));
                 }
-            }catch(Exception e){
+            } catch (Exception e) {
 
-            }finally {
-                if(c!=null){
+            } finally {
+                if (c != null) {
                     c.close();
                 }
                 return list;
@@ -263,9 +264,9 @@ public class YouTubeSqlDb {
             ArrayList<YouTubePlaylist> list = new ArrayList<>();
             SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-            Cursor c =null;
+            Cursor c = null;
             try {
-                c=db.query(YouTubePlaylistEntry.TABLE_NAME,null,null,null,null,null,YouTubePlaylistEntry.COLUMN_ENTRY_ID+" DESC");
+                c = db.query(YouTubePlaylistEntry.TABLE_NAME, null, null, null, null, null, YouTubePlaylistEntry.COLUMN_ENTRY_ID + " DESC");
                 while (c.moveToNext()) {
                     String playlistId = c.getString(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_PLAYLIST_ID));
                     String title = c.getString(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_TITLE));
@@ -274,10 +275,10 @@ public class YouTubeSqlDb {
                     String thumbnailUrl = c.getString(c.getColumnIndexOrThrow(YouTubePlaylistEntry.COLUMN_THUMBNAIL_URL));
                     list.add(new YouTubePlaylist(title, thumbnailUrl, playlistId, number, status));
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
 
-            }finally {
-                if(c!=null) {
+            } finally {
+                if (c != null) {
                     c.close();
                 }
                 return list;

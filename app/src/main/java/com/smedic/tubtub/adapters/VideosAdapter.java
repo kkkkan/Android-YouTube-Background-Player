@@ -39,8 +39,7 @@ import java.util.List;
  * Custom ArrayAdapter which enables setup of a list view row views
  * Created by smedic on 8.2.16..
  */
-public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder>
-        {
+public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder> {
 
     private Context context;
     private final List<YouTubeVideo> list;
@@ -51,7 +50,7 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
         super();
         this.list = list;
         this.context = context;
-        this.itemCheck=new ArrayList<>();
+        this.itemCheck = new ArrayList<>();
     }
 
     @Override
@@ -83,9 +82,9 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
                 if (!(itemEventsListener instanceof FavoritesFragment)) {
                     itemCheck.set(position, isChecked);
                 }
-                    if (itemEventsListener != null) {
-                        itemEventsListener.onFavoriteClicked(video, isChecked);
-                    }
+                if (itemEventsListener != null) {
+                    itemEventsListener.onFavoriteClicked(video, isChecked);
+                }
 
             }
         });
@@ -99,7 +98,7 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
             }
         });
 
-        holder.addButton.setOnClickListener(new View.OnClickListener(){
+        holder.addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (itemEventsListener != null) {
@@ -143,7 +142,7 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
             viewCount = (TextView) itemView.findViewById(R.id.views_number);
             favoriteCheckBox = (CheckBox) itemView.findViewById(R.id.favoriteButton);
             shareButton = (ImageView) itemView.findViewById(R.id.shareButton);
-            addButton=(ImageView)itemView.findViewById(R.id.PlaylistAddButton);
+            addButton = (ImageView) itemView.findViewById(R.id.PlaylistAddButton);
         }
     }
 

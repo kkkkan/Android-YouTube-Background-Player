@@ -53,7 +53,7 @@ public class YouTubeSingleton {
                 .build();
 
 
-        Log.d("kandabashi","googleAccount!");
+        Log.d("kandabashi", "googleAccount!");
     }
 
     public static YouTube getYouTube() {

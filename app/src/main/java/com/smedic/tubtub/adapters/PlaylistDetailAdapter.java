@@ -25,8 +25,7 @@ import java.util.List;
  * Created by admin on 2017/08/24.
  */
 
-public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAdapter.ViewHolder>
-         {
+public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAdapter.ViewHolder> {
 
     private static final String TAG = "PlaylistDetailAdapter";
     private Context context;

@@ -14,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.smedic.tubtub.R;
-import com.smedic.tubtub.fragments.PlaylistsFragment;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.model.YouTubePlaylist;
 import com.squareup.picasso.Picasso;
@@ -24,9 +23,8 @@ import java.util.List;
 /**
  * Custom array adapter class
  */
-public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.ViewHolder>
-        {
-    private final static String TAG_NAME="PlaylistsAdapter";
+public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.ViewHolder> {
+    private final static String TAG_NAME = "PlaylistsAdapter";
 
     private Context context;
     private List<YouTubePlaylist> playlists;
@@ -34,8 +32,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
     private OnDetailClickListener onDetailClickListener;
 
 
-
-    public interface OnDetailClickListener{
+    public interface OnDetailClickListener {
         void onDetailClick(YouTubePlaylist playlist);
     }
 
@@ -91,10 +88,10 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
         holder.playlistDetail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(onDetailClickListener!=null) {
+                if (onDetailClickListener != null) {
                     /*onDetailClickListener:MainActivity*/
                     onDetailClickListener.onDetailClick(playlist);
-                    Log.d(TAG_NAME,"onDetailClickListener-playlistId:"+String.valueOf(playlist.getId())+String.valueOf(playlist.getTitle()));
+                    Log.d(TAG_NAME, "onDetailClickListener-playlistId:" + String.valueOf(playlist.getId()) + String.valueOf(playlist.getTitle()));
                 }
             }
         });
@@ -103,7 +100,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             @Override
             public void onClick(View v) {
                 if (itemEventsListener != null) {
-                   // YouTubePlaylist item = (YouTubePlaylist) v.getTag();
+                    // YouTubePlaylist item = (YouTubePlaylist) v.getTag();
             /*itemEventListener:playlistFrragment*/
                     itemEventsListener.onItemClick(playlist);
                 }
@@ -135,8 +132,8 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             videosNumber = (TextView) itemView.findViewById(R.id.videos_number);
             privacy = (TextView) itemView.findViewById(R.id.privacy);
             shareButton = (ImageView) itemView.findViewById(R.id.share_button);
-            playlistDetail=(ImageView)itemView.findViewById(R.id.detail_button);
-            deleteButton=(ImageView)itemView.findViewById(R.id.delete_button);
+            playlistDetail = (ImageView) itemView.findViewById(R.id.detail_button);
+            deleteButton = (ImageView) itemView.findViewById(R.id.delete_button);
         }
     }
 

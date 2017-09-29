@@ -15,7 +15,7 @@ public final class Config {
     public static final String SHARE_PLAYLIST_URL = "https://www.youtube.com/playlist?list=";
     public static final String YOUTUBE_TYPE = "YT_MEDIA_TYPE";
     public static final String YOUTUBE_TYPE_VIDEO = "YT_VIDEO";
-    public static final String YOUTUBE_TYPE_PLAYLIST= "YT_PLAYLIST";
+    public static final String YOUTUBE_TYPE_PLAYLIST = "YT_PLAYLIST";
     public static final String YOUTUBE_TYPE_PLAYLIST_VIDEO_POS = "YT_PLAYLIST_VIDEO_POS";
 
     public static final String YOUTUBE_API_KEY = "AIzaSyAR3lyb-ucc8JYrSHw0rfCaXCYHveGy6U8";

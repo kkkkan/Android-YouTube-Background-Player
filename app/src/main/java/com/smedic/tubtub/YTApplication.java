@@ -2,7 +2,9 @@ package com.smedic.tubtub;
 
 import android.app.Application;
 import android.content.Context;
+
 import com.crashlytics.android.Crashlytics;
+
 import io.fabric.sdk.android.Fabric;
 
 /**

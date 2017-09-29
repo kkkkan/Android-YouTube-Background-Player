@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 import com.smedic.tubtub.R;
 import com.smedic.tubtub.database.YouTubeSqlDb;
-import com.smedic.tubtub.fragments.RecentlyWatchedFragment;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.model.YouTubeVideo;
 import com.squareup.picasso.Picasso;
@@ -35,7 +34,7 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
         super();
         this.list = list;
         this.context = context;
-        this.itemCheck=new ArrayList<>();
+        this.itemCheck = new ArrayList<>();
     }
 
     @Override
@@ -62,7 +61,7 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
 
         holder.favoriteCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton btn, boolean isChecked) {
-                itemCheck.set(position,isChecked);
+                itemCheck.set(position, isChecked);
                 if (itemEventsListener != null) {
                     itemEventsListener.onFavoriteClicked(video, isChecked);
                 }
@@ -78,7 +77,7 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
             }
         });
 
-        holder.addButton.setOnClickListener(new View.OnClickListener(){
+        holder.addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (itemEventsListener != null) {
@@ -134,8 +133,8 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
             viewCount = (TextView) itemView.findViewById(R.id.views_number);
             favoriteCheckBox = (CheckBox) itemView.findViewById(R.id.favoriteButton);
             shareButton = (ImageView) itemView.findViewById(R.id.shareButton);
-            addButton=(ImageView)itemView.findViewById(R.id.PlaylistAddButton);
-            deleteButton=(ImageView)itemView.findViewById(R.id.musicDeleteButton);
+            addButton = (ImageView) itemView.findViewById(R.id.PlaylistAddButton);
+            deleteButton = (ImageView) itemView.findViewById(R.id.musicDeleteButton);
         }
     }
 

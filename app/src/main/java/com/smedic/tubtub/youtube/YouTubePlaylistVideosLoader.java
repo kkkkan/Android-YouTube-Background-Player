@@ -32,7 +32,7 @@ import static com.smedic.tubtub.youtube.YouTubeSingleton.getInstance;
 public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVideo>> {
 
     private final static String TAG = "SMEDIC";
-    private final static String TAG_NAME="YouTubePlaylistVideosLoader";
+    private final static String TAG_NAME = "YouTubePlaylistVideosLoader";
     private YouTube youtube = getInstance().getYouTubeWithCredentials();//getYouTube();
     private String playlistId;
 
@@ -65,8 +65,8 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
 
             PlaylistItemListResponse playlistItemResult = playlistItemRequest.execute();
 
-            for(PlaylistItem p:playlistItemResult.getItems()){
-                Log.d(TAG_NAME,"title:"+p.getSnippet().getTitle());
+            for (PlaylistItem p : playlistItemResult.getItems()) {
+                Log.d(TAG_NAME, "title:" + p.getSnippet().getTitle());
             }
 
             playlistItemList.addAll(playlistItemResult.getItems());
@@ -133,17 +133,17 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
         /*50個videoIdを入れても、videolistでは50個全部取ってこれるとは限らないようである。*/
         /*<ーdeleted videoの含まれるリストを取得する際にちゃんととってこれないのはAPIバグ?
         * https://stackoverflow.com/questions/21189885/youtube-api-playlistitems-deleted-videos*/
-        Log.d(TAG_NAME,String.valueOf(ii)+"NUMBER OF VIDEOS:"+videoResults.size());
+        Log.d(TAG_NAME, String.valueOf(ii) + "NUMBER OF VIDEOS:" + videoResults.size());
         /*playlistItemListの方は削除されたビデオも要素として持ってしまってる。*/
         Iterator<PlaylistItem> pit = playlistItemList.iterator();
         Iterator<Video> vit = videoResults.iterator();
 
 
         /*50個videoIdを入れても、videolistでは50個全部取ってこれるとは限らないのでビデオの数に合わせる*/
-        int count=0;
+        int count = 0;
         while (vit.hasNext()) {
             PlaylistItem playlistItem = pit.next();
-            Log.d(TAG_NAME,playlistItem.getSnippet().getTitle());
+            Log.d(TAG_NAME, playlistItem.getSnippet().getTitle());
             YouTubeVideo youTubeVideo = new YouTubeVideo();
             youTubeVideo.setId(playlistItem.getContentDetails().getVideoId());
             youTubeVideo.setTitle(playlistItem.getSnippet().getTitle());
@@ -156,21 +156,21 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
                 /*削除されたビデオではないときのみビデオも進める。*/
                 Video videoItem = vit.next();
                 //video info
-                    String isoTime = videoItem.getContentDetails().getDuration();
-                    String time = Utils.convertISO8601DurationToNormalTime(isoTime);
-                    youTubeVideo.setDuration(time);
-                    Log.d(TAG_NAME,String.valueOf(++count)+"-"+playlistItem.getSnippet().getTitle());
-            }else{
+                String isoTime = videoItem.getContentDetails().getDuration();
+                String time = Utils.convertISO8601DurationToNormalTime(isoTime);
+                youTubeVideo.setDuration(time);
+                Log.d(TAG_NAME, String.valueOf(++count) + "-" + playlistItem.getSnippet().getTitle());
+            } else {
                 youTubeVideo.setThumbnailURL(null);
                 youTubeVideo.setDuration("00:00");
-                Log.d(TAG_NAME, String.valueOf(++count)+"-"+playlistItem.getSnippet().getTitle());
+                Log.d(TAG_NAME, String.valueOf(++count) + "-" + playlistItem.getSnippet().getTitle());
             }
 
             playlistItems.add(youTubeVideo);
-            }
-            Log.d(TAG_NAME, "YTPVL-loadInBackground-25");
-            return playlistItems;
         }
+        Log.d(TAG_NAME, "YTPVL-loadInBackground-25");
+        return playlistItems;
+    }
 
 
     @Override

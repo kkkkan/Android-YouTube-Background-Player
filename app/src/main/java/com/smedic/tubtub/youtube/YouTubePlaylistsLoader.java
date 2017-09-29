@@ -33,7 +33,7 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
 
 
     private static final String TAG = "SMEDIC";
-    private static final String TAG_NAME="kandabashi-YouTubePlaylistsLoader";
+    private static final String TAG_NAME = "kandabashi-YouTubePlaylistsLoader";
     /*googleのYouTubeAPIの登場*/
     private YouTube youtube = getYouTubeWithCredentials();
 
@@ -45,7 +45,7 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
     @Override
     public List<YouTubePlaylist> loadInBackground() {
 
-        Log.d(TAG_NAME,"playlistLoading");
+        Log.d(TAG_NAME, "playlistLoading");
         /*アカウントが設定されてなかったら*/
         if (getCredential().getSelectedAccountName() == null) {
             Log.d(TAG, "loadInBackground: account not picked!");
@@ -84,8 +84,8 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
 
                 while (iteratorPlaylistResults.hasNext()) {
                     Playlist playlist = iteratorPlaylistResults.next();
-                    String id=playlist.getId();
-                    Log.d(TAG_NAME,"YouTubePlaylistLoader-"+id);
+                    String id = playlist.getId();
+                    Log.d(TAG_NAME, "YouTubePlaylistLoader-" + id);
 
                     YouTubePlaylist playlistItem = new YouTubePlaylist(playlist.getSnippet().getTitle(),
                             playlist.getSnippet().getThumbnails().getDefault().getUrl(),
@@ -94,22 +94,22 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
                             playlist.getStatus().getPrivacyStatus());
                     youTubePlaylistList.add(playlistItem);
                 }
-                Log.d(TAG_NAME,"YouTubePlaylistLoader-11");
+                Log.d(TAG_NAME, "YouTubePlaylistLoader-11");
                 return youTubePlaylistList;
             }
-        }catch (UserRecoverableAuthIOException e) {
-            Log.d(TAG_NAME,"YouTubePlaylistLoader-"+e.toString());
+        } catch (UserRecoverableAuthIOException e) {
+            Log.d(TAG_NAME, "YouTubePlaylistLoader-" + e.toString());
             Log.d(TAG, "loadInBackground: exception REQUEST_AUTHORIZATION");
             mainHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(new MainActivity().getMainContext(),"もう一度ログインしなおしてください。",Toast.LENGTH_LONG).show();
+                    Toast.makeText(new MainActivity().getMainContext(), "もう一度ログインしなおしてください。", Toast.LENGTH_LONG).show();
                 }
             });
             cancelLoad();
             e.printStackTrace();
         } catch (IOException e) {
-            Log.d(TAG_NAME,"YouTubePlaylistLoadrer-error");
+            Log.d(TAG_NAME, "YouTubePlaylistLoadrer-error");
             Log.d(TAG, "loadInBackground: " + e.getMessage());
             cancelLoad();
             e.printStackTrace();

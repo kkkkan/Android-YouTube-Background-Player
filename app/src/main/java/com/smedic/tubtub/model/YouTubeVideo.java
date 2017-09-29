@@ -53,7 +53,6 @@ public class YouTubeVideo implements Serializable {
     }
 
 
-
     public String getId() {
         return id;
     }

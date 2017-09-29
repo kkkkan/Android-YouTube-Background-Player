@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     *idelとpauseの区別がつかないため
     *mediaplayerのステートが分かる方法がもし見つかったら無くす
     * videoCreate()でのみ使用(read)*/
-    private boolean MEDIAPLAYER_PAUSE=false;
+    private boolean MEDIAPLAYER_PAUSE = false;
 
     private int[] tabIcons = {
             R.drawable.ic_action_heart,
@@ -426,7 +426,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             return;
         }
 
-        if (mMediaPlayer.isPlaying()||MEDIAPLAYER_PAUSE) {
+        if (mMediaPlayer.isPlaying() || MEDIAPLAYER_PAUSE) {
             //playlistselected()からきている=ビデオ頭からの時はここには来ない
             //画面再生するsurfaceをセット
             mMediaPlayer.setDisplay(mHolder);
@@ -493,7 +493,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public void start() {
-        MEDIAPLAYER_PAUSE=false;
+        MEDIAPLAYER_PAUSE = false;
         mMediaPlayer.start();
         mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
         mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
@@ -501,7 +501,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public void pause() {
-        MEDIAPLAYER_PAUSE=true;
+        MEDIAPLAYER_PAUSE = true;
         mMediaPlayer.pause();
         mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
         mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
@@ -762,7 +762,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         setProgressDialogShow();
         this.playlist = playlist;
         this.currentVideoIndex = position;
-        MEDIAPLAYER_PAUSE=false;
+        MEDIAPLAYER_PAUSE = false;
 
         /*ネット環境にちゃんとつながってるかチェック*/
         if (!networkConf.isNetworkAvailable()) {
@@ -856,7 +856,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     public void setProgressDialogDismiss() {
-        if (mProgressDialog!=null&&mProgressDialog.isShowing()) {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
         }
     }
@@ -1398,12 +1398,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "pauseStartBroadcastReceiver");
             if (!mMediaPlayer.isPlaying()) {
-                MEDIAPLAYER_PAUSE=false;
+                MEDIAPLAYER_PAUSE = false;
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
                 mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
                 mMediaPlayer.start();
             } else {
-                MEDIAPLAYER_PAUSE=true;
+                MEDIAPLAYER_PAUSE = true;
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
                 mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
                 mMediaPlayer.pause();

@@ -166,7 +166,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     }
 
     @Override
-    public void onAddClicked(YouTubeVideo video){
+    public void onAddClicked(YouTubeVideo video) {
         onFavoritesSelected.onAddSelected(video); // pass event to MainActivity
     }
 

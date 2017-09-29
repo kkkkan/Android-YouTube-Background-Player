@@ -29,7 +29,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-
 import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.R;
 import com.smedic.tubtub.adapters.RecentlyVideosAdapter;
@@ -90,14 +89,14 @@ public class RecentlyWatchedFragment extends BaseFragment implements
         videoListAdapter = new RecentlyVideosAdapter(context, recentlyPlayedVideos);
         videoListAdapter.setOnItemEventsListener(this);
         recentlyPlayedListView.setAdapter(videoListAdapter);
-        mainHandler=((MainActivity)getActivity()).mainHandler;
+        mainHandler = ((MainActivity) getActivity()).mainHandler;
 
          /*swipeで更新*/
         swipeToRefresh = (SwipeRefreshLayout) v.findViewById(R.id.swipe_to_refresh);
         swipeToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Log.d(TAG,"onRefresh");
+                Log.d(TAG, "onRefresh");
                 recentlyPlayedVideos.clear();
                 recentlyPlayedVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).readAll());
                 videoListAdapter.notifyDataSetChanged();
@@ -154,19 +153,20 @@ public class RecentlyWatchedFragment extends BaseFragment implements
     }
 
     @Override
-    public void onAddClicked(YouTubeVideo video){
+    public void onAddClicked(YouTubeVideo video) {
         onFavoritesSelected.onAddSelected(video); // pass event to MainActivity
     }
+
     @Override
     public void onItemClick(YouTubeVideo video) {
         itemSelected.onPlaylistSelected(recentlyPlayedVideos, recentlyPlayedVideos.indexOf(video));
     }
 
-    public void onDeleteClicked(final YouTubeVideo video){
+    public void onDeleteClicked(final YouTubeVideo video) {
         /*削除の確認のダイアログを出す。*/
-        AlertDialog.Builder dialog=new AlertDialog.Builder(getContext());
-        dialog.setTitle("削除").setMessage(video.getTitle()+"\nを履歴から削除しますか？")
-                .setNegativeButton("Cancel",null)
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
+        dialog.setTitle("削除").setMessage(video.getTitle() + "\nを履歴から削除しますか？")
+                .setNegativeButton("Cancel", null)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
