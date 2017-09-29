@@ -181,6 +181,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private List<YouTubeVideo> playlist;
     private int currentVideoIndex;
 
+    /*madiaplayerがポーズかどうか入れるフラグ
+    *idelとpauseの区別がつかないため
+    *mediaplayerのステートが分かる方法がもし見つかったら無くす
+    * videoCreate()でのみ使用(read)*/
+    private boolean MEDIAPLAYER_PAUSE=false;
 
     private int[] tabIcons = {
             R.drawable.ic_action_heart,
@@ -415,29 +420,28 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     public void videoCreate() {
-        int MediaStartTime = 0;
          /*ネット環境にちゃんとつながってるかチェック*/
         if (!networkConf.isNetworkAvailable()) {
             networkConf.createNetErrorDialog();
             return;
         }
-        if (mMediaPlayer.isPlaying()) {
+
+        if (mMediaPlayer.isPlaying()||MEDIAPLAYER_PAUSE) {
+            //playlistselected()からきている=ビデオ頭からの時はここには来ない
+            //画面再生するsurfaceをセット
             mMediaPlayer.setDisplay(mHolder);
-            /*読み込み中ダイアログ消す*/
+            /*読み込み中ダイアログが出ていたら消す*/
             setProgressDialogDismiss();
             return;
         }
+
         /*mediaplayer関係*/
         // URLの先にある動画を再生する
         if (videoUrl != null) {
             Uri mediaPath = Uri.parse(videoUrl);
             try {
-                //今ビデオ再生途中の時
-                if (mMediaPlayer.isPlaying()) {
-                    MediaStartTime = mMediaPlayer.getCurrentPosition();
-                }
                 mMediaPlayer.reset();
-                Log.d(TAG_NAME, "videoCreate-1");
+                Log.d(TAG_NAME, "videoCreate");
                 mMediaPlayer.setDataSource(this, mediaPath);
                 mMediaPlayer.setDisplay(mHolder);
                 /*videoTitleをセット*/
@@ -445,14 +449,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     mTextView.setText(VideoTitle);
                 }
 
-                final int mMediaStartTime = MediaStartTime;
              /*prepareに時間かかることを想定し直接startせずにLister使う*/
                 mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
                     public void onPrepared(MediaPlayer mp) {
                         Log.d(TAG_NAME, "onPrepared");
-                        //mp.seekTo(getMediaStartTime());
-                        mp.seekTo(mMediaStartTime);
                         mp.start();
                         /*読み込み中ダイアログ消す*/
                         setProgressDialogDismiss();
@@ -492,6 +493,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public void start() {
+        MEDIAPLAYER_PAUSE=false;
         mMediaPlayer.start();
         mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
         mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
@@ -499,6 +501,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public void pause() {
+        MEDIAPLAYER_PAUSE=true;
         mMediaPlayer.pause();
         mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
         mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
@@ -759,6 +762,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         setProgressDialogShow();
         this.playlist = playlist;
         this.currentVideoIndex = position;
+        MEDIAPLAYER_PAUSE=false;
 
         /*ネット環境にちゃんとつながってるかチェック*/
         if (!networkConf.isNetworkAvailable()) {
@@ -852,7 +856,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     public void setProgressDialogDismiss() {
-        if (mProgressDialog.isShowing()) {
+        if (mProgressDialog!=null&&mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
         }
     }
@@ -1394,10 +1398,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "pauseStartBroadcastReceiver");
             if (!mMediaPlayer.isPlaying()) {
+                MEDIAPLAYER_PAUSE=false;
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
                 mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
                 mMediaPlayer.start();
             } else {
+                MEDIAPLAYER_PAUSE=true;
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
                 mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
                 mMediaPlayer.pause();
