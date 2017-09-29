@@ -15,9 +15,11 @@
  */
 package com.smedic.tubtub.database;
 
+import android.app.DownloadManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
@@ -34,7 +36,7 @@ import java.util.ArrayList;
  */
 public class YouTubeSqlDb {
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 5;
     private static final String DATABASE_NAME = "YouTubeDb.db";
 
     public static final String RECENTLY_WATCHED_TABLE_NAME = "recently_watched_videos";
@@ -107,6 +109,9 @@ public class YouTubeSqlDb {
             db.execSQL(YouTubeVideoEntry.DROP_QUERY_FAVORITES);
             db.execSQL(YouTubePlaylistEntry.DROP_QUERY);
             onCreate(db);
+
+            //db.execSQL("alter table " +RECENTLY_WATCHED_TABLE_NAME  +" drop constraint unique");
+
         }
 
         @Override
@@ -133,22 +138,47 @@ public class YouTubeSqlDb {
          * @return
          */
         public boolean create(YouTubeVideo video) {
-            /*指定したビデオがあったらfalse*/
-            if (checkIfExists(video.getId())) {
-                return false;
+            Log.d(TAG,"create :"+video.getTitle());
+               /*指定したビデオがあったらfalse*/
+                if (tableName.equals(FAVORITES_TABLE_NAME)&&checkIfExists(video.getId())) {
+                    //お気に入りリストは重複許さない
+                    return false;
+                }
+
+                // Gets the data repository in write mode
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+                // Create a new map of values, where column names are the keys
+                ContentValues values = new ContentValues();
+                values.put(YouTubeVideoEntry.COLUMN_VIDEO_ID, video.getId());
+                values.put(YouTubeVideoEntry.COLUMN_TITLE, video.getTitle());
+                values.put(YouTubeVideoEntry.COLUMN_DURATION, video.getDuration());
+                values.put(YouTubeVideoEntry.COLUMN_THUMBNAIL_URL, video.getThumbnailURL());
+                values.put(YouTubeVideoEntry.COLUMN_VIEWS_NUMBER, video.getViewCount());
+
+            boolean result=db.insert(tableName, YouTubeVideoEntry.COLUMN_NAME_NULLABLE, values) > 0;
+            if(result==false) {
+                //insert errror時=容量オーバーの可能性
+                Cursor c = null;
+                try {
+                    //最近見たものリストのうち,一番古いもののCOLUMN_ENTRY_IDを返す
+                    c = db.query(RECENTLY_WATCHED_TABLE_NAME, new String[]{YouTubeVideoEntry.COLUMN_ENTRY_ID}, null, null, null, null, YouTubeVideoEntry.COLUMN_ENTRY_ID + " ASC", "1");
+                    if (c.getCount() == 1) {
+                        //最近見たものリストのうち一番古いものをとれてればそれを削除
+                        c.moveToNext();
+                        db.delete(tableName, YouTubeVideoEntry.COLUMN_ENTRY_ID + "='" + c.getColumnName(c.getColumnIndex(YouTubeVideoEntry.COLUMN_ENTRY_ID)) + "'", null);
+                        //もう一度リストに登録を試す。
+                        result = db.insert(tableName, YouTubeVideoEntry.COLUMN_NAME_NULLABLE, values) > 0;
+                    }
+                } catch (Exception e) {
+                    Log.d(TAG, "create error :" + e.getMessage());
+                } finally {
+                    if (c != null) {
+                        c.close();
+                    }
+                }
             }
-            // Gets the data repository in write mode
-            SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-            // Create a new map of values, where column names are the keys
-            ContentValues values = new ContentValues();
-            values.put(YouTubeVideoEntry.COLUMN_VIDEO_ID, video.getId());
-            values.put(YouTubeVideoEntry.COLUMN_TITLE, video.getTitle());
-            values.put(YouTubeVideoEntry.COLUMN_DURATION, video.getDuration());
-            values.put(YouTubeVideoEntry.COLUMN_THUMBNAIL_URL, video.getThumbnailURL());
-            values.put(YouTubeVideoEntry.COLUMN_VIEWS_NUMBER, video.getViewCount());
-
-            return db.insert(tableName, YouTubeVideoEntry.COLUMN_NAME_NULLABLE, values) > 0;
+                return result;
         }
 
         /**
@@ -175,6 +205,7 @@ public class YouTubeSqlDb {
          * @return
          */
         public ArrayList<YouTubeVideo> readAll() {
+            Log.d(TAG,"readAll");
 
             final String SELECT_QUERY_ORDER_DESC = "SELECT * FROM " + tableName + " ORDER BY "
                     + YouTubeVideoEntry.COLUMN_ENTRY_ID + " DESC";
@@ -184,6 +215,7 @@ public class YouTubeSqlDb {
 
             Cursor c = null;
             try {
+                //新しいもの順にデータ返す
                 c = db.query(tableName, null, null, null, null, null, YouTubeVideoEntry.COLUMN_ENTRY_ID + " DESC");
                 while (c.moveToNext()) {
                     String videoId = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_VIDEO_ID));
@@ -194,7 +226,7 @@ public class YouTubeSqlDb {
                     list.add(new YouTubeVideo(videoId, title, thumbnailUrl, duration, viewsNumber));
                 }
             } catch (Exception e) {
-
+                Log.d(TAG,"readAll error :"+e.getMessage());
             } finally {
                 if (c != null) {
                     c.close();
@@ -323,7 +355,7 @@ public class YouTubeSqlDb {
         private static final String DATABASE_RECENTLY_WATCHED_TABLE_CREATE =
                 "CREATE TABLE " + RECENTLY_WATCHED_TABLE_NAME + "(" +
                         COLUMN_ENTRY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                        COLUMN_VIDEO_ID + " TEXT NOT NULL UNIQUE," +
+                        COLUMN_VIDEO_ID + " TEXT NOT NULL," +
                         COLUMN_TITLE + " TEXT NOT NULL," +
                         COLUMN_DURATION + " TEXT," +
                         COLUMN_THUMBNAIL_URL + " TEXT," +
