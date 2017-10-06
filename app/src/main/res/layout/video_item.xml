@@ -94,8 +94,6 @@
                 android:background="@drawable/add_button" />
 
 
-
-
         </RelativeLayout>
     </LinearLayout>
 </RelativeLayout>

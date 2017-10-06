@@ -155,6 +155,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private int initialColor = 0xffff0040;
     private int initialColors[] = new int[2];
 
+    static private int notificationId = 0;
+
     private SearchFragment searchFragment;
     private RecentlyWatchedFragment recentlyPlayedFragment;
     private FavoritesFragment favoritesFragment;
@@ -496,7 +498,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         MEDIAPLAYER_PAUSE = false;
         mMediaPlayer.start();
         mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
-        mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
+        mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
     }
 
     @Override
@@ -504,7 +506,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         MEDIAPLAYER_PAUSE = true;
         mMediaPlayer.pause();
         mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
-        mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
+        mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
     }
 
     @Override
@@ -818,7 +820,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     mRemoteViews.setTextViewText(R.id.title_view, VideoTitle);
                     mRemoteViews.setTextViewText(R.id.video_duration, video.getDuration());
                     mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
-                    mNotificationManagerCompat.notify(0, notification);
+                    mNotificationManagerCompat.notify(notificationId, notification);
 
                     /*バックグランド再生以外の時は動画画面付きで再生*/
 
@@ -1390,6 +1392,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         if (mMediaPlayer != null) {
             mMediaPlayer.release();
         }
+        mNotificationManagerCompat.cancel(notificationId);
     }
 
 
@@ -1400,12 +1403,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             if (!mMediaPlayer.isPlaying()) {
                 MEDIAPLAYER_PAUSE = false;
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
-                mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
+                mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
                 mMediaPlayer.start();
             } else {
                 MEDIAPLAYER_PAUSE = true;
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
-                mNotificationManagerCompat.notify(0, mNotificationCompatBuilder.build());
+                mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
                 mMediaPlayer.pause();
             }
 

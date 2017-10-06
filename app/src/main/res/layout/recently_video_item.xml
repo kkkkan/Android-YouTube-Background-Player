@@ -88,8 +88,7 @@
                 android:padding="20dp"
                 android:layout_toLeftOf="@id/musicDeleteButton"
                 android:layout_toStartOf="@id/musicDeleteButton"
-                android:background="@drawable/add_button"
-                 />
+                android:background="@drawable/add_button" />
 
             <ImageView
                 android:id="@+id/musicDeleteButton"
@@ -99,10 +98,7 @@
                 android:padding="20dp"
                 android:layout_toLeftOf="@id/shareButton"
                 android:layout_toStartOf="@id/shareButton"
-                android:background="@drawable/delete_music"
-                 />
-
-
+                android:background="@drawable/delete_music" />
 
 
         </RelativeLayout>

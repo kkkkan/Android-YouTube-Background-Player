@@ -94,8 +94,6 @@
                 android:background="@drawable/delete_music" />
 
 
-
-
         </RelativeLayout>
     </LinearLayout>
 </RelativeLayout>

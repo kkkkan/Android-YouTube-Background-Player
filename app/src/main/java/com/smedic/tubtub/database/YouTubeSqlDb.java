@@ -15,11 +15,9 @@
  */
 package com.smedic.tubtub.database;
 
-import android.app.DownloadManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
@@ -138,26 +136,26 @@ public class YouTubeSqlDb {
          * @return
          */
         public boolean create(YouTubeVideo video) {
-            Log.d(TAG,"create :"+video.getTitle());
+            Log.d(TAG, "create :" + video.getTitle());
                /*指定したビデオがあったらfalse*/
-                if (tableName.equals(FAVORITES_TABLE_NAME)&&checkIfExists(video.getId())) {
-                    //お気に入りリストは重複許さない
-                    return false;
-                }
+            if (tableName.equals(FAVORITES_TABLE_NAME) && checkIfExists(video.getId())) {
+                //お気に入りリストは重複許さない
+                return false;
+            }
 
-                // Gets the data repository in write mode
-                SQLiteDatabase db = dbHelper.getWritableDatabase();
+            // Gets the data repository in write mode
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-                // Create a new map of values, where column names are the keys
-                ContentValues values = new ContentValues();
-                values.put(YouTubeVideoEntry.COLUMN_VIDEO_ID, video.getId());
-                values.put(YouTubeVideoEntry.COLUMN_TITLE, video.getTitle());
-                values.put(YouTubeVideoEntry.COLUMN_DURATION, video.getDuration());
-                values.put(YouTubeVideoEntry.COLUMN_THUMBNAIL_URL, video.getThumbnailURL());
-                values.put(YouTubeVideoEntry.COLUMN_VIEWS_NUMBER, video.getViewCount());
+            // Create a new map of values, where column names are the keys
+            ContentValues values = new ContentValues();
+            values.put(YouTubeVideoEntry.COLUMN_VIDEO_ID, video.getId());
+            values.put(YouTubeVideoEntry.COLUMN_TITLE, video.getTitle());
+            values.put(YouTubeVideoEntry.COLUMN_DURATION, video.getDuration());
+            values.put(YouTubeVideoEntry.COLUMN_THUMBNAIL_URL, video.getThumbnailURL());
+            values.put(YouTubeVideoEntry.COLUMN_VIEWS_NUMBER, video.getViewCount());
 
-            boolean result=db.insert(tableName, YouTubeVideoEntry.COLUMN_NAME_NULLABLE, values) > 0;
-            if(result==false) {
+            boolean result = db.insert(tableName, YouTubeVideoEntry.COLUMN_NAME_NULLABLE, values) > 0;
+            if (result == false) {
                 //insert errror時=容量オーバーの可能性
                 Cursor c = null;
                 try {
@@ -178,7 +176,7 @@ public class YouTubeSqlDb {
                     }
                 }
             }
-                return result;
+            return result;
         }
 
         /**
@@ -205,7 +203,7 @@ public class YouTubeSqlDb {
          * @return
          */
         public ArrayList<YouTubeVideo> readAll() {
-            Log.d(TAG,"readAll");
+            Log.d(TAG, "readAll");
 
             final String SELECT_QUERY_ORDER_DESC = "SELECT * FROM " + tableName + " ORDER BY "
                     + YouTubeVideoEntry.COLUMN_ENTRY_ID + " DESC";
@@ -226,7 +224,7 @@ public class YouTubeSqlDb {
                     list.add(new YouTubeVideo(videoId, title, thumbnailUrl, duration, viewsNumber));
                 }
             } catch (Exception e) {
-                Log.d(TAG,"readAll error :"+e.getMessage());
+                Log.d(TAG, "readAll error :" + e.getMessage());
             } finally {
                 if (c != null) {
                     c.close();

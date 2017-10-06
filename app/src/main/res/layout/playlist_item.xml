@@ -78,6 +78,7 @@
                 android:layout_toLeftOf="@id/detail_button"
                 android:layout_toStartOf="@id/detail_button"
                 android:background="@drawable/share_button_selector" />
+
             <ImageView
                 android:id="@+id/delete_button"
                 android:layout_width="26dp"
@@ -87,9 +88,6 @@
                 android:layout_toLeftOf="@id/share_button"
                 android:layout_toStartOf="@id/share_button"
                 android:background="@drawable/delete_music" />
-
-
-
 
 
         </RelativeLayout>
