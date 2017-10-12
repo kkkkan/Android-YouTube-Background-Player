@@ -69,6 +69,7 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         favoriteVideos = new ArrayList<>();
+        favoriteVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).readAll());
     }
 
     @Override

@@ -77,6 +77,7 @@ public class RecentlyWatchedFragment extends BaseFragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         recentlyPlayedVideos = new ArrayList<>();
+        recentlyPlayedVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).readAll());
     }
 
     @Override

@@ -8,8 +8,8 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/cardview_shadow_end_color"
-        android:textColor="@android:color/white"
+        android:background="@color/aquamarine"
+        android:textColor="@android:color/black"
         android:gravity="center" />
 
 </FrameLayout>

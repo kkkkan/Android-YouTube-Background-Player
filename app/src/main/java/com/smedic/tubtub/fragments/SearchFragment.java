@@ -156,6 +156,13 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        //他のタブでのfavoriteの操作の結果を反映させるためにデータが変化したことをお知らせ
+        videoListAdapter.notifyDataSetChanged();
+    }
+
+    @Override
     public void onShareClicked(String itemId) {
         share(Config.SHARE_VIDEO_URL + itemId);
     }

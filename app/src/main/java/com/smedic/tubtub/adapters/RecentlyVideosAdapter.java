@@ -16,7 +16,6 @@ import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.model.YouTubeVideo;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,15 +25,16 @@ import java.util.List;
 public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAdapter.ViewHolder> {
     private Context context;
     private final List<YouTubeVideo> list;
-    private ArrayList<Boolean> itemCheck;
-    //private boolean[] itemChecked;
+    //private ArrayList<Boolean> itemCheck;
+    private boolean[] itemChecked;
     private ItemEventsListener<YouTubeVideo> itemEventsListener;
 
     public RecentlyVideosAdapter(Context context, List<YouTubeVideo> list) {
         super();
         this.list = list;
         this.context = context;
-        this.itemCheck = new ArrayList<>();
+        //this.itemCheck = new ArrayList<>();
+        this.itemChecked = new boolean[list.size()];
     }
 
     @Override
@@ -43,13 +43,19 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
         return new RecentlyVideosAdapter.ViewHolder(view);
     }
 
+
     @Override
     public void onBindViewHolder(RecentlyVideosAdapter.ViewHolder holder, final int position) {
         final YouTubeVideo video = list.get(position);
-        if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).checkIfExists(video.getId())) {
+        /*if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).checkIfExists(video.getId())) {
             itemCheck.add(true);
         } else {
             itemCheck.add(false);
+        }*/
+        if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).checkIfExists(video.getId())) {
+            itemChecked[position] = true;
+        } else {
+            itemChecked[position] = false;
         }
 
         Picasso.with(context).load(video.getThumbnailURL()).into(holder.thumbnail);
@@ -57,17 +63,26 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
         holder.duration.setText(video.getDuration());
         holder.viewCount.setText(video.getViewCount());
         holder.favoriteCheckBox.setOnCheckedChangeListener(null);
-        holder.favoriteCheckBox.setChecked(/*itemChecked[position]*/itemCheck.get(position));
+        holder.favoriteCheckBox.setChecked(itemChecked[position]/*itemCheck.get(position)*/);
 
-        holder.favoriteCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        /*holder.favoriteCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton btn, boolean isChecked) {
                 itemCheck.set(position, isChecked);
                 if (itemEventsListener != null) {
                     itemEventsListener.onFavoriteClicked(video, isChecked);
                 }
             }
-        });
+        });*/
 
+        /*お気に入りリストに入れたり抜いたり*/
+        holder.favoriteCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton btn, boolean isChecked) {
+                itemChecked[position] = isChecked;
+                if (itemEventsListener != null) {
+                    itemEventsListener.onFavoriteClicked(video, isChecked);
+                }
+            }
+        });
         holder.shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

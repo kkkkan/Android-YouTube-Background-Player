@@ -27,12 +27,11 @@ import android.widget.TextView;
 
 import com.smedic.tubtub.R;
 import com.smedic.tubtub.database.YouTubeSqlDb;
-import com.smedic.tubtub.fragments.FavoritesFragment;
 import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.model.YouTubeVideo;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -43,14 +42,16 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
 
     private Context context;
     private final List<YouTubeVideo> list;
-    private ArrayList<Boolean> itemCheck;
+    //private ArrayList<Boolean> itemCheck;
+    private Boolean[] itemChecked;
     private ItemEventsListener<YouTubeVideo> itemEventsListener;
 
     public VideosAdapter(Context context, List<YouTubeVideo> list) {
         super();
         this.list = list;
         this.context = context;
-        this.itemCheck = new ArrayList<>();
+        //this.itemCheck = new ArrayList<>();
+        this.itemChecked = new Boolean[list.size()];
     }
 
     @Override
@@ -63,10 +64,23 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
         final YouTubeVideo video = list.get(position);
-        if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).checkIfExists(video.getId())) {
+        /*if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).checkIfExists(video.getId())) {
             itemCheck.add(true);
         } else {
             itemCheck.add(false);
+        }
+        */
+
+        //favorite他のタブでfavoriteをいじられると合計数が変わることあるのでそのため
+        if (position >= itemChecked.length) {
+            List check = Arrays.asList(itemChecked);
+            itemChecked = (Boolean[]) check.toArray(new Boolean[position + 1]);
+        }
+
+        if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).checkIfExists(video.getId())) {
+            itemChecked[position] = true;
+        } else {
+            itemChecked[position] = false;
         }
 
         Picasso.with(context).load(video.getThumbnailURL()).into(holder.thumbnail);
@@ -74,10 +88,10 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
         holder.duration.setText(video.getDuration());
         holder.viewCount.setText(video.getViewCount());
         holder.favoriteCheckBox.setOnCheckedChangeListener(null);
-        holder.favoriteCheckBox.setChecked(/*itemChecked[position]*/itemCheck.get(position));
+        holder.favoriteCheckBox.setChecked(itemChecked[position]/*itemCheck.get(position)*/);
 
-        holder.favoriteCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            /*favoriteFragmentではすぐDBのテーブルから情報が消えるためリストがすぐ更新されるのでハートoffさせると表示がづれる。*/
+       /* holder.favoriteCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            //favoriteFragmentではすぐDBのテーブルから情報が消えるためリストがすぐ更新されるのでハートoffさせると表示がづれる。
             public void onCheckedChanged(CompoundButton btn, boolean isChecked) {
                 if (!(itemEventsListener instanceof FavoritesFragment)) {
                     itemCheck.set(position, isChecked);
@@ -86,6 +100,16 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
                     itemEventsListener.onFavoriteClicked(video, isChecked);
                 }
 
+            }
+        });*/
+
+         /*お気に入りリストに入れたり抜いたり*/
+        holder.favoriteCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton btn, boolean isChecked) {
+                itemChecked[position] = isChecked;
+                if (itemEventsListener != null) {
+                    itemEventsListener.onFavoriteClicked(video, isChecked);
+                }
             }
         });
 
