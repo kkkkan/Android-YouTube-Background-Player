@@ -39,7 +39,6 @@ import com.smedic.tubtub.youtube.YouTubePlaylistVideosLoader;
 import com.smedic.tubtub.youtube.YouTubeSingleton;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -236,8 +235,8 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                 if (swipeToRefresh.isRefreshing()) {
                     swipeToRefresh.setRefreshing(false);
                 }
-                playlistDetailList.clear();
-                playlistDetailList.addAll(Collections.<YouTubeVideo>emptyList());
+                /*playlistDetailList.clear();
+                playlistDetailList.addAll(Collections.<YouTubeVideo>emptyList());*/
             }
         }).forceLoad();
     }
