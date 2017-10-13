@@ -16,6 +16,7 @@ import com.smedic.tubtub.interfaces.ItemEventsListener;
 import com.smedic.tubtub.model.YouTubeVideo;
 import com.squareup.picasso.Picasso;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -52,6 +53,12 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
         } else {
             itemCheck.add(false);
         }*/
+
+        //最近見たリストで再生しているときにこれがないとリストが動的に数が増えるので落ちる
+        if (position >= itemChecked.length) {
+            List check = Arrays.asList(itemChecked);
+            itemChecked = (Boolean[]) check.toArray(new Boolean[position + 1]);
+        }
 
         if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).checkIfExists(video.getId())) {
             itemChecked[position] = true;
