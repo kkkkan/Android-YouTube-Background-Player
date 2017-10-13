@@ -30,7 +30,9 @@
 
     <string name="number_of_videos">Number of videos:</string>
     <string name="status">Status:</string>
-    <string name="all_permissions_request">Request permissions</string>
+    <string name="all_permissions_request">このアプリでYouTubeアカウント(Googleアカウント)にログインして連携するには連絡先と電話の許可が必要です。\n
+        YouTubeアカウントと連携しなくてもアプリは使えますがYouTubeで登録しているプレイリストの使用や編集はできません。
+        \nまた今許可やログインは行わなくても、アプリ右上のボタンを押すと出てくるログインボタンタブで、いつでも許可の付与やログイン、ログインしているアカウントの変更が出来ます。</string>
     <string name="ok">ok</string>
     <string name="choose_colors">Choose background and text color</string>
     <string name="cancel">cancel</string>

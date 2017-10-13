@@ -26,7 +26,7 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
     private Context context;
     private final List<YouTubeVideo> list;
     //private ArrayList<Boolean> itemCheck;
-    private boolean[] itemChecked;
+    private Boolean[] itemChecked;
     private ItemEventsListener<YouTubeVideo> itemEventsListener;
 
     public RecentlyVideosAdapter(Context context, List<YouTubeVideo> list) {
@@ -34,7 +34,7 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
         this.list = list;
         this.context = context;
         //this.itemCheck = new ArrayList<>();
-        this.itemChecked = new boolean[list.size()];
+        this.itemChecked = new Boolean[list.size()];
     }
 
     @Override
@@ -52,6 +52,7 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
         } else {
             itemCheck.add(false);
         }*/
+
         if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).checkIfExists(video.getId())) {
             itemChecked[position] = true;
         } else {

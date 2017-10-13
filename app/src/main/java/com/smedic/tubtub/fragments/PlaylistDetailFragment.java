@@ -235,6 +235,8 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                 if (swipeToRefresh.isRefreshing()) {
                     swipeToRefresh.setRefreshing(false);
                 }
+                /*これがあるとプレイリスト詳細から聞き始め、他の画面にいってバックグラウンド再生
+                * にしたときに次の曲に行けない*/
                 /*playlistDetailList.clear();
                 playlistDetailList.addAll(Collections.<YouTubeVideo>emptyList());*/
             }

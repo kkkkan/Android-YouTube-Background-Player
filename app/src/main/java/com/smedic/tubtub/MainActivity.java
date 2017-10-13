@@ -590,14 +590,21 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 // Request the GET_ACCOUNTS permission via a user dialog
                 EasyPermissions.requestPermissions(
                         this,
-                        "This app needs to access your Google account (via Contacts).",
+                        /*"This app needs to access your Google account (via Contacts)."*/"このアプリでYouTubeアカウントと連携するためにはグーグルアカウントが必要です。",
                         REQUEST_PERMISSION_GET_ACCOUNTS,
                         Manifest.permission.GET_ACCOUNTS);
             }
         } else {
-            // Do not have permissions, request them now
-            EasyPermissions.requestPermissions(this, getString(R.string.all_permissions_request),
-                    PERMISSIONS, perms);
+            final String[] finalperms = perms;
+            new AlertDialog.Builder(this).setCancelable(false).setMessage(getString(R.string.all_permissions_request)).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // Do not have permissions, request them now
+                    EasyPermissions.requestPermissions(MainActivity.this, getString(R.string.all_permissions_request),
+                            PERMISSIONS, finalperms);
+                }
+            }).show();
+
         }
     }
 
@@ -1316,7 +1323,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         } else if (id == R.id.log_in) {
             String[] perms = {Manifest.permission.GET_ACCOUNTS, Manifest.permission.READ_PHONE_STATE};
             if (!EasyPermissions.hasPermissions(this, perms)) {
-                EasyPermissions.requestPermissions(this, "YouTubeアカウントにlog inするには連絡先と電話の許可が必要です。\n許可してから再度log inし直してください。",
+                EasyPermissions.requestPermissions(this, "このアプリでYouTubeアカウントにログインして連携するには連絡先と電話の許可が必要です。" +
+                                "\n(YouTubeアカウントにログインしなくてもアプリ自体は使用できますがプレイリストの使用や作成や編集はできません。)",
                         PERMISSIONS, perms);
             } else {
                 startActivityForResult(
