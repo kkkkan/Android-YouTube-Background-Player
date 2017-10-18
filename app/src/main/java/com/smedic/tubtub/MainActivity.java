@@ -355,9 +355,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                if (currentVideoIndex + 1 < playlist.size()) {
-                    Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
-                    onPlaylistSelected(playlist, (currentVideoIndex + 1));
+                //ここでsize()のnull参照で落ちたため対策
+                if(playlist!=null) {
+                    if (currentVideoIndex + 1 < playlist.size()) {
+                        Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
+                        onPlaylistSelected(playlist, (currentVideoIndex + 1));
+                    }
                 }
             }
         });
@@ -372,7 +375,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 /*一周できるようにした*/
                 //START_INITIALのセットはonplaylistselsected()のなかでしている
                 Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
-                onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+                //playlistセットされてないときも押せてしまうからその時落ちないように
+                if(playlist!=null) {
+                    onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+                }
             }
         }, new View.OnClickListener() {
             @Override
@@ -381,7 +387,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 /*一周できるようにした*/
                 //START_INITIALのセットはonplaylistselsected()のなかでしている
                 Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
-                onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+                //playlistセットされてないときも押せてしまうからその時落ちないように
+                if(playlist!=null) {
+                    onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+                }
 
             }
         });
