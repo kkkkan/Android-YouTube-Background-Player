@@ -356,7 +356,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             @Override
             public void onCompletion(MediaPlayer mp) {
                 //ここでsize()のnull参照で落ちたため対策
-                if(playlist!=null) {
+                if (playlist != null) {
                     if (currentVideoIndex + 1 < playlist.size()) {
                         Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
                         onPlaylistSelected(playlist, (currentVideoIndex + 1));
@@ -376,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 //START_INITIALのセットはonplaylistselsected()のなかでしている
                 Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
                 //playlistセットされてないときも押せてしまうからその時落ちないように
-                if(playlist!=null) {
+                if (playlist != null) {
                     onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
                 }
             }
@@ -388,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 //START_INITIALのセットはonplaylistselsected()のなかでしている
                 Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
                 //playlistセットされてないときも押せてしまうからその時落ちないように
-                if(playlist!=null) {
+                if (playlist != null) {
                     onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
                 }
 

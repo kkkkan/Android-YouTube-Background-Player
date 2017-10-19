@@ -181,6 +181,7 @@ public class PlaylistsFragment extends BaseFragment implements
                 playlists.clear();
                 playlists.addAll(Collections.<YouTubePlaylist>emptyList());
                 playlistsAdapter.notifyDataSetChanged();
+                swipeToRefresh.setRefreshing(false);
             }
         }).forceLoad();
     }

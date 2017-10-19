@@ -33,7 +33,7 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
 
 
     private static final String TAG = "SMEDIC";
-    private static final String TAG_NAME = "kandabashi-YouTubePlaylistsLoader";
+    private static final String TAG_NAME = "ouTubePlaylistsLoader";
     /*googleのYouTubeAPIの登場*/
     private YouTube youtube = getYouTubeWithCredentials();
 
@@ -106,12 +106,10 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
                     Toast.makeText(new MainActivity().getMainContext(), "もう一度ログインしなおしてください。", Toast.LENGTH_LONG).show();
                 }
             });
-            cancelLoad();
             e.printStackTrace();
         } catch (IOException e) {
             Log.d(TAG_NAME, "YouTubePlaylistLoadrer-error");
             Log.d(TAG, "loadInBackground: " + e.getMessage());
-            cancelLoad();
             e.printStackTrace();
         }
         return Collections.emptyList();
