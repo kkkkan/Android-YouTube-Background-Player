@@ -1276,12 +1276,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
             AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
             alertDialog.setTitle(getString(R.string.myName));
-            alertDialog.setIcon(R.mipmap.ic_launcher);
+            alertDialog.setIcon(R.mipmap.youtube_icon);
 
             alertDialog.setMessage(getString(R.string.app_name) + " " + BuildConfig.VERSION_NAME + "\n\n" +
                     getString(R.string.email) + "\n\n" +
                     getString(R.string.date) + "\n");
-            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.ok),
+            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok),
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
