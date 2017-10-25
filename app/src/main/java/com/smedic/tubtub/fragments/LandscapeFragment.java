@@ -51,12 +51,22 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
         Log.d(TAG, "surfaceChanged");
         Activity activity = getActivity();
         if (activity instanceof MainActivity) {
-            ((MainActivity) activity).changeSurfaceHolderAndTitlebar(surfaceView, titleView);
+            ((MainActivity) activity).changeSurfaceHolderAndTitlebar(surfaceView.getHolder(), surfaceView, titleView);
         }
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.d(TAG, "surfaceDestroyed");
+        Activity activity = getActivity();
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).changeSurfaceHolderAndTitlebar(null, null, titleView);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause");
     }
 }
