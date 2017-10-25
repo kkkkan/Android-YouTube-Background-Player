@@ -26,7 +26,8 @@
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait">
+            android:configChanges="orientation|screenSize" >
+           <!-- android:screenOrientation="portrait">-->
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
