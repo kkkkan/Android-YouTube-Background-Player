@@ -14,6 +14,7 @@ import com.google.api.services.youtube.model.PlaylistListResponse;
 import com.smedic.tubtub.MainActivity;
 import com.smedic.tubtub.model.YouTubePlaylist;
 import com.smedic.tubtub.utils.Config;
+import com.smedic.tubtub.utils.NetworkConf;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,12 +47,12 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
     public List<YouTubePlaylist> loadInBackground() {
 
         Log.d(TAG_NAME, "playlistLoading");
-        /*アカウントが設定されてなかったら*/
-        if (getCredential().getSelectedAccountName() == null) {
+        //カウントが設定されてないorネットにつながっていなかったら
+        if (getCredential().getSelectedAccountName() == null || !NetworkConf.isNetworkAvailable(getContext())) {
             Log.d(TAG, "loadInBackground: account not picked!");
             return Collections.emptyList();
         }
-
+        Log.d(TAG_NAME, "playlistLoading");
         try {
             /*setMine→アカウントに登録されたチャンネルだけ返す。*/
             ChannelListResponse channelListResponse = youtube.channels().list("snippet").setMine(true).execute();

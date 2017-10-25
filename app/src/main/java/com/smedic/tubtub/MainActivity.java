@@ -18,7 +18,6 @@ package com.smedic.tubtub;
 import android.Manifest;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
@@ -29,16 +28,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.MatrixCursor;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
@@ -49,7 +47,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
@@ -67,7 +64,6 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.MediaController;
@@ -75,10 +71,6 @@ import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.flask.colorpicker.ColorPickerView;
-import com.flask.colorpicker.OnColorSelectedListener;
-import com.flask.colorpicker.builder.ColorPickerClickListener;
-import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -95,6 +87,7 @@ import com.smedic.tubtub.BroadcastReceiver.PrevReceiver;
 import com.smedic.tubtub.adapters.PlaylistsAdapter;
 import com.smedic.tubtub.database.YouTubeSqlDb;
 import com.smedic.tubtub.fragments.FavoritesFragment;
+import com.smedic.tubtub.fragments.LandscapeFragment;
 import com.smedic.tubtub.fragments.PlaylistDetailFragment;
 import com.smedic.tubtub.fragments.PlaylistTitleFragment;
 import com.smedic.tubtub.fragments.PlaylistsFragment;
@@ -138,7 +131,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private final Context mainContext = this;
 
     private static final String TAG = "SMEDIC MAIN ACTIVITY";
-    private static final String TAG_NAME = "kandabashi-MainActivity";
+    private static final String TAG_NAME = "MainActivity";
+    private static final String LandscapeFragmentTAG = "LandscapeFragmentTAG";
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -211,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         mPreview = (SurfaceView) findViewById(R.id.surface);
         if (mPreview == null) {
-            Log.d("TAG_NAME", "Surface is null!");
+            Log.d("TAG_NAME", "SurfaceView is null!");
         }
         mHolder = mPreview.getHolder();
         mHolder.addCallback(this);
@@ -302,13 +296,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         YouTubeSqlDb.getInstance().init(this);
 
+
+        /*if(config.orientation==Configuration.ORIENTATION_PORTRAIT) {
+            //縦の時のみ使うもの達*/
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
 
         /*アクションバーに戻るボタンをつけない*/
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-
         /*viewPageで保持するfragmentを三枚に設定*/
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         viewPager.setOffscreenPageLimit(3);
@@ -317,10 +313,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
+        setupTabIcons();
+        /*}*/
+
         networkConf = new NetworkConf(this);
 
-        setupTabIcons();
-        loadColor();
+        Configuration config = getResources().getConfiguration();
+        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE && savedInstanceState == null) {
+            //起動時横画面だったら
+            viewChangeWhenLandscape();
+        }
 
         requestPermissions();
     }
@@ -426,8 +428,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
         Log.d(TAG_NAME, "surfaceCreated");
-        mHolder = mPreview.getHolder();
-        videoCreate();
     }
 
     public void videoCreate() {
@@ -490,6 +490,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void surfaceChanged(SurfaceHolder paramSurfaceHolder, int paramInt1,
                                int paramInt2, int paramInt3) {
         Log.d(TAG_NAME, "surfaceChanged");
+        mHolder = mPreview.getHolder();
+        videoCreate();
     }
 
     @Override
@@ -497,7 +499,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Log.d(TAG_NAME, "surfaceDestroyed");
         //SURFACE_IS_EMPTYをfalse,COMPLETION_COUNTを0に
         mHolder = null;
-        mMediaPlayer.setDisplay(null);
+        try {
+            mMediaPlayer.setDisplay(null);
+        } catch (IllegalStateException e) {
+            //バックボタンでアプリを落としたとき用
+            //このままonDestroy()まで呼ばれるのでここはスルー
+        }
     }
 
     // ここから先はMediaController向け --------------------------
@@ -1142,8 +1149,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
 
-    /**/
-
     /**
      * Options menu in action bar
      *
@@ -1297,38 +1302,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         } else if (id == R.id.action_search) {
             MenuItemCompat.expandActionView(item);
             return true;
-        } else if (id == R.id.action_color_picker) {
-            /* Show color picker dialog */
-            ColorPickerDialogBuilder
-                    .with(this)
-                    .setTitle(getString(R.string.choose_colors))
-                    .initialColor(initialColor)
-                    .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
-                    .setPickerCount(2)
-                    .initialColors(initialColors)
-                    .density(12)
-                    .setOnColorSelectedListener(new OnColorSelectedListener() {
-                        @Override
-                        public void onColorSelected(int selectedColor) {
-                        }
-                    })
-                    .setPositiveButton(getString(R.string.ok), new ColorPickerClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
-                            //changeBackgroundColor(selectedColor);
-                            if (allColors != null) {
-                                setColors(allColors[0], allColors[1]);
-                            }
-                        }
-                    })
-                    .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                        }
-                    })
-                    .showColorEdit(true)
-                    .build()
-                    .show();
         } else if (id == R.id.log_in) {
             String[] perms = {Manifest.permission.GET_ACCOUNTS, Manifest.permission.READ_PHONE_STATE};
             if (!EasyPermissions.hasPermissions(this, perms)) {
@@ -1343,54 +1316,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-
-    /**
-     * Loads app theme color saved in preferences
-     */
-    private void loadColor() {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        int backgroundColor = sp.getInt(PREF_BACKGROUND_COLOR, -1);
-        int textColor = sp.getInt(PREF_TEXT_COLOR, -1);
-
-        if (backgroundColor != -1 && textColor != -1) {
-            setColors(backgroundColor, textColor);
-        } else {
-            initialColors = new int[]{
-                    ContextCompat.getColor(this, R.color.colorPrimary),
-                    ContextCompat.getColor(this, R.color.textColorPrimary)};
-        }
-    }
-
-    /**
-     * Save app theme color in preferences
-     */
-    private void setColors(int backgroundColor, int textColor) {
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setBackgroundColor(backgroundColor);
-        toolbar.setTitleTextColor(textColor);
-        TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
-        tabs.setBackgroundColor(backgroundColor);
-        tabs.setTabTextColors(textColor, textColor);
-        setStatusBarColor(backgroundColor);
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        sp.edit().putInt(PREF_BACKGROUND_COLOR, backgroundColor).apply();
-        sp.edit().putInt(PREF_TEXT_COLOR, textColor).apply();
-
-        initialColors[0] = backgroundColor;
-        initialColors[1] = textColor;
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void setStatusBarColor(int color) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            Window window = getWindow();
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.setStatusBarColor(color);
-        }
     }
 
 
@@ -1412,6 +1337,140 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mNotificationManagerCompat.cancel(notificationId);
     }
 
+    /*
+    * 横画面時の処理
+    * */
+    private void viewChangeWhenLandscape() {
+        //このままだと下のviewpageが見えていて且つタッチできてしまうので対策*
+        viewPager.setVisibility(View.INVISIBLE);
+        viewPager.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return false;
+            }
+        });
+        //tabも見えるし触れちゃうのでoffにする。
+        tabLayout.setVisibility(View.INVISIBLE);
+        tabLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return false;
+            }
+        });
+        //アクションバーも
+        toolbar.setVisibility(View.INVISIBLE);
+        toolbar.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return false;
+            }
+        });
+        //動画再生画面も
+        mPreview.setVisibility(View.INVISIBLE);
+        mPreview.setEnabled(false);
+        //タイトルバーも
+        mTextView.setVisibility(View.INVISIBLE);
+
+        //フラグメント追加
+        LandscapeFragment fragment = new LandscapeFragment();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.parent_layout, fragment, LandscapeFragmentTAG)
+                .commit();
+
+    }
+
+    /*
+    * UI上のビデオの描写先とタイトルバーが変更された時に
+     * それを反映させるために呼ばれる関数*/
+    public void changeSurfaceHolderAndTitlebar(SurfaceView surfaceView, TextView textView) {
+        surfaceView.getHolder().addCallback(this);
+        mHolder = surfaceView.getHolder();
+        mTextView = textView;
+        mMediaController.setAnchorView(surfaceView);
+        /*mMediaController表示のためのtouchlistener*/
+        surfaceView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.d(TAG_NAME, "onTouch");
+                boolean r = v instanceof SurfaceView;
+                boolean y = mMediaPlayer != null;
+                Log.d(TAG_NAME, String.valueOf(r) + String.valueOf(y));
+                if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView && mMediaPlayer != null) {
+                    if (!mMediaController.isShowing()) {
+                        mMediaController.show();
+                    } else {
+                        mMediaController.hide();
+                    }
+                }
+                return true;
+            }
+        });
+        mMediaPlayer.setDisplay(mHolder);
+        mTextView.setText(VideoTitle);
+    }
+
+    /*
+    * 縦画面になったときの処理
+    * */
+    private void viewChangeWhenPortrait() {
+        //フラグメント削除
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(LandscapeFragmentTAG);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .remove(fragment)
+                .commit();
+
+        //見え無くしたり触れなくしたものを直す
+        viewPager.setVisibility(View.VISIBLE);
+        viewPager.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return true;
+            }
+        });
+        //tabも見えるし触れちゃうのでoffにする。
+        tabLayout.setVisibility(View.VISIBLE);
+        tabLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return true;
+            }
+        });
+        //アクションバーも
+        toolbar.setVisibility(View.VISIBLE);
+        toolbar.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return true;
+            }
+        });
+
+        mPreview = (SurfaceView) findViewById(R.id.surface);
+        mPreview.setVisibility(View.VISIBLE);
+        mPreview.setEnabled(true);
+
+        mTextView = (TextView) findViewById(R.id.title_view);
+        mTextView.setVisibility(View.VISIBLE);
+
+        changeSurfaceHolderAndTitlebar(mPreview, mTextView);
+
+
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Log.d(TAG, "onConfigurationChanged");
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            //横画面になったら
+            viewChangeWhenLandscape();
+        } else {
+            //縦画面になったら
+            viewChangeWhenPortrait();
+        }
+
+    }
 
     private BroadcastReceiver pauseStartBroadcastReceiver = new BroadcastReceiver() {
         @Override
