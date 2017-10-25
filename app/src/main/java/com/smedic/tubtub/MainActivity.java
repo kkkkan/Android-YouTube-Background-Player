@@ -314,13 +314,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         tabLayout.setupWithViewPager(viewPager);
 
         setupTabIcons();
-        /*}*/
+
 
         networkConf = new NetworkConf(this);
-
         Configuration config = getResources().getConfiguration();
-        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE && savedInstanceState == null) {
-            //起動時横画面だったら
+        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            //横画面の時
             viewChangeWhenLandscape();
         }
 
@@ -332,6 +331,18 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     protected void onResume() {
         Log.d(TAG_NAME, "onResume");
         super.onResume();
+
+        if (mHolder == null) {
+            //アプリがフォアグランドにいるのに何かの処理が遅くてmHolder==nullになってしまっているとき
+            Configuration config = getResources().getConfiguration();
+            if (config.orientation == Configuration.ORIENTATION_PORTRAIT) {
+                //縦画面時
+                changeSurfaceHolderAndTitlebar(mPreview.getHolder(), mPreview, mTextView);
+            } else {
+                //横画面時
+                viewChangeWhenLandscape();
+            }
+        }
         // allow to continue playing media in the background.
         // バックグラウンド再生を許可する
         requestVisibleBehind(true);
@@ -490,6 +501,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void surfaceChanged(SurfaceHolder paramSurfaceHolder, int paramInt1,
                                int paramInt2, int paramInt3) {
         Log.d(TAG_NAME, "surfaceChanged");
+        Configuration config = getResources().getConfiguration();
+        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            //横画面だったら
+            return;
+        }
         mHolder = mPreview.getHolder();
         videoCreate();
     }
@@ -1371,21 +1387,26 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         //タイトルバーも
         mTextView.setVisibility(View.INVISIBLE);
 
-        //フラグメント追加
-        LandscapeFragment fragment = new LandscapeFragment();
-        getSupportFragmentManager()
-                .beginTransaction()
-                .add(R.id.parent_layout, fragment, LandscapeFragmentTAG)
-                .commit();
 
+        //フラグメント追加
+        Fragment fragment = new LandscapeFragment();
+        FragmentTransaction transaction = getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.parent_layout, fragment, LandscapeFragmentTAG);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     /*
     * UI上のビデオの描写先とタイトルバーが変更された時に
      * それを反映させるために呼ばれる関数*/
-    public void changeSurfaceHolderAndTitlebar(SurfaceView surfaceView, TextView textView) {
-        surfaceView.getHolder().addCallback(this);
-        mHolder = surfaceView.getHolder();
+    public void changeSurfaceHolderAndTitlebar(SurfaceHolder holder, SurfaceView surfaceView, TextView textView) {
+        //surfaceView.getHolder().addCallback(this);
+        mHolder = holder;
+        mMediaPlayer.setDisplay(holder);
+        if (holder == null) {
+            return;
+        }
         mTextView = textView;
         mMediaController.setAnchorView(surfaceView);
         /*mMediaController表示のためのtouchlistener*/
@@ -1406,7 +1427,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 return true;
             }
         });
-        mMediaPlayer.setDisplay(mHolder);
         mTextView.setText(VideoTitle);
     }
 
@@ -1453,7 +1473,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mTextView = (TextView) findViewById(R.id.title_view);
         mTextView.setVisibility(View.VISIBLE);
 
-        changeSurfaceHolderAndTitlebar(mPreview, mTextView);
+        changeSurfaceHolderAndTitlebar(mPreview.getHolder(), mPreview, mTextView);
 
 
     }
