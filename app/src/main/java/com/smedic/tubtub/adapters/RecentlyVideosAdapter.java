@@ -1,10 +1,13 @@
 package com.smedic.tubtub.adapters;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.TouchDelegate;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -148,7 +151,7 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
         ImageView addButton;
         ImageView deleteButton;
 
-        public ViewHolder(View itemView) {
+        public ViewHolder(final View itemView) {
             super(itemView);
             thumbnail = (ImageView) itemView.findViewById(R.id.video_thumbnail);
             title = (TextView) itemView.findViewById(R.id.video_title);
@@ -158,6 +161,21 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
             shareButton = (ImageView) itemView.findViewById(R.id.shareButton);
             addButton = (ImageView) itemView.findViewById(R.id.PlaylistAddButton);
             deleteButton = (ImageView) itemView.findViewById(R.id.musicDeleteButton);
+
+            itemView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    int dp = 4;
+                    int px = (int)(itemView.getResources().getDisplayMetrics().density * dp);
+                    Rect delegateArea = new Rect();
+                    favoriteCheckBox.getHitRect(delegateArea);
+                    delegateArea.top -= px;
+                    delegateArea.left -= px;
+                    delegateArea.right += px;
+                    delegateArea.bottom += px;
+                    ((View)favoriteCheckBox.getParent()).setTouchDelegate(new TouchDelegate(delegateArea, favoriteCheckBox));
+                }
+            });
         }
     }
 
