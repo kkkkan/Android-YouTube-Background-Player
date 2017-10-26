@@ -166,14 +166,14 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
                 @Override
                 public void onGlobalLayout() {
                     int dp = 4;
-                    int px = (int)(itemView.getResources().getDisplayMetrics().density * dp);
+                    int px = (int) (itemView.getResources().getDisplayMetrics().density * dp);
                     Rect delegateArea = new Rect();
                     favoriteCheckBox.getHitRect(delegateArea);
                     delegateArea.top -= px;
                     delegateArea.left -= px;
                     delegateArea.right += px;
                     delegateArea.bottom += px;
-                    ((View)favoriteCheckBox.getParent()).setTouchDelegate(new TouchDelegate(delegateArea, favoriteCheckBox));
+                    ((View) favoriteCheckBox.getParent()).setTouchDelegate(new TouchDelegate(delegateArea, favoriteCheckBox));
                 }
             });
         }
