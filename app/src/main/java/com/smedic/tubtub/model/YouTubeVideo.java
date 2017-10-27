@@ -27,6 +27,8 @@ public class YouTubeVideo implements Serializable {
     private String thumbnailURL;
     private String duration;
     private String viewCount;
+    //DBから取り出すときだけ使う、オートインクリメントのユニークID入れておく用のString
+    private String uniqeId;
 
     public YouTubeVideo() {
         this.id = "";
@@ -34,6 +36,7 @@ public class YouTubeVideo implements Serializable {
         this.thumbnailURL = "";
         this.duration = "";
         this.viewCount = "";
+        this.uniqeId = "";
     }
 
     public YouTubeVideo(YouTubeVideo newVideo) {
@@ -44,12 +47,13 @@ public class YouTubeVideo implements Serializable {
         this.viewCount = newVideo.viewCount;
     }
 
-    public YouTubeVideo(String id, String title, String thumbnailURL, String duration, String viewCount) {
+    public YouTubeVideo(String id, String title, String thumbnailURL, String duration, String viewCount, String uniqeId) {
         this.id = id;
         this.title = title;
         this.thumbnailURL = thumbnailURL;
         this.duration = duration;
         this.viewCount = viewCount;
+        this.uniqeId = uniqeId;
     }
 
 
@@ -91,6 +95,14 @@ public class YouTubeVideo implements Serializable {
 
     public void setViewCount(String viewCount) {
         this.viewCount = viewCount;
+    }
+
+    public String getUniqeId() {
+        return uniqeId;
+    }
+
+    public void setUniqeId(String uniqeId) {
+        this.uniqeId = uniqeId;
     }
 
     @Override

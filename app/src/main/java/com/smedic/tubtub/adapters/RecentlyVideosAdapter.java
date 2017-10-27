@@ -130,6 +130,7 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
             }
         });
 
+
         holder.itemView.setTag(video);
 
 

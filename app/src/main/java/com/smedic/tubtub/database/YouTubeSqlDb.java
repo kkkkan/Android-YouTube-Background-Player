@@ -221,7 +221,8 @@ public class YouTubeSqlDb {
                     String duration = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_DURATION));
                     String thumbnailUrl = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_THUMBNAIL_URL));
                     String viewsNumber = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_VIEWS_NUMBER));
-                    list.add(new YouTubeVideo(videoId, title, thumbnailUrl, duration, viewsNumber));
+                    String uniqeId = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_ENTRY_ID));
+                    list.add(new YouTubeVideo(videoId, title, thumbnailUrl, duration, viewsNumber, uniqeId));
                 }
             } catch (Exception e) {
                 Log.d(TAG, "readAll error :" + e.getMessage());
@@ -234,14 +235,25 @@ public class YouTubeSqlDb {
         }
 
         /**
-         * Deletes video entry with provided ID
+         * Deletes video entry with provided VideoID
          *
          * @param videoId
          * @return
          */
-        public boolean delete(String videoId) {
+        public boolean deleteByVideoId(String videoId) {
             return dbHelper.getWritableDatabase().delete(tableName,
                     YouTubeVideoEntry.COLUMN_VIDEO_ID + "='" + videoId + "'", null) > 0;
+        }
+
+        /**
+         * Deletes video entry with provided UniqueID
+         *
+         * @param videoId
+         * @return
+         */
+        public boolean deleteByUniqueId(String videoId) {
+            return dbHelper.getWritableDatabase().delete(tableName,
+                    YouTubeVideoEntry.COLUMN_ENTRY_ID + "='" + videoId + "'", null) > 0;
         }
 
         /**

@@ -32,7 +32,7 @@ import static com.smedic.tubtub.youtube.YouTubeSingleton.getInstance;
 public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVideo>> {
 
     private final static String TAG = "SMEDIC";
-    private final static String TAG_NAME = "YouTubePlaylistVideosLoader";
+    private final static String TAG_NAME = "YouTubePlaylistVideosLo";
     private YouTube youtube = getInstance().getYouTubeWithCredentials();//getYouTube();
     private String playlistId;
 
@@ -147,7 +147,6 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
             YouTubeVideo youTubeVideo = new YouTubeVideo();
             youTubeVideo.setId(playlistItem.getContentDetails().getVideoId());
             youTubeVideo.setTitle(playlistItem.getSnippet().getTitle());
-
             ThumbnailDetails thumbnailDetails = playlistItem.getSnippet().getThumbnails();
 
             if (thumbnailDetails != null) {

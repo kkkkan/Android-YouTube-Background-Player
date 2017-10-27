@@ -168,14 +168,43 @@ public class RecentlyWatchedFragment extends BaseFragment implements
         AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
         dialog.setTitle("削除").setMessage(video.getTitle() + "\nを履歴から削除しますか？")
                 .setNegativeButton("Cancel", null)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                .setNeutralButton("履歴からこのビデオをすべて消す", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
+                                //履歴からビデオIDが同じものをすべて消す
+                                if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).deleteByVideoId(video.getId())) {
+                                    mainHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getContext(), "削除に成功しました。", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                } else {
+                                    Log.d(TAG, "RecentlyWztchedFragment-delete-error-" + video.getTitle());
+                                    mainHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getContext(), "削除に失敗しました。", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                }
 
-                                if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).delete(video.getId())) {
+                            }
+
+                        }).start();
+                    }
+                })
+                .setPositiveButton("この1つだけ消す", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //ユニークIDでひとつづつ消す
+                                if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).deleteByUniqueId(video.getUniqeId())) {
                                     mainHandler.post(new Runnable() {
                                         @Override
                                         public void run() {

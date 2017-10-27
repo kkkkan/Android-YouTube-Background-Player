@@ -136,7 +136,7 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
     }
 
     public void removeFromFavorites(YouTubeVideo video) {
-        YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).delete(video.getId());
+        YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).deleteByVideoId(video.getId());
         favoriteVideos.remove(video);
         videoListAdapter.notifyDataSetChanged();
     }
