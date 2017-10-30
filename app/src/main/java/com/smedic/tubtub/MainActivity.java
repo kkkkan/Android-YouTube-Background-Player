@@ -28,6 +28,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.database.MatrixCursor;
 import android.graphics.Color;
@@ -1526,11 +1527,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         Log.d(TAG, "onConfigurationChanged");
-        if (screenLock.equals(ScreenLock.ON)) {
-            //横ロックだったら回転感知しない
-            Log.d(TAG, "screenLock==ScreenLock.ON");
-            return;
-        }
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             //横画面になったら
             viewChangeWhenLandscape();
@@ -1559,9 +1555,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void lockCheckListener() {
         switch (screenLock) {
             case ON:
+                //画面回転解禁
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
                 screenLock = ScreenLock.OFF;
                 break;
             case OFF:
+                //画面横固定
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 screenLock = ScreenLock.ON;
                 break;
         }
