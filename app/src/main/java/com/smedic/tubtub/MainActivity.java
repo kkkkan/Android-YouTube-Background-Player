@@ -65,6 +65,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.MediaController;
 import android.widget.RemoteViews;
@@ -95,6 +96,7 @@ import com.smedic.tubtub.fragments.RecentlyWatchedFragment;
 import com.smedic.tubtub.fragments.SearchFragment;
 import com.smedic.tubtub.interfaces.OnFavoritesSelected;
 import com.smedic.tubtub.interfaces.OnItemSelected;
+import com.smedic.tubtub.interfaces.TitlebarListener;
 import com.smedic.tubtub.model.YouTubePlaylist;
 import com.smedic.tubtub.model.YouTubeVideo;
 import com.smedic.tubtub.utils.Config;
@@ -121,7 +123,7 @@ import static com.smedic.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentia
  * Activity that manages fragments and action bar
  */
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
-        OnItemSelected, OnFavoritesSelected, SurfaceHolder.Callback, MediaController.MediaPlayerControl, PlaylistsAdapter.OnDetailClickListener {
+        OnItemSelected, OnFavoritesSelected, SurfaceHolder.Callback, MediaController.MediaPlayerControl, PlaylistsAdapter.OnDetailClickListener, TitlebarListener {
     public static Handler mainHandler = new Handler();
 
     public Context getMainContext() {
@@ -138,16 +140,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private ViewPager viewPager;
 
     private static final int PERMISSIONS = 1;
-    private static final String PREF_BACKGROUND_COLOR = "BACKGROUND_COLOR";
-    private static final String PREF_TEXT_COLOR = "TEXT_COLOR";
     public static final String PREF_ACCOUNT_NAME = "accountName";
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
     static final int REQUEST_CODE_TOKEN_AUTH = 1006;
 
-    private int initialColor = 0xffff0040;
-    private int initialColors[] = new int[2];
 
     static private int notificationId = 0;
 
@@ -167,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private NotificationCompat.Builder mNotificationCompatBuilder;
     private NotificationManagerCompat mNotificationManagerCompat;
     private RemoteViews mRemoteViews;
+    private CheckBox repeatBox;
 
 
     /*動画タイトル用*/
@@ -183,6 +182,27 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     * videoCreate()でのみ使用(read)*/
     private boolean MEDIAPLAYER_PAUSE = false;
 
+
+    /*横画面ロックか否かのための
+    * フラグ*/
+    private enum ScreenLock {
+        ON,
+        OFF
+    }
+
+    public ScreenLock screenLock = ScreenLock.OFF;
+
+    /*
+    一曲リピートか否かのためのフラグ
+    * */
+    public enum Repeat {
+        ON,
+        OFF
+    }
+
+    private Repeat repeat = Repeat.OFF;
+
+
     private int[] tabIcons = {
             R.drawable.ic_action_heart,
             R.drawable.ic_recently_wached,
@@ -191,6 +211,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     };
 
     private NetworkConf networkConf;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -260,6 +281,25 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         mRemoteViews.setTextColor(R.id.title_view, Color.BLACK);
         mRemoteViews.setTextColor(R.id.video_duration, Color.BLACK);
+
+        //タイトルバーの1リピートチェックボックスについての設定
+        repeatBox = (CheckBox) findViewById(R.id.repeat_box);
+        boolean bool = false;
+        switch (repeat) {
+            case ON:
+                bool = true;
+                break;
+            case OFF:
+                bool = false;
+                break;
+        }
+        repeatBox.setChecked(bool);
+        repeatBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                repeatCheckListener();
+            }
+        });
 
 
         mNotificationCompatBuilder = new NotificationCompat.Builder(getApplicationContext());
@@ -368,11 +408,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                //ここでsize()のnull参照で落ちたため対策
-                if (playlist != null) {
-                    if (currentVideoIndex + 1 < playlist.size()) {
-                        Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
-                        onPlaylistSelected(playlist, (currentVideoIndex + 1));
+                Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
+                if (repeat == Repeat.ON) {
+                    //1曲リピート時
+                    onPlaylistSelected(playlist, currentVideoIndex);
+                } else {
+                    //ここでsize()のnull参照で落ちたため対策
+                    if (playlist != null) {
+                        //プレイリストは常にリピート再生モードで
+                        onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
                     }
                 }
             }
@@ -1354,6 +1398,39 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     /*
+    * UI上のビデオの描写先とタイトルバーが変更された時に
+     * それを反映させるために呼ばれる関数*/
+    public void changeSurfaceHolderAndTitlebar(SurfaceHolder holder, SurfaceView surfaceView, TextView textView) {
+        //surfaceView.getHolder().addCallback(this);
+        mHolder = holder;
+        mMediaPlayer.setDisplay(holder);
+        if (holder == null) {
+            return;
+        }
+        mTextView = textView;
+        mMediaController.setAnchorView(surfaceView);
+        /*mMediaController表示のためのtouchlistener*/
+        surfaceView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.d(TAG_NAME, "onTouch");
+                boolean r = v instanceof SurfaceView;
+                boolean y = mMediaPlayer != null;
+                Log.d(TAG_NAME, String.valueOf(r) + String.valueOf(y));
+                if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView && mMediaPlayer != null) {
+                    if (!mMediaController.isShowing()) {
+                        mMediaController.show();
+                    } else {
+                        mMediaController.hide();
+                    }
+                }
+                return true;
+            }
+        });
+        mTextView.setText(VideoTitle);
+    }
+
+    /*
     * 横画面時の処理
     * */
     private void viewChangeWhenLandscape() {
@@ -1387,9 +1464,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         //タイトルバーも
         mTextView.setVisibility(View.INVISIBLE);
 
-
         //フラグメント追加
-        Fragment fragment = new LandscapeFragment();
+        Fragment fragment = LandscapeFragment.getNewLandscapeFragment(this, repeat);
         FragmentTransaction transaction = getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.parent_layout, fragment, LandscapeFragmentTAG);
@@ -1397,38 +1473,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         transaction.commit();
     }
 
-    /*
-    * UI上のビデオの描写先とタイトルバーが変更された時に
-     * それを反映させるために呼ばれる関数*/
-    public void changeSurfaceHolderAndTitlebar(SurfaceHolder holder, SurfaceView surfaceView, TextView textView) {
-        //surfaceView.getHolder().addCallback(this);
-        mHolder = holder;
-        mMediaPlayer.setDisplay(holder);
-        if (holder == null) {
-            return;
-        }
-        mTextView = textView;
-        mMediaController.setAnchorView(surfaceView);
-        /*mMediaController表示のためのtouchlistener*/
-        surfaceView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                Log.d(TAG_NAME, "onTouch");
-                boolean r = v instanceof SurfaceView;
-                boolean y = mMediaPlayer != null;
-                Log.d(TAG_NAME, String.valueOf(r) + String.valueOf(y));
-                if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView && mMediaPlayer != null) {
-                    if (!mMediaController.isShowing()) {
-                        mMediaController.show();
-                    } else {
-                        mMediaController.hide();
-                    }
-                }
-                return true;
-            }
-        });
-        mTextView.setText(VideoTitle);
-    }
 
     /*
     * 縦画面になったときの処理
@@ -1482,12 +1526,44 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         Log.d(TAG, "onConfigurationChanged");
+        if (screenLock.equals(ScreenLock.ON)) {
+            //横ロックだったら回転感知しない
+            Log.d(TAG, "screenLock==ScreenLock.ON");
+            return;
+        }
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             //横画面になったら
             viewChangeWhenLandscape();
         } else {
             //縦画面になったら
             viewChangeWhenPortrait();
+            screenLock = ScreenLock.OFF;
+        }
+
+    }
+
+    @Override
+    public void repeatCheckListener() {
+        Log.d(TAG, "repeatCheckListener()");
+        switch (repeat) {
+            case ON:
+                repeat = Repeat.OFF;
+                break;
+            case OFF:
+                repeat = Repeat.ON;
+                break;
+        }
+    }
+
+    @Override
+    public void lockCheckListener() {
+        switch (screenLock) {
+            case ON:
+                screenLock = ScreenLock.OFF;
+                break;
+            case OFF:
+                screenLock = ScreenLock.ON;
+                break;
         }
 
     }
