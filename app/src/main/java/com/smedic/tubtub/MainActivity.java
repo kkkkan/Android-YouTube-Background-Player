@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private NotificationCompat.Builder mNotificationCompatBuilder;
     private NotificationManagerCompat mNotificationManagerCompat;
     private RemoteViews mRemoteViews;
-    private CheckBox repeatBox;
+    private CheckBox repeatOneBox;
 
 
     /*動画タイトル用*/
@@ -284,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mRemoteViews.setTextColor(R.id.video_duration, Color.BLACK);
 
         //タイトルバーの1リピートチェックボックスについての設定
-        repeatBox = (CheckBox) findViewById(R.id.repeat_box);
+        repeatOneBox = (CheckBox) findViewById(R.id.repeat_one_box);
         boolean bool = false;
         switch (repeat) {
             case ON:
@@ -294,8 +294,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 bool = false;
                 break;
         }
-        repeatBox.setChecked(bool);
-        repeatBox.setOnClickListener(new View.OnClickListener() {
+        repeatOneBox.setChecked(bool);
+        repeatOneBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 repeatCheckListener();

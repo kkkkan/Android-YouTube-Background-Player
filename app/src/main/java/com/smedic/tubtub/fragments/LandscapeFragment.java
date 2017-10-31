@@ -24,7 +24,7 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
     private final static String TAG = "LandscapeFragment";
     private SurfaceView surfaceView;
     private TextView titleView;
-    private CheckBox repeatBox;
+    private CheckBox repeatOneBox;
     private CheckBox lockBox;
     private MainActivity.Repeat repeat;
     private TitlebarListener titlebarListener;
@@ -53,7 +53,7 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
         surfaceView.getHolder().addCallback(this);
         titleView = (TextView) view.findViewById(R.id.title_view);
         lockBox = (CheckBox) view.findViewById(R.id.lock_box);
-        repeatBox = (CheckBox) view.findViewById(R.id.repeat_box);
+        repeatOneBox = (CheckBox) view.findViewById(R.id.repeat_one_box);
         //repeatするかどうかは縦画面から横画面にいっても保持
         boolean bool = false;
         switch (repeat) {
@@ -64,7 +64,7 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
                 bool = false;
                 break;
         }
-        repeatBox.setChecked(bool);
+        repeatOneBox.setChecked(bool);
 
         //チェックボックスにクリックリスナー設置
         lockBox.setOnClickListener(new View.OnClickListener() {
@@ -73,7 +73,7 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
                 titlebarListener.lockCheckListener();
             }
         });
-        repeatBox.setOnClickListener(new View.OnClickListener() {
+        repeatOneBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 titlebarListener.repeatCheckListener();

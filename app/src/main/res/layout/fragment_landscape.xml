@@ -43,13 +43,25 @@
             <CheckBox
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:background="@drawable/playlist_repeat_selector"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:button="@null"
+                android:layout_toLeftOf="@id/repeat_one_box"
+                android:id="@+id/repeat_box" />
+
+            <CheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
                 android:background="@drawable/repeat_selector"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="20dp"
                 android:button="@null"
-                android:id="@+id/repeat_box" />
+                android:id="@+id/repeat_one_box" />
         </RelativeLayout>
     </FrameLayout>
 
