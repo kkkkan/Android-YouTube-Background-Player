@@ -225,30 +225,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().setFormat(PixelFormat.TRANSPARENT);
 
-        mPreview = (SurfaceView) findViewById(R.id.surface);
-        if (mPreview == null) {
-            Log.d("TAG_NAME", "SurfaceView is null!");
-        }
-        mHolder = mPreview.getHolder();
-        mHolder.addCallback(this);
 
-        // MediaPlayerを利用する
-        mMediaPlayer = new MediaPlayer();
-
-        // MediaControllerを利用する
-        mMediaController = new MediaController(this);
-        mMediaController.setMediaPlayer(this);
-        mMediaController.setAnchorView(mPreview);
-        mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-            @Override
-            public boolean onError(MediaPlayer mp, int what, int extra) {
-                //idel状態でstart()等を呼ぶと
-                //通常は起きない
-                Log.d(TAG_NAME, "onError:\nwhat:" + String.valueOf(what)
-                        + "\n extra:" + String.valueOf(extra));
-                return false;//setOnComplateListener呼ぶ
-            }
-        });
 
         /*
         *Notificationの設定
@@ -310,25 +287,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mNotificationManagerCompat = NotificationManagerCompat.from(this);
 
 
-        /*mMediaController表示のためのtouchlistener*/
-        mPreview.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                Log.d(TAG_NAME, "onTouch");
-                boolean r = v instanceof SurfaceView;
-                boolean y = mMediaPlayer != null;
-                Log.d(TAG_NAME, String.valueOf(r) + String.valueOf(y));
-                if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView && mMediaPlayer != null) {
-                    if (!mMediaController.isShowing()) {
-                        mMediaController.show();
-                    } else {
-                        mMediaController.hide();
-                    }
-                }
-                return true;
-            }
-        });
-
         mTextView = (TextView) findViewById(R.id.title_view);
         mListDlg = new AlertDialog.Builder(this);
         mTitleDlg = new AlertDialog.Builder(this);
@@ -337,6 +295,72 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         YouTubeSqlDb.getInstance().init(this);
 
+
+        // MediaPlayerの設定・画面についてはonResume()で設定する。そうしないとバックからフォアに来るときに落ちることがあるため。
+        mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                //idel状態でstart()等を呼ぶと
+                //通常は起きない
+                Log.d(TAG_NAME, "onError:\nwhat:" + String.valueOf(what)
+                        + "\n extra:" + String.valueOf(extra));
+                return false;//setOnComplateListener呼ぶ
+            }
+        });
+
+         /*終了後次の曲に行くためのリスナー*/
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
+                if (repeat == Repeat.ON) {
+                    //1曲リピート時
+                    onPlaylistSelected(playlist, currentVideoIndex);
+                } else {
+                    //ここでsize()のnull参照で落ちたため対策
+                    if (playlist != null) {
+                        //プレイリストは常にリピート再生モードで
+                        onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+                    }
+                }
+            }
+        });
+
+
+        // MediaControllerの設定
+        mMediaController = new MediaController(this);
+        mMediaController.setMediaPlayer(this);
+        /*戻るボタン・進むボタン*/
+        mMediaController.setPrevNextListeners(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //next button clicked
+                /*一周できるようにした*/
+                //START_INITIALのセットはonplaylistselsected()のなかでしている
+                Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
+                //playlistセットされてないときも押せてしまうからその時落ちないように
+                if (playlist != null) {
+                    onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+                }
+            }
+        }, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //previous button clicked
+                /*一周できるようにした*/
+                //START_INITIALのセットはonplaylistselsected()のなかでしている
+                Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
+                //playlistセットされてないときも押せてしまうからその時落ちないように
+                if (playlist != null) {
+                    onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+                }
+
+            }
+        });
+
+        //横画面から始めた時にmPreview等をonCreate()で作っておかないと落ちる
+        makeSurfaceViewAndMediaControllerSetting();
 
         /*if(config.orientation==Configuration.ORIENTATION_PORTRAIT) {
             //縦の時のみ使うもの達*/
@@ -367,23 +391,37 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         requestPermissions();
     }
 
+    public void onRestart() {
+        super.onRestart();
+        Log.d(TAG_NAME, "onRestart");
+    }
+
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG_NAME, "onStart");
+
+    }
 
     @SuppressLint("NewApi")
     protected void onResume() {
         Log.d(TAG_NAME, "onResume");
         super.onResume();
 
-        if (mHolder == null) {
-            //アプリがフォアグランドにいるのに何かの処理が遅くてmHolder==nullになってしまっているとき
-            Configuration config = getResources().getConfiguration();
-            if (config.orientation == Configuration.ORIENTATION_PORTRAIT) {
-                //縦画面時
-                changeSurfaceHolderAndTitlebar(mPreview.getHolder(), mPreview, mTextView);
-            } else {
-                //横画面時
-                viewChangeWhenLandscape();
-            }
+        //ここで改めてmPreviewを作り直さないと、バック画面→ロック→アプリに戻ると落ちる
+        makeSurfaceViewAndMediaControllerSetting();
+
+
+       /*
+        Configuration config = getResources().getConfiguration();
+        if (config.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            //縦画面時
+            changeSurfaceHolderAndTitlebar(mPreview.getHolder(), mPreview, mTextView);
+        } else {
+            //横画面時
+            viewChangeWhenLandscape();
         }
+        */
+
         // allow to continue playing media in the background.
         // バックグラウンド再生を許可する
         requestVisibleBehind(true);
@@ -403,56 +441,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         intentFilter.addAction(NextReceiver.ACTION);
         registerReceiver(nextBroadcastReceiver, intentFilter);
 
-
-
-     /*終了後次の曲に行くためのリスナー*/
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                Log.d(TAG_NAME, " mMediaController.setOnCompletionListener");
-                if (repeat == Repeat.ON) {
-                    //1曲リピート時
-                    onPlaylistSelected(playlist, currentVideoIndex);
-                } else {
-                    //ここでsize()のnull参照で落ちたため対策
-                    if (playlist != null) {
-                        //プレイリストは常にリピート再生モードで
-                        onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
-                    }
-                }
-            }
-        });
-
-
-
-        /*戻るボタン・進むボタン*/
-        mMediaController.setPrevNextListeners(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //next button clicked
-                /*一周できるようにした*/
-                //START_INITIALのセットはonplaylistselsected()のなかでしている
-                Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
-                //playlistセットされてないときも押せてしまうからその時落ちないように
-                if (playlist != null) {
-                    onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
-                }
-            }
-        }, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //previous button clicked
-                /*一周できるようにした*/
-                //START_INITIALのセットはonplaylistselsected()のなかでしている
-                Log.d(TAG_NAME, " mMediaController.setPrevNextListeners");
-                //playlistセットされてないときも押せてしまうからその時落ちないように
-                if (playlist != null) {
-                    onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
-                }
-
-            }
-        });
-
     }
 
     @Override
@@ -462,22 +450,55 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
 
-    public void onStart() {
-        super.onStart();
-        Log.d(TAG_NAME, "onStart");
-
-    }
-
-    public void onRestart() {
-        super.onRestart();
-        Log.d(TAG_NAME, "onRestart");
-    }
-
     public void onStop() {
         super.onStop();
         Log.d(TAG_NAME, "onStop");
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mMediaPlayer != null) {
+            mMediaPlayer.release();
+        }
+        mNotificationManagerCompat.cancel(notificationId);
+    }
+
+    /**
+     * mPreviewを作り直す
+     * それに伴いmMediaplayerの投影先とmHolderも作り直し
+     */
+    private void makeSurfaceViewAndMediaControllerSetting() {
+        mPreview = (SurfaceView) findViewById(R.id.surface);
+        if (mPreview == null) {
+            Log.d("TAG_NAME", "SurfaceView is null!");
+        }
+        mHolder = mPreview.getHolder();
+        mHolder.addCallback(this);
+
+         /*mMediaController表示のためのtouchlistener*/
+        mPreview.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.d(TAG_NAME, "onTouch");
+                boolean r = v instanceof SurfaceView;
+                boolean y = mMediaPlayer != null;
+                Log.d(TAG_NAME, String.valueOf(r) + String.valueOf(y));
+                if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView && mMediaPlayer != null) {
+                    if (!mMediaController.isShowing()) {
+                        mMediaController.show();
+                    } else {
+                        mMediaController.hide();
+                    }
+                }
+                return true;
+            }
+        });
+
+        //mediaControllerの画面に新しく作ったsurfaceviewをセット
+        mMediaController.setAnchorView(mPreview);
+
+    }
 
     /*アプリが一番上で動いているときに新しいビデオを再生したいときに呼ばれる。
     * */
@@ -567,6 +588,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             //このままonDestroy()まで呼ばれるのでここはスルー
         }
     }
+
 
     // ここから先はMediaController向け --------------------------
 
@@ -1389,14 +1411,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         return tabLayout;
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (mMediaPlayer != null) {
-            mMediaPlayer.release();
-        }
-        mNotificationManagerCompat.cancel(notificationId);
-    }
 
     /*
     * UI上のビデオの描写先とタイトルバーが変更された時に
@@ -1481,11 +1495,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private void viewChangeWhenPortrait() {
         //フラグメント削除
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(LandscapeFragmentTAG);
-        getSupportFragmentManager()
-                .beginTransaction()
-                .remove(fragment)
-                .commit();
-
+        //最初から縦の時はnull
+        if (fragment != null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .remove(fragment)
+                    //onPause()やonStop()直後に呼ばれるonSaveInstanceState()ではFragmentの状態も含めた画面情報を保存するため、それ以降のタイミングでFragmentを操作するとおかしくなる
+                    //しかし画面状態が失われてもいいからコミットしたいのでcommitAllowingStateLoss()
+                    .commitAllowingStateLoss();
+        }
         //見え無くしたり触れなくしたものを直す
         viewPager.setVisibility(View.VISIBLE);
         viewPager.setOnTouchListener(new View.OnTouchListener() {
