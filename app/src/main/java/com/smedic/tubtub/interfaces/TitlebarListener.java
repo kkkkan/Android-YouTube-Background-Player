@@ -5,7 +5,9 @@ package com.smedic.tubtub.interfaces;
  */
 
 public interface TitlebarListener {
-    void repeatCheckListener();
+    void repeatOneCheckListener();
+
+    void repeatPlaylistCheckListener();
 
     void lockCheckListener();
 }

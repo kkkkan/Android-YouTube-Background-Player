@@ -36,7 +36,7 @@
                 android:layout_marginBottom="5dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
-                android:layout_toLeftOf="@id/repeat_box"
+                android:layout_toLeftOf="@id/repeat_playlist_box"
                 android:button="@null"
                 android:id="@+id/lock_box" />
 
@@ -50,7 +50,7 @@
                 android:layout_marginRight="10dp"
                 android:button="@null"
                 android:layout_toLeftOf="@id/repeat_one_box"
-                android:id="@+id/repeat_box" />
+                android:id="@+id/repeat_playlist_box" />
 
             <CheckBox
                 android:layout_width="wrap_content"
