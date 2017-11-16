@@ -9,7 +9,7 @@
         android:orderInCategory="100"
         android:title="@string/action_search"
         app:showAsAction="always"
-        app:actionViewClass="android.support.v7.widget.SearchView"/>
+        app:actionViewClass="android.support.v7.widget.SearchView" />
 
     <item
         android:id="@+id/action_clear_list"
@@ -23,10 +23,16 @@
         android:title="@string/action_about"
         app:showAsAction="never" />
 
+    <!-- <item
+         android:id="@+id/action_color_picker"
+         android:orderInCategory="100"
+         android:title="@string/action_color_picker"
+         app:showAsAction="never" />-->
+
     <item
-        android:id="@+id/action_color_picker"
+        android:id="@+id/log_in"
         android:orderInCategory="100"
-        android:title="@string/action_color_picker"
+        android:title="log in"
         app:showAsAction="never" />
 
 </menu>

@@ -11,49 +11,45 @@
         android:layout_height="100dp"
         android:background="@color/windowBackground"
         android:orientation="horizontal"
+        android:paddingBottom="4dp"
+        android:paddingTop="4dp"
         android:weightSum="100">
 
-        <RelativeLayout
+        <FrameLayout
             android:id="@+id/image_frame_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="35"
-            android:paddingBottom="5dp"
-            android:paddingLeft="5dp"
-            android:paddingStart="5dp"
-            android:paddingTop="5dp">
+            android:layout_weight="40">
 
             <ImageView
                 android:id="@+id/video_thumbnail"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="fitXY" />
+                android:layout_height="match_parent" />
 
             <TextView
                 android:id="@+id/video_duration"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="12dp"
+                android:layout_marginRight="12dp"
                 android:background="@android:color/black"
                 android:textColor="@android:color/white"
                 android:textSize="13sp"
                 android:textStyle="bold" />
-        </RelativeLayout>
+        </FrameLayout>
 
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="65"
-            android:padding="5dp">
+            android:layout_weight="60">
 
             <TextView
                 android:id="@+id/video_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:maxLines="3"
-                android:textSize="15sp" />
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/views_number"
@@ -63,28 +59,40 @@
                 android:maxLines="1"
                 android:textSize="14sp" />
 
-            <ImageView
-                android:id="@+id/shareButton"
-                android:layout_width="27dp"
-                android:layout_height="27dp"
-                android:layout_alignParentBottom="true"
-                android:layout_marginEnd="15dp"
-                android:layout_marginRight="15dp"
-                android:layout_toLeftOf="@+id/favoriteButton"
-                android:layout_toStartOf="@+id/favoriteButton"
-                android:background="@drawable/share_button_selector" />
-
             <CheckBox
                 android:id="@+id/favoriteButton"
-                android:layout_width="27dp"
-                android:layout_height="27dp"
+                android:layout_width="23dp"
+                android:layout_height="23dp"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
-                android:layout_marginEnd="10dp"
-                android:layout_marginRight="10dp"
+                android:layout_marginEnd="15dp"
+                android:layout_marginRight="15dp"
                 android:background="@drawable/favorite_button_selector"
                 android:button="@null" />
+
+            <ImageView
+                android:id="@+id/shareButton"
+                android:layout_width="23dp"
+                android:layout_height="23dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginEnd="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_toLeftOf="@id/favoriteButton"
+                android:layout_toStartOf="@id/favoriteButton"
+                android:background="@drawable/share_button_selector" />
+
+            <ImageView
+                android:id="@+id/PlaylistAddButton"
+                android:layout_width="23dp"
+                android:layout_height="23dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginEnd="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_toLeftOf="@id/shareButton"
+                android:layout_toStartOf="@id/shareButton"
+                android:background="@drawable/add_button" />
+
 
         </RelativeLayout>
     </LinearLayout>

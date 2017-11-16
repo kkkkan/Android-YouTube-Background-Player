@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/grey"
+    android:paddingBottom="1dp">
+
+    <LinearLayout
+        android:id="@+id/row_item"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@color/windowBackground"
+        android:orientation="horizontal"
+        android:paddingTop="4dp"
+        android:weightSum="100">
+
+        <FrameLayout
+            android:layout_marginBottom="4dp"
+            android:id="@+id/image_frame_layout"
+            android:layout_width="0dp"
+            tools:background="#808080"
+            android:layout_height="match_parent"
+            android:layout_weight="40">
+
+            <ImageView
+                android:id="@+id/video_thumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:id="@+id/video_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="12dp"
+                android:layout_marginRight="12dp"
+                android:background="@android:color/black"
+                android:textColor="@android:color/white"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="60">
+
+            <TextView
+                android:id="@+id/video_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="3"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/views_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:paddingBottom="4dp"
+                tools:text="114,416 views"
+                android:maxLines="1"
+                android:textSize="14sp" />
+
+            <CheckBox
+                android:id="@+id/favoriteButton"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_margin="4dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/favorite_button_selector"
+                android:button="@null" />
+
+            <ImageView
+                android:id="@+id/shareButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dip"
+                android:layout_alignParentBottom="true"
+                android:layout_toLeftOf="@id/favoriteButton"
+                android:layout_toStartOf="@id/favoriteButton"
+                android:src="@drawable/share_button_selector" />
+
+            <ImageView
+                android:id="@+id/PlaylistAddButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentBottom="true"
+                android:padding="4dp"
+                android:layout_toLeftOf="@id/musicDeleteButton"
+                android:layout_toStartOf="@id/musicDeleteButton"
+                android:src="@drawable/add_button" />
+
+            <ImageView
+                android:id="@+id/musicDeleteButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentBottom="true"
+                android:padding="4dp"
+                android:layout_toLeftOf="@id/shareButton"
+                android:layout_toStartOf="@id/shareButton"
+                android:src="@drawable/delete_music" />
+
+
+        </RelativeLayout>
+    </LinearLayout>
+</RelativeLayout>
