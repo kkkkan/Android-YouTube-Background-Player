@@ -15,7 +15,7 @@
     <application
         android:name=".tubtub.YTApplication"
         android:allowBackup="false"
-        android:icon="@drawable/heart"
+        android:icon="@drawable/dbwan"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/MyMaterialTheme"

@@ -1456,7 +1456,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
             AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
             alertDialog.setTitle(getString(R.string.myName));
-            alertDialog.setIcon(R.mipmap.youtube_icon);
+            alertDialog.setIcon(R.drawable.dbwan);
 
             alertDialog.setMessage(getString(R.string.app_name) + " " + BuildConfig.VERSION_NAME + "\n\n" +
                     getString(R.string.email) + "\n\n" +
@@ -1480,8 +1480,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         } else if (id == R.id.log_in) {
             String[] perms = {Manifest.permission.GET_ACCOUNTS, Manifest.permission.READ_PHONE_STATE};
             if (!EasyPermissions.hasPermissions(this, perms)) {
-                EasyPermissions.requestPermissions(this, "このアプリでYouTubeアカウントにログインして連携するには連絡先と電話の許可が必要です。" +
-                                "\n(YouTubeアカウントにログインしなくてもアプリ自体は使用できますがプレイリストの使用や作成や編集はできません。)",
+                EasyPermissions.requestPermissions(this, getString(R.string.permissions_request),
                         PERMISSIONS, perms);
             } else {
                 startActivityForResult(

@@ -1,39 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#e9e9e9">
+    android:layout_height="match_parent">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/fragment_list_items"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_to_refresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" />
+        android:layout_height="wrap_content">
 
-    <RelativeLayout
-        android:id="@+id/nothing_found_holder"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center">
-
-        <ImageView
-            android:id="@+id/nothing_found_image"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_centerHorizontal="true"
-            android:src="@drawable/nothing_found" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/nothing_found_image"
-            android:layout_centerHorizontal="true"
-            android:text="@string/list_empty"
-            android:textColor="#a8a8a8"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-    </RelativeLayout>
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/fragment_list_items"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </android.support.v4.widget.SwipeRefreshLayout>
 
     <ProgressBar
         android:id="@+id/fragment_progress_bar"
