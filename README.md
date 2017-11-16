@@ -9,10 +9,13 @@ This is an application that allows you to continue playing videos on youtube eve
 <img src="https://github.com/smedic/Android-YouTube-Background-Player/blob/master/raw/Screenshot_2016-03-24-10-21-27.png" alt="alt text" width="360" height="640">
 <img src="https://github.com/smedic/Android-YouTube-Background-Player/blob/master/raw/Screenshot_2016-03-24-10-20-31.png" alt="alt text" width="360" height="640">
 
+
 ##Copyright holder
+
 - Name: kkkkan
 - Contact: kan4649kan@gmail.com
   - I'm happy if you can contact me in Japanese.
+
 
 ##What to do to use this app
 
@@ -38,6 +41,7 @@ Change to the API key you registered earlier.
 
 
 #README(日本語ver)
+
 ## Android-YouTube-Background-Player
 
 これはyoutube上のビデオをアプリがバックグラウンドにいっても再生し続けられるアプリです。
@@ -47,9 +51,11 @@ Change to the API key you registered earlier.
 - google accountに連携しなくてもローカルでお気に入りリストを1つ持てます。
 
 ##著作権者
+
 - 名前 : kkkkan
 - 連絡先 : kan4649kan@gmail.com
   - 日本語のできる方は日本語で連絡いただけると嬉しいです。
+  
 
 ##このアプリを使うためにすべきこと
 
