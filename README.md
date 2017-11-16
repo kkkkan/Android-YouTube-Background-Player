@@ -10,14 +10,13 @@ This is an application that allows you to continue playing videos on youtube eve
 <img src="https://github.com/smedic/Android-YouTube-Background-Player/blob/master/raw/Screenshot_2016-03-24-10-20-31.png" alt="alt text" width="360" height="640">
 
 
-##Copyright holder
+##  Copyright holder
 
 - Name: kkkkan
 - Contact: kan4649kan@gmail.com
   - I'm happy if you can contact me in Japanese.
 
-
-##What to do to use this app
+## What to do to use this app
 
 1. Google Developers Console(https://console.developers.google.com/?hl=en)
 Access to the project, create project, move to the authentication information.
@@ -40,7 +39,7 @@ Change to the API key you registered earlier.
 
 
 
-#README(日本語ver)
+# README(日本語ver)
 
 ## Android-YouTube-Background-Player
 
@@ -50,14 +49,14 @@ Change to the API key you registered earlier.
 - スマートフォンに紐づけられているgoogle accountに連携する事でyoutube上に作成しているプレイリストの再生・編集ができます。
 - google accountに連携しなくてもローカルでお気に入りリストを1つ持てます。
 
-##著作権者
+## 著作権者
 
 - 名前 : kkkkan
 - 連絡先 : kan4649kan@gmail.com
   - 日本語のできる方は日本語で連絡いただけると嬉しいです。
   
 
-##このアプリを使うためにすべきこと
+## このアプリを使うためにすべきこと
 
 1. Google Developers Console(https://console.developers.google.com/?hl=en)
    　にアクセスしてprojectを作成し、認証情報へ移動します。
