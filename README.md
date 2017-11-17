@@ -6,13 +6,7 @@ This is an application that allows you to continue playing videos on youtube eve
 - You can play and edit the playlist you have created on youtube by linking to the google account linked to your smartphone.
 - You can have one local favorite list without linking to google account.
 
-<img src="https://user-images.githubusercontent.com/22609306/32922866-bd747b94-cb77-11e7-80ad-ea56a1560349.png" width="180" height="320">
-<img src="https://user-images.githubusercontent.com/22609306/32922901-edd17c10-cb77-11e7-936d-6dd08d606cb0.png" width="180" height="320">
-<img src="https://user-images.githubusercontent.com/22609306/32922904-f09bc7ca-cb77-11e7-86a0-642cda23f819.png"  width="180" height="320">
-<img src="https://user-images.githubusercontent.com/22609306/32922904-f09bc7ca-cb77-11e7-86a0-642cda23f819.png" width="180" height="320">
-<img src="https://user-images.githubusercontent.com/22609306/32922887-dd95f998-cb77-11e7-8237-c3b54332e139.png"  width="180" height="320">
-<img src="https://user-images.githubusercontent.com/22609306/32922906-f26939c0-cb77-11e7-88f9-90f2d4f02b42.png"  width="320" height="180">
-<img src="https://user-images.githubusercontent.com/22609306/32923300-2a9af85e-cb7a-11e7-9bfb-e1635c99749d.png"  width="180" height="320">
+<img src="https://user-images.githubusercontent.com/22609306/32922866-bd747b94-cb77-11e7-80ad-ea56a1560349.png" width="180" height="320"> <img src="https://user-images.githubusercontent.com/22609306/32922901-edd17c10-cb77-11e7-936d-6dd08d606cb0.png" width="180" height="320"> <img src="https://user-images.githubusercontent.com/22609306/32922904-f09bc7ca-cb77-11e7-86a0-642cda23f819.png"  width="180" height="320"> <img src="https://user-images.githubusercontent.com/22609306/32922904-f09bc7ca-cb77-11e7-86a0-642cda23f819.png" width="180" height="320"> <img src="https://user-images.githubusercontent.com/22609306/32922887-dd95f998-cb77-11e7-8237-c3b54332e139.png"  width="180" height="320"> <img src="https://user-images.githubusercontent.com/22609306/32922906-f26939c0-cb77-11e7-88f9-90f2d4f02b42.png"  width="320" height="180"> <img src="https://user-images.githubusercontent.com/22609306/32923300-2a9af85e-cb7a-11e7-9bfb-e1635c99749d.png"  width="180" height="320">
 
 ##  Copyright holder
 
