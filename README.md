@@ -23,7 +23,7 @@ This is an application that allows you to continue playing videos on youtube eve
 
 1. Google Developers Console(https://console.developers.google.com/?hl=en)
 Access to the project, create project, move to the authentication information.
-1. Create Android's YouTubeApi (v3) API key and OAuth 2.0 client ID, add the package name com.kkkkan.youtube of this application and
+1. Create ~Android's~ YouTubeApi (v3) API key and OAuth 2.0 client ID, add the package name com.kkkkan.youtube of this application and
 Register the fingerprint of SHA - 1 certificate under your own environment.
 1. Public static final String YOUTUBE_API_KEY of com.kkkkan.youtube.tubtub.utils.Config of the source code of this application,
 Change to the API key you registered earlier.
