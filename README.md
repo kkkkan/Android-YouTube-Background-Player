@@ -72,8 +72,8 @@ Change to the API key you registered earlier.
 
 1. Google Developers Console(https://console.developers.google.com/?hl=en)
    　にアクセスしてprojectを作成し、認証情報へ移動します。
-1. androidのYouTubeApi(v3)のAPIキーとOAuth 2.0 クライアント IDを作成し、それぞれこのアプリのパッケージ名com.kkkkan.youtubeと
-自分の環境下でのSHA-1証明書のフィンガープリントを登録します。
+1. ~androidの~ YouTubeApi(v3)のAPIキーとOAuth 2.0 クライアント IDを作成し、それぞれこのアプリのパッケージ名com.kkkkan.youtubeと
+自分の環境下でのSHA-1証明書のフィンガープリントを登録します。　**APIキーの制限をandroidにするとエラーが出ることがあるようなので、APIキーに制限はかけない方がよさそうです。**
 1. このアプリのソースコードのcom.kkkkan.youtube.tubtub.utils.Configのpublic static final String YOUTUBE_API_KEYを,
 先ほど登録したAPIキーに変更します。
 
