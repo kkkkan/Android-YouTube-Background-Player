@@ -91,3 +91,4 @@ Change to the API key you registered earlier.
 
 - シャッフル再生機能
 - 他のアプリからyoutubeビデオの共有を受け取る機能
+ro
