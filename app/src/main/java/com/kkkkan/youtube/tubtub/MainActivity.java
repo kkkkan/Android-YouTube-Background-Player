@@ -121,6 +121,7 @@ import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
 import com.kkkkan.youtube.tubtub.youtube.SuggestionsLoader;
+import com.kkkkan.youtube.tubtub.youtube.YouTubeShareVideoGetLoader;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -171,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
     static private int notificationId = 0;
+
 
     private SearchFragment searchFragment;
     private RecentlyWatchedFragment recentlyPlayedFragment;
@@ -474,14 +476,18 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         //When opened by sharing from another application
         //他のアプリからの共有で開かれた場合
-        Intent getIntent = getIntent();
-        String action = getIntent.getAction();
-        String type = getIntent.getType();
-        Log.d(TAG, "Intent:\n" + action + "\n" + type);
-        if (Intent.ACTION_SEND.equals(action) && "text/plain".equals(type)) {
-            //When opened from sharing by another application
-            //他のアプリによる共有から開かれたとき
-            shareHandle(getIntent);
+        if (savedInstanceState == null) {
+            //It is not time to regenerate
+            //再生成時ではない
+            Intent getIntent = getIntent();
+            String action = getIntent.getAction();
+            String type = getIntent.getType();
+            Log.d(TAG, "Intent:\n" + action + "\n" + type);
+            if (Intent.ACTION_SEND.equals(action) && "text/plain".equals(type)) {
+                //When opened from sharing by another application
+                //他のアプリによる共有から開かれたとき
+                shareHandle(getIntent);
+            }
         }
 
     }
@@ -1397,7 +1403,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 if (query.length() > 2) { //make suggestions after 3rd letter
                     if (networkConf.isNetworkAvailable()) {
 
-                        getSupportLoaderManager().restartLoader(4, null, new LoaderManager.LoaderCallbacks<List<String>>() {
+                        getSupportLoaderManager().restartLoader(Config.SuggestionsLoaderId, null, new LoaderManager.LoaderCallbacks<List<String>>() {
                             @Override
                             public Loader<List<String>> onCreateLoader(final int id, final Bundle args) {
                                 return new SuggestionsLoader(getApplicationContext(), query);
@@ -1753,19 +1759,31 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         if (extras != null) {
             CharSequence ext = extras.getCharSequence(Intent.EXTRA_TEXT);
             if (ext != null) {
-                String StrUrl = String.valueOf(ext);
+                final String StrUrl = String.valueOf(ext);
                 Log.d(TAG, StrUrl);
 
+                getSupportLoaderManager().restartLoader(Config.YouTubeShareVideoGetLoader, null, new LoaderManager.LoaderCallbacks<YouTubeVideo>() {
+                    @Override
+                    public Loader<YouTubeVideo> onCreateLoader(int id, Bundle args) {
+                        return new YouTubeShareVideoGetLoader(getApplicationContext(), StrUrl);
+                    }
 
-                /**
-                 * この後すること：
-                 *
-                 * StrUrlからConfig.YOUTUBE_BASE_URLを削除することによりVideoIDを抜き出して、Loaderを作り
-                 * Videos.list API(https://developers.google.com/youtube/v3/docs/videos/list?hl=ja#try-it)
-                 * を使ってこのビデオだけ入ったList<YouTubeVideo>を作成。
-                 * onPlaylistSelected()に遷移させる
-                 *
-                 */
+                    @Override
+                    public void onLoadFinished(Loader<YouTubeVideo> loader, YouTubeVideo data) {
+                        if (data == null) {
+                            Toast.makeText(MainActivity.this, "このビデオは開けません", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        List<YouTubeVideo> video = new ArrayList<YouTubeVideo>();
+                        video.add(data);
+                        onPlaylistSelected(video, 0);
+                    }
+
+                    @Override
+                    public void onLoaderReset(Loader<YouTubeVideo> loader) {
+
+                    }
+                }).forceLoad();
 
             }
         }

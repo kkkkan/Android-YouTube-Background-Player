@@ -27,6 +27,7 @@ public final class Config {
 
     public static final String SUGGESTIONS_URL = "http://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=";
     public static final String YOUTUBE_BASE_URL = "http://youtube.com/watch?v=";
+    public static final String YOUTUBE_BASE_SHARE = "https://youtu.be/";
     public static final String SHARE_VIDEO_URL = "http://youtube.com/watch?v=";
     public static final String SHARE_PLAYLIST_URL = "https://www.youtube.com/playlist?list=";
     public static final String YOUTUBE_TYPE = "YT_MEDIA_TYPE";
@@ -37,5 +38,11 @@ public final class Config {
     public static final String YOUTUBE_API_KEY = "AIzaSyApidIQCEBbqishTDtwuNky9uA-wyqZlR0";
 
     public static final long NUMBER_OF_VIDEOS_RETURNED = 50; //due to YouTube API rules - MAX 50
+
+
+    final static public int YouTubeVideosLoaderId = 1;
+    final static public int YouTubePlaylistLoaderId = 3;
+    final static public int SuggestionsLoaderId = 4;
+    final static public int YouTubeShareVideoGetLoader = 5;
 
 }

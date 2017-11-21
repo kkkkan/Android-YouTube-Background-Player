@@ -151,7 +151,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
 
         loadingProgressBar.setVisibility(View.VISIBLE);
 
-        getLoaderManager().restartLoader(1, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
+        getLoaderManager().restartLoader(Config.YouTubeVideosLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
             @Override
             public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
                 return new YouTubeVideosLoader(context, query);

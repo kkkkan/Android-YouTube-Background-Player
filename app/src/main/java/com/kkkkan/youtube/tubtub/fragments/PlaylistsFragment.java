@@ -205,7 +205,7 @@ public class PlaylistsFragment extends BaseFragment implements
 
     private void acquirePlaylistVideos(final String playlistId) {
         Log.d(TAG, "acquirePlaylistVideos");
-        getLoaderManager().restartLoader(3, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
+        getLoaderManager().restartLoader(Config.YouTubePlaylistLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
             @Override
             public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
                 Log.d(TAG, "PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:" + playlistId);
