@@ -53,6 +53,7 @@ Change to the API key you registered earlier.
 - youtube上を検索して公開されているビデオを再生できます。　
 - スマートフォンに紐づけられているgoogle accountに連携する事でyoutube上に作成しているプレイリストの再生・編集ができます。
 - google accountに連携しなくてもローカルでお気に入りリストを1つ持てます。
+- このアプリが起動していないときはYouTube公式アプリの共有機能からこのアプリを起動し、このアプリで動画再生できます。
 
 <img src="https://user-images.githubusercontent.com/22609306/32922866-bd747b94-cb77-11e7-80ad-ea56a1560349.png" width="180" height="320"> <img src="https://user-images.githubusercontent.com/22609306/32922901-edd17c10-cb77-11e7-936d-6dd08d606cb0.png" width="180" height="320">
 <img src="https://user-images.githubusercontent.com/22609306/32922904-f09bc7ca-cb77-11e7-86a0-642cda23f819.png" width="180" height="320"> 
@@ -90,5 +91,5 @@ Change to the API key you registered earlier.
 ## 今後拡張を考えている機能
 
 - シャッフル再生機能
-- 他のアプリからyoutubeビデオの共有を受け取る機能
+- ~他のアプリからyoutubeビデオの共有を受け取る機能~ ->このアプリが起動していないときはYouTube公式アプリの共有機能からこのアプリを起動し、このアプリで動画再生できるようになりました。**しかし既にこのアプリが起動しているときは共有を受け取ってもアプリを開くだけで動画再生を始めることが出来ないので、既にこのアプリが起動しているときも共有から動画再生できる機能を付けたいと考えています。**
 ro
