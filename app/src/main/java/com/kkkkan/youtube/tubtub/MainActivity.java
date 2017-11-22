@@ -492,6 +492,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     }
 
+
     public void onRestart() {
         super.onRestart();
         Log.d(TAG, "onRestart");
@@ -832,6 +833,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        Log.d(TAG, "onNewIntent");
         setIntent(intent);
 
         handleIntent(intent);
@@ -843,11 +845,17 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      * @param intent
      */
     private void handleIntent(Intent intent) {
-
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+        String action = intent.getAction();
+        String type = intent.getType();
+        Log.d(TAG, "Intent:\n" + action + "\n" + type);
+        if (Intent.ACTION_SEND.equals(action) && "text/plain".equals(type)) {
+            //When opened from sharing by another application
+            //他のアプリによる共有から開かれたとき
+            shareHandle(intent);
+        } else if (Intent.ACTION_SEARCH.equals(action)) {
+            //検索の時
             String query = intent.getStringExtra(SearchManager.QUERY);
-
-            /*スムーズスクロールありでfragmenを2に変更*/
+            //スムーズスクロールありでfragmenを2に変更
             viewPager.setCurrentItem(2, true); //switch to search fragment
 
             if (searchFragment != null) {
