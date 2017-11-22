@@ -166,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private static final int PERMISSIONS = 1;
     public static final String PREF_ACCOUNT_NAME = "accountName";
 
+
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
     static final int REQUEST_CODE_TOKEN_AUTH = 1006;
@@ -212,6 +213,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private NetworkConf networkConf;
 
+    private boolean playlistSelectedCancelFlag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -371,7 +373,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             @Override
             public void onCompletion(MediaPlayer mp) {
                 Log.d(TAG, " mMediaController.setOnCompletionListener");
-                Settings settings = Settings.getInstance();
                 if (playlist == null) {
                     //Originally it should not be playlist == null,
                     // but because there was something that was fallen by null reference with playlist.size ()
@@ -380,21 +381,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     Log.d(TAG, "\nplaylist is null!\n");
                     return;
                 }
-                if (settings.getRepeatOne() == Settings.RepeatOne.ON) {
-                    // one song repeat
-                    //1曲リピート時
-                    onPlaylistSelected(playlist, currentVideoIndex);
-                } else if (settings.getRepeatPlaylist() == ON) {
-                    // It is not a repeat of one song, and at play list repeat
-                    //1曲リピートではなく、かつプレイリストリピート時
-                    onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
-                } else {
-                    // When it is neither a single song repeat nor a play list repeat
-                    //一曲リピートでもプレイリストリピートでもないとき
-                    if (currentVideoIndex + 1 < playlist.size()) {
-                        onPlaylistSelected(playlist, currentVideoIndex + 1);
-                    }
-                }
+                handleNextVideo();
             }
         });
 
@@ -914,6 +901,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
         Log.d(TAG, "onPlaylistSelected");
+        if (playlistSelectedCancelFlag) {
+            //もしユーザーがビデオ読み込みやめるよう操作していたら
+            //Flagをfalseにする
+            playlistSelectedCancelFlag = false;
+            //一応Loading…出てたら消す
+            setProgressDialogDismiss();
+            return;
+        }
         //読み込み中ダイアログ表示
         setProgressDialogShow();
         this.playlist = playlist;
@@ -933,9 +928,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
                 Log.d(TAG, "onExtractionComplete");
                 if (ytFiles == null) {
-                    Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
-                    setProgressDialogDismiss();
-                    onPlaylistSelected(MainActivity.this.playlist, (currentVideoIndex + 1) % MainActivity.this.playlist.size());
+                    Toast.makeText(mainContext, "ビデオが読み込めませんでした。次のビデオを再生します。", Toast.LENGTH_SHORT).show();
+                    handleNextVideo();
                     return;
                 }
 
@@ -982,14 +976,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                     //Progressダイアログ消すのはvideoCreate()のなかでやってる。
                     videoCreate();
-                } else if (currentVideoIndex + 1 < MainActivity.this.playlist.size()) {
-                    Log.d(TAG, "ytFile-null-next:" + video.getId());
-                    Toast.makeText(mainContext, "このビデオは読み込めません。次のビデオを再生します。", Toast.LENGTH_LONG).show();
-                    setProgressDialogDismiss();
-                    onPlaylistSelected(MainActivity.this.playlist, (currentVideoIndex + 1) % MainActivity.this.playlist.size());
                 } else {
-                    //最後の曲のときはprogressbarを消すだけ。
-                    setProgressDialogDismiss();
+                    Log.d(TAG, "ytFile-null-next:" + video.getId());
+                    Toast.makeText(mainContext, "ビデオが読み込めませんでした。\n次のビデオを再生します。", Toast.LENGTH_SHORT).show();
+                    handleNextVideo();
                 }
             }
         }.execute(youtubeLink);
@@ -1054,12 +1044,45 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     /**
+     * 次のビデオを再生するとなったときに呼ぶメゾッド。
+     * 設定によって同じビデオを再生するか、プレイリストの最後に達していた時に次のビデオに行くかなどを
+     * ハンドリングする
+     */
+    private void handleNextVideo() {
+        Settings settings = Settings.getInstance();
+        if (settings.getRepeatOne() == Settings.RepeatOne.ON) {
+            // one song repeat
+            //1曲リピート時
+            onPlaylistSelected(playlist, currentVideoIndex);
+        } else if (settings.getRepeatPlaylist() == ON) {
+            // It is not a repeat of one song, and at play list repeat
+            //1曲リピートではなく、かつプレイリストリピート時
+            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+        } else {
+            // When it is neither a single song repeat nor a play list repeat
+            //一曲リピートでもプレイリストリピートでもないとき
+            if (currentVideoIndex + 1 < playlist.size()) {
+                onPlaylistSelected(playlist, currentVideoIndex + 1);
+            } else {
+                //最後の曲のときはprogressbarが出ていたらそれを消すだけ。
+                setProgressDialogDismiss();
+            }
+        }
+    }
+
+    /**
      * progressDialog表示
      */
     public void setProgressDialogShow() {
         /*進捗状況は表示しない*/
         mProgressDialog.setIndeterminate(true);
         mProgressDialog.setMessage("Loading...");
+        mProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                playlistSelectedCancelFlag = true;
+            }
+        });
         mProgressDialog.show();
 
     }
