@@ -1049,6 +1049,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      * ハンドリングする
      */
     private void handleNextVideo() {
+        Log.d(TAG,"handleNextVideo");
         Settings settings = Settings.getInstance();
         if (settings.getRepeatOne() == Settings.RepeatOne.ON) {
             // one song repeat
@@ -1077,10 +1078,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         /*進捗状況は表示しない*/
         mProgressDialog.setIndeterminate(true);
         mProgressDialog.setMessage("Loading...");
-        mProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+        mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
-            public void onDismiss(DialogInterface dialog) {
-                playlistSelectedCancelFlag = true;
+            public void onCancel(DialogInterface dialog) {
+                playlistSelectedCancelFlag=true;
             }
         });
         mProgressDialog.show();
