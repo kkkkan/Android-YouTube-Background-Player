@@ -81,6 +81,8 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -553,6 +555,20 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         if (mPreview == null) {
             //通常ありえない
             Log.d("TAG", "SurfaceView is null!");
+        } else {
+            //Change the vertical and horizontal lengths of the playback space of the movie according to the screen size of the smartphone
+            //スマホの画面サイズに合わせて動画の再生スペースの縦横の長さを変化させる
+            mPreview.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if (mPreview.isEnabled()) {
+                        ViewGroup.LayoutParams svlp = mPreview.getLayoutParams();
+                        int width = mPreview.getWidth();
+                        svlp.height = width / 16 * 9;
+                        mPreview.setLayoutParams(svlp);
+                    }
+                }
+            });
         }
         mHolder = mPreview.getHolder();
         mHolder.addCallback(this);
@@ -1049,7 +1065,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      * ハンドリングする
      */
     private void handleNextVideo() {
-        Log.d(TAG,"handleNextVideo");
+        Log.d(TAG, "handleNextVideo");
         Settings settings = Settings.getInstance();
         if (settings.getRepeatOne() == Settings.RepeatOne.ON) {
             // one song repeat
@@ -1081,7 +1097,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
-                playlistSelectedCancelFlag=true;
+                playlistSelectedCancelFlag = true;
             }
         });
         mProgressDialog.show();
@@ -1692,6 +1708,20 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mPreview = (SurfaceView) findViewById(R.id.surface);
         mPreview.setVisibility(View.VISIBLE);
         mPreview.setEnabled(true);
+        //Change the vertical and horizontal lengths of the playback space of the movie according to the screen size of the smartphone
+        //スマホの画面サイズに合わせて動画の再生スペースの縦横の長さを変化させる
+        mPreview.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (mPreview.isEnabled()) {
+                    ViewGroup.LayoutParams svlp = mPreview.getLayoutParams();
+                    int width = mPreview.getWidth();
+                    svlp.height = width / 16 * 9;
+                    mPreview.setLayoutParams(svlp);
+                }
+            }
+        });
+
 
         mTextView = (TextView) findViewById(R.id.title_view);
         mTextView.setVisibility(View.VISIBLE);

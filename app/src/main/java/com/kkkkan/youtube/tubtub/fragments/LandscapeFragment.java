@@ -26,6 +26,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
@@ -71,6 +72,19 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
         View view = inflater.inflate(R.layout.fragment_landscape, container, false);
         surfaceView = (SurfaceView) view.findViewById(R.id.surface);
         surfaceView.getHolder().addCallback(this);
+        //Change the vertical and horizontal lengths of the playback space of the movie according to the screen size of the smartphone
+        //スマホの画面サイズに合わせて動画の再生スペースの縦横の長さを変化させる
+        surfaceView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (surfaceView.isEnabled()) {
+                    ViewGroup.LayoutParams svlp = surfaceView.getLayoutParams();
+                    int width = surfaceView.getWidth();
+                    svlp.height = width / 16 * 9;
+                    surfaceView.setLayoutParams(svlp);
+                }
+            }
+        });
         titleView = (TextView) view.findViewById(R.id.title_view);
         lockBox = (CheckBox) view.findViewById(R.id.lock_box);
         repeatOneBox = (CheckBox) view.findViewById(R.id.repeat_one_box);
