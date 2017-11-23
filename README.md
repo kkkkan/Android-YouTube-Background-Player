@@ -5,7 +5,7 @@ This is an application that allows you to continue playing videos on youtube eve
 - You can search videos on youtube and play public videos.
 - You can play and edit the playlist you have created on youtube by linking to the google account linked to your smartphone.
 - You can have one local favorite list without linking to google account.
-- When this application is not running, you can select the video with the YouTube official application, launch this application from the sharing function, and play this video with this application.
+- By choosing this application from the sharing function in the YouTube official application, you can play videos with this application.
 
 <img src="https://user-images.githubusercontent.com/22609306/32922866-bd747b94-cb77-11e7-80ad-ea56a1560349.png" width="180" height="320"> <img src="https://user-images.githubusercontent.com/22609306/32922901-edd17c10-cb77-11e7-936d-6dd08d606cb0.png" width="180" height="320">
 <img src="https://user-images.githubusercontent.com/22609306/32922904-f09bc7ca-cb77-11e7-86a0-642cda23f819.png" width="180" height="320"> 
@@ -41,8 +41,6 @@ Change to the API key you registered earlier.
 ## Functions considering expansion in the future
 
 - Shuffle playback function
-- ~Ability to receive youtube video sharing from other apps~ </br> ->When this application is not running, this application is launched from the sharing function of YouTube official application, and you can play videos with this application. **However, when this application is already launched, even if you receive the share, you can not start playing the movie just by opening the application, so if you want to add a function to play movies from share even when this application is already running I believe.**
-
 
 
 # README(日本語ver)
@@ -54,7 +52,7 @@ Change to the API key you registered earlier.
 - youtube上を検索して公開されているビデオを再生できます。　
 - スマートフォンに紐づけられているgoogle accountに連携する事でyoutube上に作成しているプレイリストの再生・編集ができます。
 - google accountに連携しなくてもローカルでお気に入りリストを1つ持てます。
-- このアプリが起動していないときはYouTube公式アプリでビデオを選択し、共有機能からこのアプリを起動し、このアプリで動画再生できます。
+- YouTube公式アプリなどで、共有機能からこのアプリを選ぶことで、このアプリで動画再生できます。
 
 <img src="https://user-images.githubusercontent.com/22609306/32922866-bd747b94-cb77-11e7-80ad-ea56a1560349.png" width="180" height="320"> <img src="https://user-images.githubusercontent.com/22609306/32922901-edd17c10-cb77-11e7-936d-6dd08d606cb0.png" width="180" height="320">
 <img src="https://user-images.githubusercontent.com/22609306/32922904-f09bc7ca-cb77-11e7-86a0-642cda23f819.png" width="180" height="320"> 
@@ -92,5 +90,4 @@ Change to the API key you registered earlier.
 ## 今後拡張を考えている機能
 
 - シャッフル再生機能
-- ~他のアプリからyoutubeビデオの共有を受け取る機能~ </br>->このアプリが起動していないときはYouTube公式アプリの共有機能からこのアプリを起動し、このアプリで動画再生できるようになりました。**しかし既にこのアプリが起動しているときは共有を受け取ってもアプリを開くだけで動画再生を始めることが出来ないので、既にこのアプリが起動しているときも共有から動画再生できる機能を付けたいと考えています。**
 ro
