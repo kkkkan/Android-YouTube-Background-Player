@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private String videoUrl;
     private SurfaceHolder mHolder;
     private SurfaceView mPreview;
-    private MediaPlayer mMediaPlayer = null;
+    //private MediaPlayer mMediaPlayer = null;
     private MediaController mMediaController;
     private AlertDialog.Builder mListDlg;
     private AlertDialog.Builder mTitleDlg;
@@ -306,8 +306,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         //Because it may fall when coming from the back to the fore if you do not get surfaceView every time with onResume ().
         // MediaPlayerの設定・画面についてはonResume()で設定する。
         // onResume()でいちいちsurfaceViewを取得し直さないとバックからフォアに来るときに落ちることがあるため。
-        mMediaPlayer = new MediaPlayer();
-        mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+        SingletonMediaPlayer.instance.getMediaPlayer().setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
                 Log.d(TAG, "onError:\nwhat:" + String.valueOf(what)
@@ -371,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         //Listener to go to the next song after the end
         //終了後次の曲に行くためのリスナー
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        SingletonMediaPlayer.instance.getMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 Log.d(TAG, " mMediaController.setOnCompletionListener");
@@ -540,15 +539,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mMediaPlayer != null) {
-            mMediaPlayer.release();
-        }
+
+        SingletonMediaPlayer.instance.getMediaPlayer().release();
+
         mNotificationManagerCompat.cancel(notificationId);
     }
 
     /**
      * mPreviewを作り直す
-     * それに伴いmMediaplayerの投影先とmHolderも作り直し
+     * それに伴いMediaplayerの投影先とmHolderも作り直し
      */
     private void makeSurfaceViewAndMediaControllerSetting() {
         mPreview = (SurfaceView) findViewById(R.id.surface);
@@ -561,12 +560,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             mPreview.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
-                    if (mPreview.isEnabled()) {
-                        ViewGroup.LayoutParams svlp = mPreview.getLayoutParams();
-                        int width = mPreview.getWidth();
-                        svlp.height = width / 16 * 9;
-                        mPreview.setLayoutParams(svlp);
-                    }
+                    resizeSurfaceView();
                 }
             });
         }
@@ -577,11 +571,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mPreview.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                //Log.d(TAG, "onTouch");
-                boolean r = v instanceof SurfaceView;
-                boolean y = mMediaPlayer != null;
-                //Log.d(TAG, String.valueOf(r) + String.valueOf(y));
-                if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView && mMediaPlayer != null) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView) {
                     if (!mMediaController.isShowing()) {
                         mMediaController.show();
                     } else {
@@ -634,14 +624,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public void start() {
-        mMediaPlayer.start();
+        SingletonMediaPlayer.instance.getMediaPlayer().start();
         mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
         mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
     }
 
     @Override
     public void pause() {
-        mMediaPlayer.pause();
+        SingletonMediaPlayer.instance.getMediaPlayer().pause();
         mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
         mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
     }
@@ -651,7 +641,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         //MediaPlayer#getDuration()はnativeメゾッドで、
         // かつ再生対象のないとき(setDataSource()前？/start()前？)のMediaPlayerに呼んだ時の挙動については定義されてないので
         //再生対象のないMediaPlayerに対してよんだ時の挙動は機種によって違う。
-        return mMediaPlayer.getDuration();
+        return SingletonMediaPlayer.instance.getMediaPlayer().getDuration();
     }
 
     @Override
@@ -659,17 +649,17 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         //MediaPlayer#getPositon()はnativeメゾッドで、
         // かつ再生対象のないとき(setDataSource()前？/start()前？)のMediaPlayerに呼んだ時の挙動については定義されてないので
         //再生対象のないMediaPlayerに対してよんだ時の挙動は機種によって違う。
-        return mMediaPlayer.getCurrentPosition();
+        return SingletonMediaPlayer.instance.getMediaPlayer().getCurrentPosition();
     }
 
     @Override
     public void seekTo(int pos) {
-        mMediaPlayer.seekTo(pos);
+        SingletonMediaPlayer.instance.getMediaPlayer().seekTo(pos);
     }
 
     @Override
     public boolean isPlaying() {
-        return mMediaPlayer.isPlaying();
+        return SingletonMediaPlayer.instance.getMediaPlayer().isPlaying();
     }
 
     @Override
@@ -988,7 +978,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
                     mNotificationManagerCompat.notify(notificationId, notification);
 
-                    Log.d(TAG, "mMediaPlayer.isPlaying:" + String.valueOf(mMediaPlayer.isPlaying()));
+                    Log.d(TAG, "SingletonMediaplayer.instance.getMediaPlayer().isPlaying:" + String.valueOf(SingletonMediaPlayer.instance.getMediaPlayer().isPlaying()));
 
                     //Progressダイアログ消すのはvideoCreate()のなかでやってる。
                     videoCreate();
@@ -1019,7 +1009,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Uri mediaPath = Uri.parse(videoUrl);
         try {
             //新しいビデオを再生するために一度resetしてMediaPlayerをIDLE状態にする
-            mMediaPlayer.reset();
+            SingletonMediaPlayer.instance.getMediaPlayer().reset();
             Log.d(TAG, "videoCreate");
             //長いビデオだとarrows M02で途中でストリーミングが終わってしまう問題の解決のために
             //分割ストリーミングの設定
@@ -1028,16 +1018,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             headers.put("Accept-Ranges", "bytes");
             headers.put("Status", "206");
             headers.put("Cache-control", "no-cache");
-            mMediaPlayer.setDataSource(getApplicationContext(), mediaPath, headers);
-            //mMediaPlayer.setDataSource(this, mediaPath);
-            mMediaPlayer.setDisplay(mHolder);
+            SingletonMediaPlayer.instance.getMediaPlayer().setDataSource(getApplicationContext(), mediaPath, headers);
+            //SingletonMediaplayer.instance.getMediaPlayer().setDataSource(this, mediaPath);
+            SingletonMediaPlayer.instance.getMediaPlayer().setDisplay(mHolder);
             //videoTitleをセット
             if (VideoTitle != null) {
                 mTextView.setText(VideoTitle);
             }
 
             //prepareに時間かかることを想定し直接startせずにLister使う
-            mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            SingletonMediaPlayer.instance.getMediaPlayer().setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     Log.d(TAG, "onPrepared");
@@ -1046,7 +1036,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     setProgressDialogDismiss();
                 }
             });
-            mMediaPlayer.prepareAsync();
+            SingletonMediaPlayer.instance.getMediaPlayer().prepareAsync();
         } catch (IllegalArgumentException e) {
             Log.d(TAG, "videoCreate-IllegalArgumentException" + e.getMessage());
             e.printStackTrace();
@@ -1582,13 +1572,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void changeSurfaceHolderAndTitlebar(SurfaceHolder holder, SurfaceView surfaceView, TextView textView) {
         mHolder = holder;
         try {
-            mMediaPlayer.setDisplay(holder);
+            SingletonMediaPlayer.instance.getMediaPlayer().setDisplay(holder);
         } catch (IllegalArgumentException e) {
             //surfaceの解放や生成の処理が前後してしまい、うまくいっておらず
             //既に解放済みのsurfaceのholderが来てしまったとき
             Log.d(TAG, "changeSurfaceHolderAndTitlebar#IllegalArgumentException\n" + e.getMessage());
             mHolder = null;
-            mMediaPlayer.setDisplay(null);
+            SingletonMediaPlayer.instance.getMediaPlayer().setDisplay(null);
         }
         if (holder == null) {
             Log.d(TAG, "changeSurfaceHolderAndTitlebar#\nholder==null");
@@ -1602,10 +1592,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         surfaceView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                boolean r = v instanceof SurfaceView;
-                boolean y = mMediaPlayer != null;
-                // Log.d(TAG, String.valueOf(r) + String.valueOf(y));
-                if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView && mMediaPlayer != null) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView) {
                     if (!mMediaController.isShowing()) {
                         mMediaController.show();
                     } else {
@@ -1713,12 +1700,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mPreview.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                if (mPreview.isEnabled()) {
-                    ViewGroup.LayoutParams svlp = mPreview.getLayoutParams();
-                    int width = mPreview.getWidth();
-                    svlp.height = width / 16 * 9;
-                    mPreview.setLayoutParams(svlp);
-                }
+                resizeSurfaceView();
             }
         });
 
@@ -1851,18 +1833,33 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
+    /**
+     * Change the vertical and horizontal lengths of the playback space of the movie according to the screen size of the smartphone
+     * <p>
+     * surfaceViewの大きさを整えるメゾッド
+     * スマホの画面サイズに合わせて動画の再生スペースの縦横の長さを変化させる
+     */
+    private void resizeSurfaceView() {
+        if (mPreview.isEnabled()) {
+            ViewGroup.LayoutParams svlp = mPreview.getLayoutParams();
+            int width = mPreview.getWidth();
+            svlp.height = width / 16 * 9;
+            mPreview.setLayoutParams(svlp);
+        }
+    }
+
     private BroadcastReceiver pauseStartBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "pauseStartBroadcastReceiver");
-            if (!mMediaPlayer.isPlaying()) {
+            if (!SingletonMediaPlayer.instance.getMediaPlayer().isPlaying()) {
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
                 mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
-                mMediaPlayer.start();
+                SingletonMediaPlayer.instance.getMediaPlayer().start();
             } else {
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
                 mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
-                mMediaPlayer.pause();
+                SingletonMediaPlayer.instance.getMediaPlayer().pause();
             }
 
 
