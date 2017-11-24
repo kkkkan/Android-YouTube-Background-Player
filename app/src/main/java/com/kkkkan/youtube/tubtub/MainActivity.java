@@ -35,25 +35,24 @@ import android.Manifest;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
-import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.database.MatrixCursor;
-import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
@@ -62,8 +61,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
@@ -87,7 +84,6 @@ import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.MediaController;
-import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -103,9 +99,6 @@ import com.google.api.services.youtube.model.PlaylistStatus;
 import com.google.api.services.youtube.model.ResourceId;
 import com.kkkkan.youtube.BuildConfig;
 import com.kkkkan.youtube.R;
-import com.kkkkan.youtube.tubtub.BroadcastReceiver.NextReceiver;
-import com.kkkkan.youtube.tubtub.BroadcastReceiver.PauseStartReceiver;
-import com.kkkkan.youtube.tubtub.BroadcastReceiver.PrevReceiver;
 import com.kkkkan.youtube.tubtub.adapters.PlaylistsAdapter;
 import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
 import com.kkkkan.youtube.tubtub.fragments.FavoritesFragment;
@@ -152,6 +145,7 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTubeWithC
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
         OnItemSelected, OnFavoritesSelected, SurfaceHolder.Callback, MediaController.MediaPlayerControl, PlaylistsAdapter.OnDetailClickListener, TitlebarListener {
     public static Handler mainHandler = new Handler();
+    static private MediaPlayerService service;
 
     public Context getMainContext() {
         return mainContext;
@@ -189,9 +183,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private AlertDialog.Builder mListDlg;
     private AlertDialog.Builder mTitleDlg;
     private ProgressDialog mProgressDialog;
-    private NotificationCompat.Builder mNotificationCompatBuilder;
-    private NotificationManagerCompat mNotificationManagerCompat;
-    private RemoteViews mRemoteViews;
+    //private NotificationCompat.Builder mNotificationCompatBuilder;
+    //private NotificationManagerCompat mNotificationManagerCompat;
+    //private RemoteViews mRemoteViews;
     private CheckBox repeatOneBox;
     private CheckBox repeatPlaylistBox;
 
@@ -227,43 +221,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().setFormat(PixelFormat.TRANSPARENT);
 
-
-        //Notification settings
-        //Notificationの設定
-
-
-        //In the notification field · lock screen so that you can see the information on the video currently being played,
-        // let's go to the application with a notification tap.
-        //通知欄・ロック画面で今再生中のビデオの情報を見れるよう,に、通知タップでアプリに行けるようにします。
-        mRemoteViews = new RemoteViews(getApplicationContext().getPackageName(), R.layout.notification_layout);
-        //Fly to the app with thumbnail touch
-        //サムネイルタッチでアプリに飛ぶ
-        Intent intent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mRemoteViews.setOnClickPendingIntent(R.id.video_thumbnail, pendingIntent);
-
-        //pause_start Touch pause / start
-        //pause_startタッチでpause/start
-        intent = new Intent(this, PauseStartReceiver.class);
-        pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mRemoteViews.setOnClickPendingIntent(R.id.pause_start, pendingIntent);
-
-        //Go to the previous video with prev touch
-        //prevタッチで前のビデオに行く
-        intent = new Intent(this, PrevReceiver.class);
-        pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mRemoteViews.setOnClickPendingIntent(R.id.prev, pendingIntent);
-
-        //Go to next video with next touch
-        //nextタッチで次のビデオに行く
-        intent = new Intent(this, NextReceiver.class);
-        pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mRemoteViews.setOnClickPendingIntent(R.id.next, pendingIntent);
-
-
-        mRemoteViews.setTextColor(R.id.title_view, Color.BLACK);
-        mRemoteViews.setTextColor(R.id.video_duration, Color.BLACK);
-
         //Setting for one repeat check box on the title bar
         //タイトルバーの1リピートチェックボックスについての設定
         repeatOneBox = (CheckBox) findViewById(R.id.repeat_one_box);
@@ -284,13 +241,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 checkBoxUpdata();
             }
         });
-
-
-        mNotificationCompatBuilder = new NotificationCompat.Builder(getApplicationContext());
-        mNotificationCompatBuilder.setContent(mRemoteViews);
-        mNotificationCompatBuilder.setSmallIcon(R.drawable.ic_action_playlist);
-        //mNotificationCompatBuilder.setContentIntent(null);
-        mNotificationManagerCompat = NotificationManagerCompat.from(this);
 
 
         mTextView = (TextView) findViewById(R.id.title_view);
@@ -477,6 +427,20 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
         }
 
+        startService(new Intent(this, MediaPlayerService.class));
+        bindService(new Intent(this, MediaPlayerService.class), new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                MainActivity.service = ((MediaPlayerService.MediaPlayerBinder) service).getService();
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                MainActivity.service = null;
+            }
+        }, BIND_AUTO_CREATE);
+
+
     }
 
 
@@ -502,21 +466,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         // allow to continue playing media in the background.
         // バックグラウンド再生を許可する
         requestVisibleBehind(true);
-
-        //PauseStartReceiverからのブロードキャスト受け取れるように
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(PauseStartReceiver.ACTION);
-        registerReceiver(pauseStartBroadcastReceiver, intentFilter);
-
-        //PrevReceiverからのブロードキャスト受け取れるように
-        intentFilter = new IntentFilter();
-        intentFilter.addAction(PrevReceiver.ACTION);
-        registerReceiver(prevBroadcastReceiver, intentFilter);
-
-        //NextReceiverからのブロードキャスト受け取れるように
-        intentFilter = new IntentFilter();
-        intentFilter.addAction(NextReceiver.ACTION);
-        registerReceiver(nextBroadcastReceiver, intentFilter);
 
         //チェックボックスの画像を設定に合わせる
         checkBoxUpdata();
@@ -622,15 +571,19 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void start() {
         SingletonMediaPlayer.instance.getMediaPlayer().start();
-        mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
-        mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
+        if (service != null) {
+            service.mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
+            service.mNotificationManagerCompat.notify(notificationId, service.mNotificationCompatBuilder.build());
+        }
     }
 
     @Override
     public void pause() {
         SingletonMediaPlayer.instance.getMediaPlayer().pause();
-        mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
-        mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
+        if (service != null) {
+            service.mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
+            service.mNotificationManagerCompat.notify(notificationId, service.mNotificationCompatBuilder.build());
+        }
     }
 
     @Override
@@ -1845,40 +1798,5 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
-    private BroadcastReceiver pauseStartBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "pauseStartBroadcastReceiver");
-            if (!SingletonMediaPlayer.instance.getMediaPlayer().isPlaying()) {
-                mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
-                mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
-                SingletonMediaPlayer.instance.getMediaPlayer().start();
-            } else {
-                mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
-                mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
-                SingletonMediaPlayer.instance.getMediaPlayer().pause();
-            }
 
-
-        }
-    };
-
-
-    private BroadcastReceiver prevBroadcastReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "prevBroadcastReceiver");
-            onPlaylistSelected(SingletonMediaPlayer.instance.playlist, (SingletonMediaPlayer.instance.currentVideoIndex - 1 + SingletonMediaPlayer.instance.playlist.size()) % SingletonMediaPlayer.instance.playlist.size());
-        }
-
-    };
-
-    private BroadcastReceiver nextBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "nextStartBroadcastReceiver");
-            onPlaylistSelected(SingletonMediaPlayer.instance.playlist, (SingletonMediaPlayer.instance.currentVideoIndex + 1) % SingletonMediaPlayer.instance.playlist.size());
-        }
-    };
 }
