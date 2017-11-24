@@ -17,6 +17,10 @@ package com.kkkkan.youtube.tubtub;
 
 import android.media.MediaPlayer;
 
+import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
+
+import java.util.List;
+
 /**
  * Created by admin on 2017/11/24.
  */
@@ -26,6 +30,17 @@ public class SingletonMediaPlayer {
     static public final SingletonMediaPlayer instance = new SingletonMediaPlayer();
     static private MediaPlayer mediaPlayer;
 
+    //Insert the playlist that is currently playing and the number of the video in it
+    //今再生中のプレイリストとその中の何番目のビデオかを入れておく
+    public List<YouTubeVideo> playlist;
+    public int currentVideoIndex;
+    //For movie title
+    //動画タイトル用
+    public String VideoTitle;
+
+    public String videoUrl;
+
+
     private SingletonMediaPlayer() {
         mediaPlayer = new MediaPlayer();
     }
@@ -33,6 +48,5 @@ public class SingletonMediaPlayer {
     public MediaPlayer getMediaPlayer() {
         return mediaPlayer;
     }
-
 
 }

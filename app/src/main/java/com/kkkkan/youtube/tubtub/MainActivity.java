@@ -182,10 +182,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private FavoritesFragment favoritesFragment;
 
 
-    private String videoUrl;
+    //private String videoUrl;
     private SurfaceHolder mHolder;
     private SurfaceView mPreview;
-    //private MediaPlayer mMediaPlayer = null;
     private MediaController mMediaController;
     private AlertDialog.Builder mListDlg;
     private AlertDialog.Builder mTitleDlg;
@@ -199,12 +198,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     //For movie title
     //動画タイトル用
     private TextView mTextView;
-    private String VideoTitle;
+    //private String VideoTitle;
 
     //Insert the playlist that is currently playing and the number of the video in it
     //今再生中のプレイリストとその中の何番目のビデオかを入れておく
-    private List<YouTubeVideo> playlist;
-    private int currentVideoIndex;
+    //private List<YouTubeVideo> playlist;
+    //private int currentVideoIndex;
 
     private int[] tabIcons = {
             R.drawable.ic_action_heart,
@@ -374,7 +373,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             @Override
             public void onCompletion(MediaPlayer mp) {
                 Log.d(TAG, " mMediaController.setOnCompletionListener");
-                if (playlist == null) {
+                if (SingletonMediaPlayer.instance.playlist == null) {
                     //Originally it should not be playlist == null,
                     // but because there was something that was fallen by null reference with playlist.size ()
                     //本来ならplaylist==nullとなることは無いはずだが、
@@ -404,8 +403,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 Log.d(TAG, " mMediaController.setPrevNextListeners");
                 //When playlist is not set, you can also press it so that it will not fall at that time
                 //playlistセットされてないときも押せてしまうからその時落ちないように
-                if (playlist != null) {
-                    onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+                if (SingletonMediaPlayer.instance.playlist != null) {
+                    onPlaylistSelected(SingletonMediaPlayer.instance.playlist, (SingletonMediaPlayer.instance.currentVideoIndex + 1) % SingletonMediaPlayer.instance.playlist.size());
                 }
             }
         }, new View.OnClickListener() {
@@ -420,8 +419,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 Log.d(TAG, " mMediaController.setPrevNextListeners");
                 //When playlist is not set, you can also press it so that it will not fall at that time
                 //playlistセットされてないときも押せてしまうからその時落ちないように
-                if (playlist != null) {
-                    onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+                if (SingletonMediaPlayer.instance.playlist != null) {
+                    onPlaylistSelected(SingletonMediaPlayer.instance.playlist, (SingletonMediaPlayer.instance.currentVideoIndex - 1 + SingletonMediaPlayer.instance.playlist.size()) % SingletonMediaPlayer.instance.playlist.size());
                 }
 
             }
@@ -539,10 +538,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        SingletonMediaPlayer.instance.getMediaPlayer().release();
-
-        mNotificationManagerCompat.cancel(notificationId);
+        //SingletonMediaPlayer.instance.getMediaPlayer().release();
+        //mNotificationManagerCompat.cancel(notificationId);
     }
 
     /**
@@ -917,8 +914,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
         //読み込み中ダイアログ表示
         setProgressDialogShow();
-        this.playlist = playlist;
-        this.currentVideoIndex = position;
+        SingletonMediaPlayer.instance.playlist = playlist;
+        SingletonMediaPlayer.instance.currentVideoIndex = position;
 
         //ネット環境にちゃんとつながってるかチェック
         if (!networkConf.isNetworkAvailable()) {
@@ -966,14 +963,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     Log.d(TAG, "VideoURL:" + videoDownloadUrl);
 
                     //ポーズから戻ったときのためMovieUrlも変えとく
-                    videoUrl = videoDownloadUrl;
-                    VideoTitle = video.getTitle();
+                    SingletonMediaPlayer.instance.videoUrl = videoDownloadUrl;
+                    SingletonMediaPlayer.instance.VideoTitle = video.getTitle();
 
                     //サムネイルの設定
                     Notification notification = mNotificationCompatBuilder.build();
                     Picasso.with(mainContext).load(video.getThumbnailURL()).into(mRemoteViews, R.id.video_thumbnail, 0, notification);
 
-                    mRemoteViews.setTextViewText(R.id.title_view, VideoTitle);
+                    mRemoteViews.setTextViewText(R.id.title_view, SingletonMediaPlayer.instance.VideoTitle);
                     mRemoteViews.setTextViewText(R.id.video_duration, video.getDuration());
                     mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
                     mNotificationManagerCompat.notify(notificationId, notification);
@@ -993,7 +990,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     private void videoCreate() {
-        if (videoUrl == null) {
+        if (SingletonMediaPlayer.instance.videoUrl == null) {
             //通常あり得ない
             Log.d(TAG, "videoCreate()-videoUrl==null");
             return;
@@ -1006,7 +1003,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         // mediaplayer関係
         // URLの先にある動画を再生する
 
-        Uri mediaPath = Uri.parse(videoUrl);
+        Uri mediaPath = Uri.parse(SingletonMediaPlayer.instance.videoUrl);
         try {
             //新しいビデオを再生するために一度resetしてMediaPlayerをIDLE状態にする
             SingletonMediaPlayer.instance.getMediaPlayer().reset();
@@ -1022,8 +1019,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             //SingletonMediaplayer.instance.getMediaPlayer().setDataSource(this, mediaPath);
             SingletonMediaPlayer.instance.getMediaPlayer().setDisplay(mHolder);
             //videoTitleをセット
-            if (VideoTitle != null) {
-                mTextView.setText(VideoTitle);
+            if (SingletonMediaPlayer.instance.VideoTitle != null) {
+                mTextView.setText(SingletonMediaPlayer.instance.VideoTitle);
             }
 
             //prepareに時間かかることを想定し直接startせずにLister使う
@@ -1060,16 +1057,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         if (settings.getRepeatOne() == Settings.RepeatOne.ON) {
             // one song repeat
             //1曲リピート時
-            onPlaylistSelected(playlist, currentVideoIndex);
+            onPlaylistSelected(SingletonMediaPlayer.instance.playlist, SingletonMediaPlayer.instance.currentVideoIndex);
         } else if (settings.getRepeatPlaylist() == ON) {
             // It is not a repeat of one song, and at play list repeat
             //1曲リピートではなく、かつプレイリストリピート時
-            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+            onPlaylistSelected(SingletonMediaPlayer.instance.playlist, (SingletonMediaPlayer.instance.currentVideoIndex + 1) % SingletonMediaPlayer.instance.playlist.size());
         } else {
             // When it is neither a single song repeat nor a play list repeat
             //一曲リピートでもプレイリストリピートでもないとき
-            if (currentVideoIndex + 1 < playlist.size()) {
-                onPlaylistSelected(playlist, currentVideoIndex + 1);
+            if (SingletonMediaPlayer.instance.currentVideoIndex + 1 < SingletonMediaPlayer.instance.playlist.size()) {
+                onPlaylistSelected(SingletonMediaPlayer.instance.playlist, SingletonMediaPlayer.instance.currentVideoIndex + 1);
             } else {
                 //最後の曲のときはprogressbarが出ていたらそれを消すだけ。
                 setProgressDialogDismiss();
@@ -1602,7 +1599,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 return true;
             }
         });
-        mTextView.setText(VideoTitle);
+        mTextView.setText(SingletonMediaPlayer.instance.VideoTitle);
     }
 
     /**
@@ -1872,7 +1869,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "prevBroadcastReceiver");
-            onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+            onPlaylistSelected(SingletonMediaPlayer.instance.playlist, (SingletonMediaPlayer.instance.currentVideoIndex - 1 + SingletonMediaPlayer.instance.playlist.size()) % SingletonMediaPlayer.instance.playlist.size());
         }
 
     };
@@ -1881,7 +1878,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "nextStartBroadcastReceiver");
-            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+            onPlaylistSelected(SingletonMediaPlayer.instance.playlist, (SingletonMediaPlayer.instance.currentVideoIndex + 1) % SingletonMediaPlayer.instance.playlist.size());
         }
     };
 }
