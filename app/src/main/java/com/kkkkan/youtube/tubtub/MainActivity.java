@@ -188,17 +188,17 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private MainActivityViewModel viewModel;
 
-    private boolean isConnect=false;
+    private boolean isConnect = false;
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             MainActivity.service = ((MediaPlayerService.MediaPlayerBinder) service).getService(viewModel);
-            isConnect=true;
+            isConnect = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            isConnect=false;
+            isConnect = false;
             unbindService(this);
             MainActivity.service = null;
         }
@@ -408,7 +408,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         //SingletonMediaPlayer.instance.getMediaPlayer().release();
         //mNotificationManagerCompat.cancel(notificationId);
         //サービスへのbind切る
-        if(isConnect) {
+        if (isConnect) {
             service.unbindService(connection);
         }
     }
@@ -464,7 +464,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                int paramInt2, int paramInt3) {
         Log.d(TAG, "surfaceChanged");
         Configuration config = getResources().getConfiguration();
-        if(service!=null) {
+        if (service != null) {
             service.setDisplay(mPreview.getHolder());
         }
         if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -480,7 +480,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void surfaceDestroyed(SurfaceHolder paramSurfaceHolder) {
         Log.d(TAG, "surfaceDestroyed");
         try {
-            changeSurfaceHolderAndTitlebar(null, null, mTextView);
+            releaseSurfaceHolder(paramSurfaceHolder);
         } catch (IllegalStateException e) {
             //バックボタンでアプリを落としたとき用
             //このままonDestroy()まで呼ばれるのでここはスルー
@@ -1178,16 +1178,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         return tabLayout;
     }
 
-    /**
-     * 今のmediaplayerの移している先を返す
-     *
-     * @return
-     */
-    public SurfaceHolder getmHolder() {
-        return service.getmHolder();
-    }
-
-
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -1238,6 +1228,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         //ビデオ途中で縦横変わるときだけはviewmodelだけじゃちゃんと移行先のタイトルバーに題名つけるのできなかったのでとりあえずこちらから取りに行く
         //きれいじゃないのでいつか直したい
         mTextView.setText(service.getVideoTitle());
+    }
+
+    /**
+     * surfaceDestroyedで呼び出す用の,
+     * surfaceHolder解放する用のメゾッド
+     *
+     * @param holder
+     */
+    public void releaseSurfaceHolder(SurfaceHolder holder) {
+        service.releaseSurfaceHolder(holder);
     }
 
     /**

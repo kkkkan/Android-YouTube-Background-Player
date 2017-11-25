@@ -224,11 +224,8 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
         Log.d(TAG, "surfaceDestroyed");
         Activity activity = getActivity();
         if (activity instanceof MainActivity) {
-            if (((MainActivity) activity).getmHolder().equals(surfaceView.getHolder())) {
-                //Release now if it is my surfaceHolder that is projected on mediaplayer
-                //今mediaplayerに投影されているのが自分のsurfaceHolderだったら解放する
-                ((MainActivity) activity).changeSurfaceHolderAndTitlebar(null, null, titleView);
-            }
+            //surfaceHolderを解放
+            ((MainActivity) activity).releaseSurfaceHolder(holder);
         }
     }
 

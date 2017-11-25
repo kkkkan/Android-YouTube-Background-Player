@@ -12,7 +12,6 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -76,6 +75,12 @@ public class MediaPlayerService extends Service implements MediaController.Media
         this.playlistSelectedCancelFlag = playlistSelectedCancelFlag;
     }
 
+    /**
+     * 引数のsurfaceHolderがnullだったらfalseを返す
+     *
+     * @param holder
+     * @return
+     */
     public boolean setDisplay(SurfaceHolder holder) {
         mHolder = holder;
         try {
@@ -88,6 +93,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             mediaPlayer.setDisplay(null);
         }
         if (holder == null) {
+            //基本的にあり得ない
             Log.d(TAG, "changeSurfaceHolderAndTitlebar#\nholder==null");
             return false;
         }
@@ -95,14 +101,16 @@ public class MediaPlayerService extends Service implements MediaController.Media
     }
 
     /**
-     * 今のmediaplayerの移している先を返す
-     * このメゾッドの存在はあまり好ましくないがこれがないと画面が横→縦になったときに
-     * 縦の画面が動かなくなってしまう
+     * 引数のsurfaceHolderと今mediaPlayerの投影先になっているsurfaceHolderが同じインスタンスだったら
+     * 解放するメゾッド
      *
-     * @return
+     * @param holder
      */
-    public SurfaceHolder getmHolder() {
-        return mHolder;
+    public void releaseSurfaceHolder(SurfaceHolder holder) {
+        if (holder == mHolder) {
+            mHolder = null;
+            mediaPlayer.setDisplay(null);
+        }
     }
 
     public String getVideoTitle() {
@@ -264,7 +272,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
     }
 
     @Override
-    public int onStartCommand(Intent intent,  int flags, int startId) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         return START_NOT_STICKY;
     }
 
