@@ -188,14 +188,17 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private MainActivityViewModel viewModel;
 
+    private boolean isConnect=false;
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             MainActivity.service = ((MediaPlayerService.MediaPlayerBinder) service).getService(viewModel);
+            isConnect=true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            isConnect=false;
             unbindService(this);
             MainActivity.service = null;
         }
@@ -405,7 +408,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         //SingletonMediaPlayer.instance.getMediaPlayer().release();
         //mNotificationManagerCompat.cancel(notificationId);
         //サービスへのbind切る
-        service.unbindService(connection);
+        if(isConnect) {
+            service.unbindService(connection);
+        }
     }
 
     /**
