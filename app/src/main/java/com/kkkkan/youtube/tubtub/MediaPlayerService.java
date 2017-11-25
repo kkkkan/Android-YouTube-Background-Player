@@ -104,6 +104,10 @@ public class MediaPlayerService extends Service implements MediaController.Media
         return mHolder;
     }
 
+    public String getVideoTitle() {
+        return videoTitle;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();

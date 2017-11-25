@@ -1226,8 +1226,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 return true;
             }
         });
-        //viewModelにしたので自動的にタイトルは入ってくるはず
-        //mTextView.setText(SingletonMediaPlayer.instance.VideoTitle);
+
+        //ビデオ途中で縦横変わるときだけはviewmodelだけじゃちゃんと移行先のタイトルバーに題名つけるのできなかったのでとりあえずこちらから取りに行く
+        //きれいじゃないのでいつか直したい
+        mTextView.setText(service.getVideoTitle());
     }
 
     /**
