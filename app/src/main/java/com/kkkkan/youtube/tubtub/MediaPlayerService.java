@@ -366,7 +366,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
                     //サムネイルの設定
                     Notification notification = mNotificationCompatBuilder.build();
-                    Picasso.with(MediaPlayerService.this).load(video.getThumbnailURL()).into(mRemoteViews, R.id.video_thumbnail, 0, notification);
+                    Picasso.with(MediaPlayerService.this).load(video.getThumbnailURL()).into(mRemoteViews, R.id.video_thumbnail, notificationId, notification);
 
                     mRemoteViews.setTextViewText(R.id.title_view, videoTitle);
                     mRemoteViews.setTextViewText(R.id.video_duration, video.getDuration());
