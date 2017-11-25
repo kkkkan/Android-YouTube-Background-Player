@@ -278,8 +278,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "onDestroy()");
         stopSelf();
-
     }
 
     private BroadcastReceiver pauseStartBroadcastReceiver = new BroadcastReceiver() {

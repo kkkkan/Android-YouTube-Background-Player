@@ -198,6 +198,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            Log.d(TAG, "onServiceDisconnected(ComponentName name)");
             isConnect = false;
             unbindService(this);
             MainActivity.service = null;
@@ -405,12 +406,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.d(TAG, "onDestroy()");
         //SingletonMediaPlayer.instance.getMediaPlayer().release();
         //mNotificationManagerCompat.cancel(notificationId);
         //サービスへのbind切る
         if (isConnect) {
-            service.unbindService(connection);
+            Log.d(TAG, "service.unbindService");
+            unbindService(connection);
         }
+
     }
 
     /**
