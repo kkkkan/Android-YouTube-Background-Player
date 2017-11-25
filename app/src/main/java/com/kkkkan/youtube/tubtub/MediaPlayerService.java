@@ -12,6 +12,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -262,6 +263,16 @@ public class MediaPlayerService extends Service implements MediaController.Media
         return binder;
     }
 
+    @Override
+    public int onStartCommand(Intent intent,  int flags, int startId) {
+        return START_NOT_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        stopSelf();
+
+    }
 
     private BroadcastReceiver pauseStartBroadcastReceiver = new BroadcastReceiver() {
         @Override

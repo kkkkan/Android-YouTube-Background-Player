@@ -196,6 +196,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            unbindService(this);
             MainActivity.service = null;
         }
     };
@@ -458,7 +459,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                int paramInt2, int paramInt3) {
         Log.d(TAG, "surfaceChanged");
         Configuration config = getResources().getConfiguration();
-        service.setDisplay(mPreview.getHolder());
+        if(service!=null) {
+            service.setDisplay(mPreview.getHolder());
+        }
         if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             //横画面だったらどちらにしろ投影先はLandscapeFragment上のsurfaceなので
             // mediaplayerの設定変更系はしない
