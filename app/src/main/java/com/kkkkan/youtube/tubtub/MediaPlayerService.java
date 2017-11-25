@@ -519,7 +519,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
     public void start() {
         mediaPlayer.start();
         mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
-        mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
+        startForeground(notificationId,mNotificationCompatBuilder.build());
+        //mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
     }
 
     @Override
@@ -527,6 +528,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         mediaPlayer.pause();
         mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
         mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
+        stopForeground(false);
     }
 
     @Override
