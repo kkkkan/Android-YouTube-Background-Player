@@ -93,6 +93,17 @@ public class MediaPlayerService extends Service implements MediaController.Media
         return true;
     }
 
+    /**
+     * 今のmediaplayerの移している先を返す
+     * このメゾッドの存在はあまり好ましくないがこれがないと画面が横→縦になったときに
+     * 縦の画面が動かなくなってしまう
+     *
+     * @return
+     */
+    public SurfaceHolder getmHolder() {
+        return mHolder;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();

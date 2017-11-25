@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
     //private String videoUrl;
-    private SurfaceHolder mHolder;
+    //private SurfaceHolder mHolder;
     private SurfaceView mPreview;
     private MediaController mMediaController;
     private AlertDialog.Builder mListDlg;
@@ -426,8 +426,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 }
             });
         }
-        mHolder = mPreview.getHolder();
-        mHolder.addCallback(this);
+        mPreview.getHolder().addCallback(this);
 
          /*mMediaController表示のためのtouchlistener*/
         mPreview.setOnTouchListener(new View.OnTouchListener() {
@@ -459,14 +458,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                int paramInt2, int paramInt3) {
         Log.d(TAG, "surfaceChanged");
         Configuration config = getResources().getConfiguration();
-        mHolder = mPreview.getHolder();
         if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             //横画面だったらどちらにしろ投影先はLandscapeFragment上のsurfaceなので
             // mediaplayerの設定変更系はしない
             return;
         }
         //MediaPlayer、MediaControllerの投影先を変更
-        changeSurfaceHolderAndTitlebar(mHolder, mPreview, mTextView);
+        changeSurfaceHolderAndTitlebar(mPreview.getHolder(), mPreview, mTextView);
     }
 
     @Override
@@ -1172,8 +1170,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         return tabLayout;
     }
 
+    /**
+     * 今のmediaplayerの移している先を返す
+     *
+     * @return
+     */
     public SurfaceHolder getmHolder() {
-        return mHolder;
+        return service.getmHolder();
     }
 
 
@@ -1196,7 +1199,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      * それを反映させるために呼ばれる関数
      */
     public void changeSurfaceHolderAndTitlebar(SurfaceHolder holder, SurfaceView surfaceView, TextView textView) {
-        mHolder = holder;
         boolean setDisplaySuccess = false;
         if (service != null) {
             setDisplaySuccess = service.setDisplay(holder);
@@ -1334,7 +1336,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         //設定とcheckboxの表示合わせる
         checkBoxUpdata();
 
-        changeSurfaceHolderAndTitlebar(mHolder, mPreview, mTextView);
+        changeSurfaceHolderAndTitlebar(mPreview.getHolder(), mPreview, mTextView);
     }
 
     /**
