@@ -18,6 +18,7 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
+import android.widget.MediaController;
 import android.widget.RemoteViews;
 
 import com.kkkkan.youtube.R;
@@ -38,28 +39,58 @@ import at.huber.youtubeExtractor.VideoMeta;
 import at.huber.youtubeExtractor.YouTubeExtractor;
 import at.huber.youtubeExtractor.YtFile;
 
+import static android.media.MediaPlayer.MEDIA_ERROR_IO;
+import static android.media.MediaPlayer.MEDIA_INFO_UNKNOWN;
 import static com.kkkkan.youtube.tubtub.Settings.RepeatPlaylist.ON;
 
 /**
  * Created by ka1n9 on 2017/11/24.
  */
 
-public class MediaPlayerService extends Service {
+public class MediaPlayerService extends Service implements MediaController.MediaPlayerControl {
     static final private String TAG = "MediaPlayerService";
     private final IBinder binder = new MediaPlayerBinder();
     private final MediaPlayer mediaPlayer = new MediaPlayer();
     public RemoteViews mRemoteViews;
     public NotificationCompat.Builder mNotificationCompatBuilder;
     public NotificationManagerCompat mNotificationManagerCompat;
-    static private int notificationId = 0;
+    static private int notificationId = 1;
     private boolean playlistSelectedCancelFlag = false;
     private SurfaceHolder mHolder;
+    private MainActivityViewModel viewModel;
+    private List<YouTubeVideo> playlist;
+    private int currentVideoIndex;
+    private String videoUrl;
+    private String videoTitle;
 
 
     public class MediaPlayerBinder extends Binder {
-        public MediaPlayerService getService() {
+        public MediaPlayerService getService(MainActivityViewModel viewModel) {
+            MediaPlayerService.this.viewModel = viewModel;
             return MediaPlayerService.this;
         }
+    }
+
+    public void setPlaylistSelectedCancelFlag(boolean playlistSelectedCancelFlag) {
+        this.playlistSelectedCancelFlag = playlistSelectedCancelFlag;
+    }
+
+    public boolean setDisplay(SurfaceHolder holder) {
+        mHolder = holder;
+        try {
+            mediaPlayer.setDisplay(holder);
+        } catch (IllegalArgumentException e) {
+            //surfaceの解放や生成の処理が前後してしまい、うまくいっておらず
+            //既に解放済みのsurfaceのholderが来てしまったとき
+            Log.d(TAG, "changeSurfaceHolderAndTitlebar#IllegalArgumentException\n" + e.getMessage());
+            mHolder = null;
+            mediaPlayer.setDisplay(null);
+        }
+        if (holder == null) {
+            Log.d(TAG, "changeSurfaceHolderAndTitlebar#\nholder==null");
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -124,6 +155,90 @@ public class MediaPlayerService extends Service {
         intentFilter.addAction(NextReceiver.ACTION);
         registerReceiver(nextBroadcastReceiver, intentFilter);
 
+        //Listener to go to the next song after the end
+        //終了後次の曲に行くためのリスナー
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                Log.d(TAG, " mMediaController.setOnCompletionListener");
+                if (playlist == null) {
+                    //Originally it should not be playlist == null,
+                    // but because there was something that was fallen by null reference with playlist.size ()
+                    //本来ならplaylist==nullとなることは無いはずだが、
+                    // playlist.size()でnull参照で落ちたことがあったので対策
+                    Log.d(TAG, "\nplaylist is null!\n");
+                    return;
+                }
+                handleNextVideo();
+            }
+        });
+
+        //For MediaPlayer setting · screen, set it with onResume ()
+        //Because it may fall when coming from the back to the fore if you do not get surfaceView every time with onResume ().
+        // MediaPlayerの設定・画面についてはonResume()で設定する。
+        // onResume()でいちいちsurfaceViewを取得し直さないとバックからフォアに来るときに落ちることがあるため。
+        mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                Log.d(TAG, "onError:\nwhat:" + String.valueOf(what)
+                        + "\n extra:" + String.valueOf(extra));
+                if (what == MEDIA_INFO_UNKNOWN && extra == MEDIA_ERROR_IO) {
+                    //MediaPlayer.MEDIA_INFO_UNKNOWN==1
+                    //MadiaPlayer.MEDIA_ERROR_IO==-1004
+
+                    //Depending on the model (FUJITSU Arrows M 03: android 6.0.1),
+                    // it is coming here that one video is running for 10 to 20 minutes
+                    //機種によって(FUJITSU Arrows M03:android 6.0.1)は1つのビデオを10～20分程度流しているとここに来るぽい
+
+                    //It was OK with SO 01G (android 5.0.2)
+                    //SO 01G(android 5.0.2)では大丈夫だった
+
+                    //A phenomenon peculiar to android 6?
+                    //android 6特有の現象？
+
+                    //Solved by split streaming setting with videoCreate ()?
+                    //videoCreate()で分割ストリーミング設定することにより解決？
+                }
+                //Calling start () etc. in the idel state
+                //Usually it does not happen
+                //idel状態でstart()等を呼ぶと
+                //通常は起きない
+
+
+                //call setOnComplateListener
+                //setOnComplateListener呼ぶ
+                return false;
+            }
+        });
+
+       /* //Depending on the model handling info to prevent log.W from being output a lot at every other second in the form of (SONY SO - 01 G:androd 5.0.2),
+        // MediaPlayer: info / warning (702, 0)
+        //機種によっては(SONY SO-01G:android 5.0.2)、MediaPlayer: info/warning (702, 0)といった形でLog.Wが1秒おきで
+        // たくさん出力されるのを防ぐためにinfoをハンドリング
+        mMediaPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+            @Override
+            public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                Log.d(TAG,"setOnInfoListener:onInfo:\nwhat=="+String.valueOf(what)+"\nextra=="+String.valueOf(extra));
+                if(what==MEDIA_INFO_BUFFERING_END&&extra==0){
+                    //MEDIA_INFO_BUFFERING_END==702
+                    //extra == 0 is a mystery
+                    //extra==0は謎
+
+                    //A notification indicating that playback of MediaPlayer has started since a certain amount of buffer has accumulated
+                    //It seems that you do not need to do anything in particular, and it is annoying to fill the Log and return false
+                    //バッファが一定量溜まったのでMediaPlayerの再生を開始したことを示す通知
+                    //特になにもしなくてもいいようであり、Logを埋め尽くしてうっとうしいのでfalseを返す
+                    return false;
+                }
+                //Others
+                //その他
+                //Give Log.W
+                //Log.Wを出す
+                return true;
+            }
+        });
+        */
+
     }
 
     @Nullable
@@ -137,16 +252,15 @@ public class MediaPlayerService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "pauseStartBroadcastReceiver");
-            if (!SingletonMediaPlayer.instance.getMediaPlayer().isPlaying()) {
+            if (!mediaPlayer.isPlaying()) {
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
                 mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
-                SingletonMediaPlayer.instance.getMediaPlayer().start();
+                mediaPlayer.start();
             } else {
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
                 mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
-                SingletonMediaPlayer.instance.getMediaPlayer().pause();
+                mediaPlayer.pause();
             }
-
 
         }
     };
@@ -157,7 +271,7 @@ public class MediaPlayerService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "prevBroadcastReceiver");
-            onPlaylistSelected(SingletonMediaPlayer.instance.playlist, (SingletonMediaPlayer.instance.currentVideoIndex - 1 + SingletonMediaPlayer.instance.playlist.size()) % SingletonMediaPlayer.instance.playlist.size());
+            onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
         }
 
     };
@@ -166,7 +280,7 @@ public class MediaPlayerService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "nextStartBroadcastReceiver");
-            onPlaylistSelected(SingletonMediaPlayer.instance.playlist, (SingletonMediaPlayer.instance.currentVideoIndex + 1) % SingletonMediaPlayer.instance.playlist.size());
+            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
         }
     };
 
@@ -182,13 +296,13 @@ public class MediaPlayerService extends Service {
             //Flagをfalseにする
             playlistSelectedCancelFlag = false;
             //一応Loading…出てたら消す
-            //setProgressDialogDismiss();
+            viewModel.setStateStopLoading();
             return;
         }
         //読み込み中ダイアログ表示
-        // setProgressDialogShow();
-        SingletonMediaPlayer.instance.playlist = playlist;
-        SingletonMediaPlayer.instance.currentVideoIndex = position;
+        viewModel.setStateStartLoading();
+        this.playlist = playlist;
+        currentVideoIndex = position;
 
         //ネット環境にちゃんとつながってるかチェック
         /*if (!networkConf.isNetworkAvailable()) {
@@ -204,7 +318,7 @@ public class MediaPlayerService extends Service {
             protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
                 Log.d(TAG, "onExtractionComplete");
                 if (ytFiles == null) {
-                    //Toast.makeText(mainContext, "ビデオが読み込めませんでした。次のビデオを再生します。", Toast.LENGTH_SHORT).show();
+                    viewModel.setStateError();
                     handleNextVideo();
                     return;
                 }
@@ -236,25 +350,26 @@ public class MediaPlayerService extends Service {
                     Log.d(TAG, "VideoURL:" + videoDownloadUrl);
 
                     //ポーズから戻ったときのためMovieUrlも変えとく
-                    SingletonMediaPlayer.instance.videoUrl = videoDownloadUrl;
-                    SingletonMediaPlayer.instance.VideoTitle = video.getTitle();
+                    videoUrl = videoDownloadUrl;
+                    videoTitle = video.getTitle();
 
                     //サムネイルの設定
                     Notification notification = mNotificationCompatBuilder.build();
                     Picasso.with(MediaPlayerService.this).load(video.getThumbnailURL()).into(mRemoteViews, R.id.video_thumbnail, 0, notification);
 
-                    mRemoteViews.setTextViewText(R.id.title_view, SingletonMediaPlayer.instance.VideoTitle);
+                    mRemoteViews.setTextViewText(R.id.title_view, videoTitle);
                     mRemoteViews.setTextViewText(R.id.video_duration, video.getDuration());
                     mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
-                    mNotificationManagerCompat.notify(notificationId, notification);
+                    // mNotificationManagerCompat.notify(notificationId, notification);
+                    startForeground(notificationId, notification);
 
-                    Log.d(TAG, "SingletonMediaplayer.instance.getMediaPlayer().isPlaying:" + String.valueOf(SingletonMediaPlayer.instance.getMediaPlayer().isPlaying()));
+                    Log.d(TAG, "SingletonMediaplayer.instance.getMediaPlayer().isPlaying:" + String.valueOf(mediaPlayer.isPlaying()));
 
                     //Progressダイアログ消すのはvideoCreate()のなかでやってる。
                     videoCreate();
                 } else {
                     Log.d(TAG, "ytFile-null-next:" + video.getId());
-                    //Toast.makeText(mainContext, "ビデオが読み込めませんでした。\n次のビデオを再生します。", Toast.LENGTH_SHORT).show();
+                    viewModel.setStateError();
                     handleNextVideo();
                 }
             }
@@ -263,7 +378,7 @@ public class MediaPlayerService extends Service {
     }
 
     private void videoCreate() {
-        if (SingletonMediaPlayer.instance.videoUrl == null) {
+        if (videoUrl == null) {
             //通常あり得ない
             Log.d(TAG, "videoCreate()-videoUrl==null");
             return;
@@ -276,10 +391,10 @@ public class MediaPlayerService extends Service {
         // mediaplayer関係
         // URLの先にある動画を再生する
 
-        Uri mediaPath = Uri.parse(SingletonMediaPlayer.instance.videoUrl);
+        Uri mediaPath = Uri.parse(videoUrl);
         try {
             //新しいビデオを再生するために一度resetしてMediaPlayerをIDLE状態にする
-            SingletonMediaPlayer.instance.getMediaPlayer().reset();
+            mediaPlayer.reset();
             Log.d(TAG, "videoCreate");
             //長いビデオだとarrows M02で途中でストリーミングが終わってしまう問題の解決のために
             //分割ストリーミングの設定
@@ -288,25 +403,25 @@ public class MediaPlayerService extends Service {
             headers.put("Accept-Ranges", "bytes");
             headers.put("Status", "206");
             headers.put("Cache-control", "no-cache");
-            SingletonMediaPlayer.instance.getMediaPlayer().setDataSource(getApplicationContext(), mediaPath, headers);
+            mediaPlayer.setDataSource(getApplicationContext(), mediaPath, headers);
             //SingletonMediaplayer.instance.getMediaPlayer().setDataSource(this, mediaPath);
-            SingletonMediaPlayer.instance.getMediaPlayer().setDisplay(mHolder);
+            mediaPlayer.setDisplay(mHolder);
             //videoTitleをセット
-            if (SingletonMediaPlayer.instance.VideoTitle != null) {
-                mTextView.setText(SingletonMediaPlayer.instance.VideoTitle);
+            if (videoTitle != null) {
+                viewModel.setVideoTitle(videoTitle);
             }
 
             //prepareに時間かかることを想定し直接startせずにLister使う
-            SingletonMediaPlayer.instance.getMediaPlayer().setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     Log.d(TAG, "onPrepared");
                     mp.start();
                     //読み込み中ダイアログ消す
-                    // setProgressDialogDismiss();
+                    viewModel.setStateStopLoading();
                 }
             });
-            SingletonMediaPlayer.instance.getMediaPlayer().prepareAsync();
+            mediaPlayer.prepareAsync();
         } catch (IllegalArgumentException e) {
             Log.d(TAG, "videoCreate-IllegalArgumentException" + e.getMessage());
             e.printStackTrace();
@@ -331,20 +446,102 @@ public class MediaPlayerService extends Service {
         if (settings.getRepeatOne() == Settings.RepeatOne.ON) {
             // one song repeat
             //1曲リピート時
-            onPlaylistSelected(SingletonMediaPlayer.instance.playlist, SingletonMediaPlayer.instance.currentVideoIndex);
+            onPlaylistSelected(playlist, currentVideoIndex);
         } else if (settings.getRepeatPlaylist() == ON) {
             // It is not a repeat of one song, and at play list repeat
             //1曲リピートではなく、かつプレイリストリピート時
-            onPlaylistSelected(SingletonMediaPlayer.instance.playlist, (SingletonMediaPlayer.instance.currentVideoIndex + 1) % SingletonMediaPlayer.instance.playlist.size());
+            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
         } else {
             // When it is neither a single song repeat nor a play list repeat
             //一曲リピートでもプレイリストリピートでもないとき
-            if (SingletonMediaPlayer.instance.currentVideoIndex + 1 < SingletonMediaPlayer.instance.playlist.size()) {
-                onPlaylistSelected(SingletonMediaPlayer.instance.playlist, SingletonMediaPlayer.instance.currentVideoIndex + 1);
+            if (currentVideoIndex + 1 < playlist.size()) {
+                onPlaylistSelected(playlist, currentVideoIndex + 1);
             } else {
                 //最後の曲のときはprogressbarが出ていたらそれを消すだけ。
-                //setProgressDialogDismiss();
+                viewModel.setStateStopLoading();
             }
         }
     }
+
+    public void nextPlay() {
+        if (playlist != null) {
+            //When playlist is not set, you can also press it so that it will not fall at that time
+            //playlistセットされてないときも押せてしまうからその時落ちないように
+            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+        }
+    }
+
+    public void prevPlay() {
+        //When playlist is not set, you can also press it so that it will not fall at that time
+        //playlistセットされてないときも押せてしまうからその時落ちないように
+        if (playlist != null) {
+            onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+        }
+    }
+
+    @Override
+    public void start() {
+        mediaPlayer.start();
+        mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
+        mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
+    }
+
+    @Override
+    public void pause() {
+        mediaPlayer.pause();
+        mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
+        mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
+    }
+
+    @Override
+    public int getDuration() {
+        //MediaPlayer#getDuration()はnativeメゾッドで、
+        // かつ再生対象のないとき(setDataSource()前？/start()前？)のMediaPlayerに呼んだ時の挙動については定義されてないので
+        //再生対象のないMediaPlayerに対してよんだ時の挙動は機種によって違う。
+        return mediaPlayer.getDuration();
+    }
+
+    @Override
+    public int getCurrentPosition() {
+        //MediaPlayer#getPositon()はnativeメゾッドで、
+        // かつ再生対象のないとき(setDataSource()前？/start()前？)のMediaPlayerに呼んだ時の挙動については定義されてないので
+        //再生対象のないMediaPlayerに対してよんだ時の挙動は機種によって違う。
+        return mediaPlayer.getCurrentPosition();
+    }
+
+    @Override
+    public void seekTo(int pos) {
+        mediaPlayer.seekTo(pos);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return mediaPlayer.isPlaying();
+    }
+
+    @Override
+    public int getBufferPercentage() {
+        return 0;
+    }
+
+    @Override
+    public boolean canPause() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekBackward() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekForward() {
+        return true;
+    }
+
+    @Override
+    public int getAudioSessionId() {
+        return 0;
+    }
+
 }

@@ -42,7 +42,7 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
-
+        <service android:name=".tubtub.MediaPlayerService"/>
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="bb541db4fab98abcf060b297ca5461bf77a33880" />

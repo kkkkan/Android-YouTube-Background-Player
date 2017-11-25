@@ -18,7 +18,10 @@ package com.kkkkan.youtube.tubtub.fragments;
 
 
 import android.app.Activity;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,6 +35,7 @@ import android.widget.TextView;
 
 import com.kkkkan.youtube.R;
 import com.kkkkan.youtube.tubtub.MainActivity;
+import com.kkkkan.youtube.tubtub.MainActivityViewModel;
 import com.kkkkan.youtube.tubtub.Settings;
 import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
 
@@ -47,6 +51,7 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
     private CheckBox lockBox;
     private CheckBox repeatPlaylistBox;
     private TitlebarListener titlebarListener;
+    private MainActivityViewModel viewModel;
 
     /**
      * When making a new instance of LandscapeFragment make sure to make with this mezzo
@@ -113,6 +118,14 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
             public void onClick(View v) {
                 titlebarListener.lockCheckListener();
                 checkBoxUpdata();
+            }
+        });
+
+        viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
+        viewModel.getVideoTitle().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String s) {
+                titleView.setText(s);
             }
         });
         return view;
