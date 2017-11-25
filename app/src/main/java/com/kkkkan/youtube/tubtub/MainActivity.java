@@ -458,6 +458,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                int paramInt2, int paramInt3) {
         Log.d(TAG, "surfaceChanged");
         Configuration config = getResources().getConfiguration();
+        service.setDisplay(mPreview.getHolder());
         if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             //横画面だったらどちらにしろ投影先はLandscapeFragment上のsurfaceなので
             // mediaplayerの設定変更系はしない
@@ -470,7 +471,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void surfaceDestroyed(SurfaceHolder paramSurfaceHolder) {
         Log.d(TAG, "surfaceDestroyed");
-        //mHolder = null;
         try {
             changeSurfaceHolderAndTitlebar(null, null, mTextView);
         } catch (IllegalStateException e) {
@@ -1474,6 +1474,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             mPreview.setLayoutParams(svlp);
         }
     }
+
 
     /**
      * 以下、mediacontroller用のinterface
