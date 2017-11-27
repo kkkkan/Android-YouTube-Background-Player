@@ -467,7 +467,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         //bindService()はすぐ返ってきて、serviceに代入するのはその後コネクションが出来てからなので
         // ここに来るときservice==nullのことあり
         if (service != null) {
-            service.setDisplay(mPreview.getHolder());
+            service.setDisplay(paramSurfaceHolder);
         }
         if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             //横画面だったらどちらにしろ投影先はLandscapeFragment上のsurfaceなので

@@ -452,6 +452,26 @@ public class MediaPlayerService extends Service implements MediaController.Media
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     Log.d(TAG, "onPrepared");
+                    if (mHolder != null) {
+                        int videoWidth = mp.getVideoWidth();
+                        int videoHeight = mp.getVideoHeight();
+                        try {
+                            int nowWidth = mHolder.getSurfaceFrame().width();
+                            int nowHeight = mHolder.getSurfaceFrame().height();
+                            //動画の縦横比を変えないようにするため画面サイズを変更する
+                            if (videoHeight * nowWidth >= nowHeight * videoWidth) {
+                                //縦幅は今と同じに固定して横幅を縦横比変わらないように合わせる
+                                mHolder.setFixedSize(videoWidth * nowHeight / videoHeight, nowHeight);
+                            } else {
+                                //縦幅を固定して縦横比を固定すると横幅が今より大きくなってしまう場合は
+                                // 横幅固定で縦を合わせる
+                                mHolder.setFixedSize(nowWidth, nowWidth * videoHeight / videoWidth);
+                            }
+                            mp.setDisplay(mHolder);
+                        } catch (Exception e) {
+                            Log.d(TAG, "Exception e:" + e.getMessage());
+                        }
+                    }
                     mp.start();
                     //読み込み中ダイアログ消す
                     viewModel.setStateStopLoading();
