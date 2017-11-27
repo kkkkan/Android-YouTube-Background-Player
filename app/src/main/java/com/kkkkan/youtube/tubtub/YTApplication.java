@@ -19,6 +19,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.crashlytics.android.Crashlytics;
+import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
 
 import io.fabric.sdk.android.Fabric;
 
@@ -37,6 +38,7 @@ public class YTApplication extends Application {
         super.onCreate();
         Fabric.with(this, new Crashlytics());
         mContext = getApplicationContext();
+        YouTubeSqlDb.getInstance().init(this);
     }
 
     public static Context getAppContext() {

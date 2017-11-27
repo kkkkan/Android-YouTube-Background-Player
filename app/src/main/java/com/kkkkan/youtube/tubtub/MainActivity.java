@@ -276,10 +276,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mTitleDlg = new AlertDialog.Builder(this);
         mProgressDialog = new ProgressDialog(this);
 
-
-        YouTubeSqlDb.getInstance().init(this);
-
-
         //MediaController settings
         // MediaControllerの設定
         mMediaController = new MediaController(this);
@@ -468,6 +464,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                int paramInt2, int paramInt3) {
         Log.d(TAG, "surfaceChanged");
         Configuration config = getResources().getConfiguration();
+        //bindService()はすぐ返ってきて、serviceに代入するのはその後コネクションが出来てからなので
+        // ここに来るときservice==nullのことあり
         if (service != null) {
             service.setDisplay(mPreview.getHolder());
         }

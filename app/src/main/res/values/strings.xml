@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TubTub</string>
+    <string name="app_name">YT Backgrounder</string>
     <string name="action_about">About me</string>
     <string name="action_color_picker">Color picker</string>
     <string name="favorite_watched_tab">Recently watched</string>
