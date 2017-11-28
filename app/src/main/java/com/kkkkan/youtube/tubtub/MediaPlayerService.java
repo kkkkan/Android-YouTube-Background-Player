@@ -452,7 +452,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     Log.d(TAG, "onPrepared");
-                    if (mHolder != null) {
+                    /*if (mHolder != null) {
                         int videoWidth = mp.getVideoWidth();
                         int videoHeight = mp.getVideoHeight();
                         try {
@@ -471,7 +471,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                         } catch (Exception e) {
                             Log.d(TAG, "Exception e:" + e.getMessage());
                         }
-                    }
+                    }*/
                     mp.start();
                     //読み込み中ダイアログ消す
                     viewModel.setStateStopLoading();
