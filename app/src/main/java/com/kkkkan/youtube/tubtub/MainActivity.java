@@ -35,7 +35,6 @@ import android.Manifest;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.app.SearchManager;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
@@ -46,28 +45,19 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.database.MatrixCursor;
 import android.graphics.PixelFormat;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v4.widget.CursorAdapter;
-import android.support.v4.widget.SimpleCursorAdapter;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -82,31 +72,29 @@ import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.kkkkan.youtube.R;
 import com.kkkkan.youtube.tubtub.fragments.LandscapeFragment;
 import com.kkkkan.youtube.tubtub.fragments.PortraitFragment;
+import com.kkkkan.youtube.tubtub.interfaces.LoginHandler;
 import com.kkkkan.youtube.tubtub.interfaces.OnItemSelected;
 import com.kkkkan.youtube.tubtub.interfaces.SurfaceHolderListener;
 import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
-import com.kkkkan.youtube.tubtub.youtube.SuggestionsLoader;
 import com.kkkkan.youtube.tubtub.youtube.YouTubeShareVideoGetLoader;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
-import static com.kkkkan.youtube.R.layout.suggestions;
 import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getCredential;
 
 /**
  * Activity that manages fragments and action bar
  */
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
-        OnItemSelected, TitlebarListener, MediaController.MediaPlayerControl, SurfaceHolderListener {
+        OnItemSelected, TitlebarListener, MediaController.MediaPlayerControl, SurfaceHolderListener, LoginHandler {
     public static Handler mainHandler = new Handler();
     static private MediaPlayerService service;
 
@@ -316,44 +304,19 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      */
     @AfterPermissionGranted(PERMISSIONS)
     private void requestPermissions() {
-        String[] perms = {Manifest.permission.GET_ACCOUNTS, Manifest.permission.READ_PHONE_STATE};
-        /*permissionがあれば*/
-        if (EasyPermissions.hasPermissions(this, perms)) {
-            // Already have permission, do the thing
-            /*ビルド環境が低かったりするとスルーされてきてしまうのでここでもう一度チェック?*/
-            if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
-                /*自アプリのみ書き込み可能で開いてアカウントネームを拾ってくる*/
-                String accountName = getPreferences(Context.MODE_PRIVATE).getString(PREF_ACCOUNT_NAME, null);
-                /*アカウントひとつだけあったら*/
-                if (accountName != null) {
-                    /*アカウントをセット*/
-                    getCredential().setSelectedAccountName(accountName);
-                } else {
-                    /*無ければコールバックありでアカウントを選ばせる*/
-                    // Start a dialog from which the user can choose an account
-                    startActivityForResult(
-                            getCredential().newChooseAccountIntent(),
-                            REQUEST_ACCOUNT_PICKER);
-                }
-            } else {
-                // Request the GET_ACCOUNTS permission via a user dialog
-                EasyPermissions.requestPermissions(
-                        this,
-                        /*"This app needs to access your Google account (via Contacts)."*/"このアプリでYouTubeアカウントと連携するためにはグーグルアカウントが必要です。",
-                        REQUEST_PERMISSION_GET_ACCOUNTS,
-                        Manifest.permission.GET_ACCOUNTS);
-            }
-        } else {
-            final String[] finalperms = perms;
-            new AlertDialog.Builder(this).setCancelable(false).setMessage(getString(R.string.all_permissions_request)).setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    // Do not have permissions, request them now
-                    EasyPermissions.requestPermissions(MainActivity.this, getString(R.string.all_permissions_request),
-                            PERMISSIONS, finalperms);
-                }
-            }).show();
+        checkPermissionAndLoginGoogleAccount();
+    }
 
+    @Override
+    public void checkPermissionAndLoginGoogleAccount() {
+        String[] perms = {Manifest.permission.GET_ACCOUNTS, Manifest.permission.READ_PHONE_STATE};
+        if (!EasyPermissions.hasPermissions(this, perms)) {
+            EasyPermissions.requestPermissions(this, getString(R.string.all_permissions_request),
+                    PERMISSIONS, perms);
+        } else {
+            startActivityForResult(
+                    getCredential().newChooseAccountIntent(),
+                    REQUEST_ACCOUNT_PICKER);
         }
     }
 
@@ -506,121 +469,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
         }
-    }
-
-
-    /**
-     * Options menu in action bar
-     *
-     * @param menu
-     * @return
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        /*メニューバー追加*/
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-
-        /*探すボタンで検索できるよう機能の実装*/
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-
-        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-        if (searchView != null) {
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        }
-
-        /*第一引数：context,第二引数:レイアウトid、三：Cursur,四：カラム名（配列）、五：viewid,六：flag*/
-        //suggestions
-        final CursorAdapter suggestionAdapter = new SimpleCursorAdapter(this,
-                suggestions,
-                null,
-                new String[]{SearchManager.SUGGEST_COLUMN_TEXT_1},
-                new int[]{android.R.id.text1},
-                0);
-        final List<String> suggestions = new ArrayList<>();
-
-        /*setSuggestionsAdaper:独自のadapterをセットする*/
-        searchView.setSuggestionsAdapter(suggestionAdapter);
-
-
-        /*リスナー設定クリックされたら*/
-        searchView.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
-            /*suggestionをスクロールしたとき？*/
-            @Override
-            public boolean onSuggestionSelect(int position) {
-                return false;
-            }
-
-            /*スクロールを選んだ時検索*/
-            @Override
-            public boolean onSuggestionClick(int position) {
-                searchView.setQuery(suggestions.get(position), false);
-                searchView.clearFocus();
-
-                Intent suggestionIntent = new Intent(Intent.ACTION_SEARCH);
-                suggestionIntent.putExtra(SearchManager.QUERY, suggestions.get(position));
-                handleIntent(suggestionIntent);
-
-                return true;
-            }
-        });
-
-        /*検索窓の文字が変わるたび呼び出される？*/
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String s) {
-                return false; //if true, no new intent is started
-            }
-
-            /*検索ワードが変わったら*/
-            @Override
-            public boolean onQueryTextChange(final String query) {
-                // check network connection. If not available, do not query.
-                // this also disables onSuggestionClick triggering
-                /*二文字以上入力されてたら*/
-                if (query.length() > 2) { //make suggestions after 3rd letter
-                    if (networkConf.isNetworkAvailable()) {
-
-                        getSupportLoaderManager().restartLoader(Config.SuggestionsLoaderId, null, new LoaderManager.LoaderCallbacks<List<String>>() {
-                            @Override
-                            public Loader<List<String>> onCreateLoader(final int id, final Bundle args) {
-                                return new SuggestionsLoader(getApplicationContext(), query);
-                            }
-
-                            @Override
-                            public void onLoadFinished(Loader<List<String>> loader, List<String> data) {
-                                if (data == null)
-                                    return;
-                                suggestions.clear();
-                                suggestions.addAll(data);
-                                String[] columns = {
-                                        BaseColumns._ID,
-                                        SearchManager.SUGGEST_COLUMN_TEXT_1
-                                };
-                                MatrixCursor cursor = new MatrixCursor(columns);
-
-                                for (int i = 0; i < data.size(); i++) {
-                                    String[] tmp = {Integer.toString(i), data.get(i)};
-                                    cursor.addRow(tmp);
-                                }
-                                suggestionAdapter.swapCursor(cursor);
-                            }
-
-                            @Override
-                            public void onLoaderReset(Loader<List<String>> loader) {
-                                suggestions.clear();
-                                suggestions.addAll(Collections.<String>emptyList());
-                            }
-                        }).forceLoad();
-                        return true;
-                    }
-                }
-                return false;
-            }
-        });
-
-        return true;
     }
 
 

@@ -16,7 +16,6 @@
 package com.kkkkan.youtube.tubtub.fragments;
 
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.arch.lifecycle.Observer;
@@ -67,6 +66,7 @@ import com.kkkkan.youtube.tubtub.MainActivityViewModel;
 import com.kkkkan.youtube.tubtub.Settings;
 import com.kkkkan.youtube.tubtub.adapters.PlaylistsAdapter;
 import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
+import com.kkkkan.youtube.tubtub.interfaces.LoginHandler;
 import com.kkkkan.youtube.tubtub.interfaces.OnFavoritesSelected;
 import com.kkkkan.youtube.tubtub.interfaces.SurfaceHolderListener;
 import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
@@ -77,10 +77,7 @@ import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import java.util.ArrayList;
 import java.util.List;
 
-import pub.devrel.easypermissions.EasyPermissions;
-
 import static com.kkkkan.youtube.R.layout.suggestions;
-import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getCredential;
 import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentials;
 
 /**
@@ -520,14 +517,9 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             MenuItemCompat.expandActionView(item);
             return true;
         } else if (id == R.id.log_in) {
-            String[] perms = {Manifest.permission.GET_ACCOUNTS, Manifest.permission.READ_PHONE_STATE};
-            if (!EasyPermissions.hasPermissions(getActivity(), perms)) {
-                EasyPermissions.requestPermissions(this, getString(R.string.permissions_request),
-                        PERMISSIONS, perms);
-            } else {
-                startActivityForResult(
-                        getCredential().newChooseAccountIntent(),
-                        REQUEST_ACCOUNT_PICKER);
+            Activity activity = getActivity();
+            if (activity instanceof LoginHandler) {
+                ((LoginHandler) activity).checkPermissionAndLoginGoogleAccount();
             }
         }
 
