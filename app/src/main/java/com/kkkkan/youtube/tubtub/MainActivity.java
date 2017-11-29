@@ -304,7 +304,17 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      */
     @AfterPermissionGranted(PERMISSIONS)
     private void requestPermissions() {
-        checkPermissionAndLoginGoogleAccount();
+        if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
+                /*自アプリのみ書き込み可能で開いてアカウントネームを拾ってくる*/
+            String accountName = getPreferences(Context.MODE_PRIVATE).getString(PREF_ACCOUNT_NAME, null);
+                /*アカウントひとつだけあったら*/
+            if (accountName != null) {
+                    /*アカウントをセット*/
+                getCredential().setSelectedAccountName(accountName);
+            }
+            return;
+        }
+            checkPermissionAndLoginGoogleAccount();
     }
 
     @Override

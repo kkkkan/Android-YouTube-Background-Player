@@ -490,9 +490,10 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        Log.d(TAG,"onOptionsItemSelected");
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_about) {
-
+            Log.d(TAG,"onOptionsItemSelected:about");
             AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
             alertDialog.setTitle(getString(R.string.myName));
             alertDialog.setIcon(R.drawable.dbwan);
@@ -510,13 +511,16 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
             return true;
         } else if (id == R.id.action_clear_list) {
+            Log.d(TAG,"onOptionsItemSelected:clear");
             YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).deleteAll();
             recentlyPlayedFragment.clearRecentlyPlayedList();
             return true;
         } else if (id == R.id.action_search) {
+            Log.d(TAG,"onOptionsItemSelected:search");
             MenuItemCompat.expandActionView(item);
             return true;
         } else if (id == R.id.log_in) {
+            Log.d(TAG,"onOptionsItemSelected:login");
             Activity activity = getActivity();
             if (activity instanceof LoginHandler) {
                 ((LoginHandler) activity).checkPermissionAndLoginGoogleAccount();
