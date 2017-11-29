@@ -73,30 +73,19 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.EditText;
 import android.widget.MediaController;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
-import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.Playlist;
-import com.google.api.services.youtube.model.PlaylistItem;
-import com.google.api.services.youtube.model.PlaylistItemSnippet;
-import com.google.api.services.youtube.model.PlaylistSnippet;
-import com.google.api.services.youtube.model.PlaylistStatus;
-import com.google.api.services.youtube.model.ResourceId;
 import com.kkkkan.youtube.R;
-import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
 import com.kkkkan.youtube.tubtub.fragments.LandscapeFragment;
 import com.kkkkan.youtube.tubtub.fragments.PortraitFragment;
-import com.kkkkan.youtube.tubtub.interfaces.OnFavoritesSelected;
 import com.kkkkan.youtube.tubtub.interfaces.OnItemSelected;
 import com.kkkkan.youtube.tubtub.interfaces.SurfaceHolderListener;
 import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
 import com.kkkkan.youtube.tubtub.interfaces.VideoTitleGetter;
-import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
@@ -113,20 +102,19 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 import static com.kkkkan.youtube.R.layout.suggestions;
 import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getCredential;
-import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentials;
 
 /**
  * Activity that manages fragments and action bar
  */
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
-        OnItemSelected, OnFavoritesSelected, TitlebarListener, MediaController.MediaPlayerControl,
+        OnItemSelected, TitlebarListener, MediaController.MediaPlayerControl,
         VideoTitleGetter, SurfaceHolderListener {
     public static Handler mainHandler = new Handler();
     static private MediaPlayerService service;
 
-    public Context getMainContext() {
+    /*public Context getMainContext() {
         return mainContext;
-    }
+    }*/
 
     private final Context mainContext = this;
 
@@ -143,8 +131,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     static final int REQUEST_CODE_TOKEN_AUTH = 1006;
 
     private MediaController mMediaController;
-    private AlertDialog.Builder mListDlg;
-    private AlertDialog.Builder mTitleDlg;
     private ProgressDialog mProgressDialog;
     //For movie title
     //動画タイトル用
@@ -207,9 +193,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().setFormat(PixelFormat.TRANSPARENT);
 
-
-        mListDlg = new AlertDialog.Builder(this);
-        mTitleDlg = new AlertDialog.Builder(this);
         mProgressDialog = new ProgressDialog(this);
 
         //MediaController settings
@@ -245,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Configuration config = getResources().getConfiguration();
         switch (config.orientation) {
             case Configuration.ORIENTATION_PORTRAIT:
-                viewChangeWhenLandscape();
+                viewChangeWhenPortrait();
                 break;
             case Configuration.ORIENTATION_LANDSCAPE:
                 //At the time of horizontal screen
@@ -527,192 +510,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
-
-    @Override
-    public void onFavoritesSelected(YouTubeVideo video, boolean isChecked) {
-
-    }
-
-    /**
-     * 新規プレイリスト作成する。
-     * 作成が終わったら、AddVideoToPlayList()に作ったプレイリストと追加したいビデオを渡して追加する。
-     */
-    private void AddPlaylist(final String title, final String privacyStatus, final YouTubeVideo video) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                YouTube youtubeWithCredential = getYouTubeWithCredentials();
-
-                /*プレイリストを作成*/
-                PlaylistSnippet playlistSnippet = new PlaylistSnippet();
-                playlistSnippet.setTitle(title);
-
-                PlaylistStatus status = new PlaylistStatus();
-                status.setPrivacyStatus(privacyStatus);
-
-                Playlist playlist = new Playlist();
-                playlist.setSnippet(playlistSnippet);
-                playlist.setStatus(status);
-
-
-                try {
-                    String playlistid = youtubeWithCredential.playlists().insert("snippet,status", playlist).execute().getId();
-                    /*作ったプレイリストにvideoを追加*/
-                    AddVideoToPlayList(playlistid, video, false, title, privacyStatus);
-                } catch (Exception e) {
-                    /*プレイリストの新規作成に失敗したとき*/
-                    mainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(mainContext, "プレイリスト作成に失敗しました。", Toast.LENGTH_LONG).show();
-                        }
-                    });
-
-                }
-            }
-        }).start();
-
-    }
-
-    /**
-     * プレイリストにビデオ追加
-     * 引数:boolean resultShow:プレイリストの新規作成してそこに追加するときはfalseが渡ってくる。
-     */
-    private void AddVideoToPlayList(final String playlistId, final YouTubeVideo video, final boolean resultShow, final String title, final String privacyStatus) {
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                //プレイリストに追加
-
-                /*渡すjsonのresourceidを作成*/
-                ResourceId resourceId = new ResourceId();
-                resourceId.setVideoId(video.getId());
-                resourceId.setKind("youtube#video");
-
-                /*渡すjsonのsnippetを作成*/
-                PlaylistItemSnippet snippet = new PlaylistItemSnippet();
-                snippet.setPlaylistId(playlistId);
-                snippet.setResourceId(resourceId);
-
-                /*実際にinsertするplaylistitemを作成 */
-                PlaylistItem playlistItem = new PlaylistItem();
-                playlistItem.setSnippet(snippet);
-
-                String toastText = "";
-                try {
-                    getYouTubeWithCredentials().playlistItems().insert("snippet", playlistItem).execute();
-                    if (resultShow) {
-                        toastText = " 追加に成功しました。";
-                    } else {
-                     /*新規作成およびビデオ追加ともに成功した場合*/
-                        toastText = privacyStatus + "リスト\n" + title + " を新規作成し\n" + video.getTitle() + " を追加しました。";
-                    }
-                } catch (Exception e) {
-                    Log.d(TAG, "AddPlaylist Error:" + e.getMessage());
-                    if (resultShow) {
-                        toastText = "追加に失敗しました。";
-                    } else {
-                        /*プレイリスト新規作成には成功したがビデオ追加に失敗した場合*/
-                        toastText = "新規" + privacyStatus + "リスト\n" + title + " の作成には成功しましたがビデオの追加に失敗しました。";
-                    }
-
-                }
-                final String finalToastText = toastText;
-                mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(mainContext, finalToastText, Toast.LENGTH_LONG).show();
-                    }
-                });
-
-            }
-
-        }).start();
-    }
-
-    /*プレイリストに追加したり、プレイリストを新規作成したうえで追加したり*/
-    @Override
-    public void onAddSelected(final YouTubeVideo video) {
-        Log.d(TAG, "onAddSelected");
-        /*video タイトル取得*/
-        final String videoTitle = video.getTitle();
-
-        /*プレイリストを取得*/
-        final ArrayList<YouTubePlaylist> allPlaylist = YouTubeSqlDb.getInstance().playlists().readAll();
-        Log.d(TAG, "AddPlaylistDialog-1-which:" + String.valueOf(allPlaylist.size()));
-
-        /*プレイリストタイトルを取得*/
-        final CharSequence[] playlists = new CharSequence[allPlaylist.size() + 1];
-        int i = 0;
-        for (YouTubePlaylist p : allPlaylist) {
-            playlists[i++] = p.getTitle() + "(" + String.valueOf(p.getNumberOfVideos()) + ")";
-        }
-        playlists[i++] = "新規作成して追加";
-
-        /*チェックされたやつの番号を入れておく。*/
-        final ArrayList<Integer> checkedItems = new ArrayList<Integer>();
-        checkedItems.add(0);
-
-/*ダイアログ表示のための準備*/
-        mListDlg.setTitle("プレイリスト追加：\n" + videoTitle);
-
-        mListDlg.setSingleChoiceItems(playlists, 0, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                checkedItems.clear();
-                checkedItems.add(which);
-            }
-        });
-        mListDlg.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Log.d(TAG, "AddPlaylistDialog-1-which:" + String.valueOf(which));
-                if (!checkedItems.isEmpty()) {
-                    if (checkedItems.get(0) == (playlists.length - 1)) {
-                        //新しいプレイリスト作って追加
-                        final EditText titleEdit = new EditText(mainContext);
-                        mTitleDlg.setTitle("新規プレイリスト名入力");
-                        mTitleDlg.setView(titleEdit);
-                        mTitleDlg.setPositiveButton("非公開で作成", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                final String title = titleEdit.getText().toString();
-                                if (title.length() == 0) {
-                                    Toast.makeText(mainContext, "プレイリスト名は空白は認められません。", Toast.LENGTH_LONG).show();
-                                } else {
-                                    AddPlaylist(title, "private", video);
-                                }
-                            }
-                        });
-                        mTitleDlg.setNeutralButton("公開で作成", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                final String title = titleEdit.getText().toString();
-                                if (title.length() == 0) {
-                                    Toast.makeText(mainContext, "プレイリスト名は空白は認められません。", Toast.LENGTH_LONG).show();
-                                } else {
-                                    AddPlaylist(title, "public", video);
-                                }
-                            }
-                        });
-
-                        mTitleDlg.setNegativeButton("cancel", null);
-                        mTitleDlg.show();
-
-
-                    } else {
-                        AddVideoToPlayList(allPlaylist.get(checkedItems.get(0)).getId(), video, true, "", "");
-                    }
-                }
-            }
-        });
-
-        mListDlg.setNegativeButton("キャンセル", null);
-
-        mListDlg.create().show();
-    }
 
     /**
      * Options menu in action bar

@@ -33,6 +33,7 @@ package com.kkkkan.youtube.tubtub.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -46,6 +47,7 @@ import com.kkkkan.youtube.tubtub.MainActivity;
 import com.kkkkan.youtube.tubtub.adapters.VideosAdapter;
 import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
 import com.kkkkan.youtube.tubtub.interfaces.ItemEventsListener;
+import com.kkkkan.youtube.tubtub.interfaces.OnFavoritesSelected;
 import com.kkkkan.youtube.tubtub.interfaces.OnItemSelected;
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
@@ -176,8 +178,10 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
 
     @Override
     public void onAddClicked(YouTubeVideo video) {
-        /*mainactivityのonAddSelected(video)へ*/
-        ((MainActivity) itemSelected).onAddSelected(video);
+        Fragment fragment = getParentFragment();
+        if (fragment instanceof OnFavoritesSelected) {
+            ((OnFavoritesSelected) fragment).onAddSelected(video);
+        }
     }
 
     @Override

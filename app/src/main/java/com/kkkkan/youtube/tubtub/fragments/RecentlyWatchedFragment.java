@@ -36,6 +36,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -145,7 +146,10 @@ public class RecentlyWatchedFragment extends BaseFragment implements
         if (context instanceof MainActivity) {
             this.context = context;
             itemSelected = (MainActivity) context;
-            onFavoritesSelected = (MainActivity) context;
+        }
+        Fragment fragment = getParentFragment();
+        if (fragment instanceof OnFavoritesSelected) {
+            onFavoritesSelected = (OnFavoritesSelected) fragment;
         }
     }
 

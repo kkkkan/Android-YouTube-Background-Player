@@ -27,7 +27,6 @@ import com.google.api.services.youtube.model.Channel;
 import com.google.api.services.youtube.model.ChannelListResponse;
 import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.PlaylistListResponse;
-import com.kkkkan.youtube.tubtub.MainActivity;
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
@@ -53,9 +52,11 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
     private static final String TAG = "SMEDIC";
     private static final String TAG_NAME = "ouTubePlaylistsLoader";
     private YouTube youtube = getYouTubeWithCredentials();
+    private Context context;
 
     public YouTubePlaylistsLoader(Context context) {
         super(context);
+        this.context = context;
     }
 
 
@@ -122,7 +123,7 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
             mainHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(new MainActivity().getMainContext(), "もう一度ログインしなおしてください。", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "もう一度ログインしなおしてください。", Toast.LENGTH_LONG).show();
                 }
             });
             e.printStackTrace();

@@ -16,10 +16,6 @@
 
 package com.kkkkan.youtube.tubtub.interfaces;
 
-/**
- * Created by admin on 2017/10/30.
- */
-
 public interface TitlebarListener {
     void repeatOneCheckListener();
 

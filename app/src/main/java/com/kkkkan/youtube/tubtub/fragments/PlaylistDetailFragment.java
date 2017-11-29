@@ -180,7 +180,10 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         if (context instanceof MainActivity) {
             this.context = context;
             itemSelected = (MainActivity) context;
-            onFavoritesSelected = (MainActivity) context;
+        }
+        Fragment fragment = getParentFragment();
+        if (fragment instanceof OnFavoritesSelected) {
+            onFavoritesSelected = (OnFavoritesSelected) fragment;
         }
     }
 
