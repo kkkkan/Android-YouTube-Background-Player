@@ -23,6 +23,7 @@ import android.content.DialogInterface;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -373,6 +374,14 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                 }
             });
             viewPager.setVisibility(View.VISIBLE);
+            TabLayout tabLayout = ((ViewPagerListener) fragment).getTabLayout();
+            tabLayout.setVisibility(View.VISIBLE);
+            tabLayout.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return true;
+                }
+            });
         }
     }
 

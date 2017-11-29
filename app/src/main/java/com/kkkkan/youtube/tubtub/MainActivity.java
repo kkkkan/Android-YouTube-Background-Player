@@ -637,7 +637,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
 
     }
-    
+
 
     @Override
     public void changeSurfaceHolder(SurfaceHolder holder, SurfaceView surfaceView) {
@@ -676,7 +676,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      */
     @Override
     public void releaseSurfaceHolder(SurfaceHolder holder) {
-        service.releaseSurfaceHolder(holder);
+        //アプリ起動直後に画面向きを変えるとserver==nullでここにくる
+        if (service != null) {
+            service.releaseSurfaceHolder(holder);
+        }
     }
 
 
@@ -685,11 +688,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      */
     private void viewChangeWhenLandscape() {
         Log.d(TAG, " viewChangeWhenLandscape() ");
+        Fragment portraitFragment = getSupportFragmentManager().findFragmentByTag(PortraitFragmentTAG);
+        FragmentTransaction transaction = getSupportFragmentManager()
+                .beginTransaction();
+        if (portraitFragment != null) {
+            transaction.detach(portraitFragment);
+        }
         //フラグメント追加
         Fragment fragment = LandscapeFragment.getNewLandscapeFragment(this, viewModel);
-        FragmentTransaction transaction = getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.parent_layout, fragment, LandscapeFragmentTAG);
+        transaction.add(R.id.parent_layout, fragment, LandscapeFragmentTAG);
         //transaction.addToBackStack(null);
         transaction.commitAllowingStateLoss();
     }
@@ -700,12 +707,36 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      */
     private void viewChangeWhenPortrait() {
         Log.d(TAG, "viewChangeWhenPortrait()");
-        //フラグメント追加
-        Fragment fragment = PortraitFragment.getNewPortraitFragment(this,viewModel);
+        Fragment portraitFragment = getSupportFragmentManager().findFragmentByTag(PortraitFragmentTAG);
+        Fragment landscapeFragment = getSupportFragmentManager().findFragmentByTag(LandscapeFragmentTAG);
         FragmentTransaction transaction = getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.parent_layout, fragment, PortraitFragmentTAG);
+                .beginTransaction();
+        if (portraitFragment == null) {
+            //フラグメント追加
+            Fragment fragment = PortraitFragment.getNewPortraitFragment(this, viewModel);
+            transaction.replace(R.id.parent_layout, fragment, PortraitFragmentTAG);
+        } else {
+            transaction.attach(portraitFragment);
+            if (landscapeFragment != null) {
+                transaction.remove(landscapeFragment);
+            }
+        }
         transaction.commitAllowingStateLoss();
+    }
+
+    /**
+     * 縦画面のときプレイリスト詳細を表示しているときは
+     * バックボタンでプレイリスト詳細を出す前の状態にする
+     */
+    @Override
+    public void onBackPressed() {
+        Configuration config = getResources().getConfiguration();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(PortraitFragmentTAG);
+        if (config.orientation == Configuration.ORIENTATION_PORTRAIT && fragment != null) {
+            fragment.getChildFragmentManager().popBackStack();
+            return;
+        }
+        super.onBackPressed();
     }
 
     @Override
