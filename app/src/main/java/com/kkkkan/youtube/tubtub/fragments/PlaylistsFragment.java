@@ -206,15 +206,23 @@ public class PlaylistsFragment extends BaseFragment implements
     private void acquirePlaylistVideos(final String playlistId) {
         Log.d(TAG, "acquirePlaylistVideos");
         getLoaderManager().restartLoader(Config.YouTubePlaylistLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
+            //このフラグがないとこのfragmentに戻ったときなぜか onLoadFinishedが呼ばれてしまうことがある
+            boolean loaderRunning = false;
+
             @Override
             public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
                 Log.d(TAG, "PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:" + playlistId);
+                loaderRunning = true;
                 return new YouTubePlaylistVideosLoader(context, playlistId);
             }
 
             @Override
             public void onLoadFinished(Loader<List<YouTubeVideo>> loader, List<YouTubeVideo> data) {
                 Log.d(TAG, "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished");
+                if (!loaderRunning) {
+                    return;
+                }
+                loaderRunning = false;
                 if (data == null || data.isEmpty()) {
                     return;
                 }
@@ -249,6 +257,7 @@ public class PlaylistsFragment extends BaseFragment implements
     @Override
     public void onItemClick(YouTubePlaylist youTubePlaylist) {
         //results are in onVideosReceived callback method
+        Log.d(TAG, "onItemClick");
         String id = youTubePlaylist.getId();
         Log.d(TAG, "PlaylistsFragment-onItemClicked-id:" + id);
         acquirePlaylistVideos(youTubePlaylist.getId());

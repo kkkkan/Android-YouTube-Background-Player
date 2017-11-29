@@ -218,17 +218,23 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     private void acquirePlaylistVideos(final String playlistId) {
         Log.d(TAG, "acquirePlaylistVideos");
         getLoaderManager().restartLoader(Config.YouTubePlaylistLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
-
+            //このフラグがないとこのfragmentに戻ったときなぜか onLoadFinishedが呼ばれてしまうことがある
+            boolean loaderRunning = false;
 
             @Override
             public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
                 Log.d(TAG, "PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:" + playlistId);
+                loaderRunning = true;
                 return new YouTubePlaylistVideosLoader(context, playlistId);
             }
 
             @Override
             public void onLoadFinished(Loader<List<YouTubeVideo>> loader, List<YouTubeVideo> data) {
                 Log.d(TAG, "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished");
+                if (!loaderRunning) {
+                    return;
+                }
+                loaderRunning = false;
                 if (data == null || data.isEmpty()) {
                     Log.d(TAG, "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished-empty");
                     //If you get out Loading ...

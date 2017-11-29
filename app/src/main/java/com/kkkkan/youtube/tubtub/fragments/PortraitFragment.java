@@ -135,10 +135,16 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         // Required empty public constructor
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        Log.d(TAG, "onattach");
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_portrait, container, false);
         titleView = (TextView) view.findViewById(R.id.title_view);
         viewModel.getVideoTitle().observe(this, new Observer<String>() {
@@ -215,7 +221,26 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     @Override
     public void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume");
         checkBoxUpdata();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy");
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        Log.d(TAG, "onDetach");
     }
 
     /**
