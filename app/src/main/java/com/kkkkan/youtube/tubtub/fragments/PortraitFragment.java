@@ -20,7 +20,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -71,7 +70,6 @@ import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
 import com.kkkkan.youtube.tubtub.interfaces.OnFavoritesSelected;
 import com.kkkkan.youtube.tubtub.interfaces.SurfaceHolderListener;
 import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
-import com.kkkkan.youtube.tubtub.interfaces.VideoTitleGetter;
 import com.kkkkan.youtube.tubtub.interfaces.ViewPagerListener;
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
@@ -93,6 +91,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
+    private TitlebarListener titlebarListener;
     private SearchFragment searchFragment;
     private RecentlyWatchedFragment recentlyPlayedFragment;
     private FavoritesFragment favoritesFragment;
@@ -117,6 +116,21 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     };
 
 
+    /**
+     * When making a new instance of PortraitFragment make sure to make with this mezzo
+     * <p>
+     * PortraitFragmentの新しいインスタンスを作るときは必ず
+     * このメゾッドで作ること
+     * <p>
+     * MainActivity#onCreate()の中で必ず呼んでいるので再生成時もリスナーがnullになることはなし
+     */
+    static public PortraitFragment getNewPortraitFragment(TitlebarListener titlebarListener, MainActivityViewModel viewModel) {
+        PortraitFragment fragment = new PortraitFragment();
+        fragment.titlebarListener = titlebarListener;
+        fragment.viewModel = viewModel;
+        return fragment;
+    }
+
     public PortraitFragment() {
         // Required empty public constructor
     }
@@ -127,11 +141,6 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_portrait, container, false);
         titleView = (TextView) view.findViewById(R.id.title_view);
-        final Activity activity = getActivity();
-        if (activity instanceof VideoTitleGetter) {
-            titleView.setText(((VideoTitleGetter) activity).getVideoTitle());
-        }
-        viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         viewModel.getVideoTitle().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
@@ -159,9 +168,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         repeatOneBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (activity instanceof TitlebarListener) {
-                    ((TitlebarListener) activity).repeatOneCheckListener();
-                }
+                titlebarListener.repeatOneCheckListener();
                 checkBoxUpdata();
             }
         });
@@ -171,9 +178,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         repeatPlaylistBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (activity instanceof TitlebarListener) {
-                    ((TitlebarListener) activity).repeatPlaylistCheckListener();
-                }
+                titlebarListener.repeatPlaylistCheckListener();
                 checkBoxUpdata();
             }
         });

@@ -85,7 +85,6 @@ import com.kkkkan.youtube.tubtub.fragments.PortraitFragment;
 import com.kkkkan.youtube.tubtub.interfaces.OnItemSelected;
 import com.kkkkan.youtube.tubtub.interfaces.SurfaceHolderListener;
 import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
-import com.kkkkan.youtube.tubtub.interfaces.VideoTitleGetter;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
@@ -107,8 +106,7 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getCredential;
  * Activity that manages fragments and action bar
  */
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
-        OnItemSelected, TitlebarListener, MediaController.MediaPlayerControl,
-        VideoTitleGetter, SurfaceHolderListener {
+        OnItemSelected, TitlebarListener, MediaController.MediaPlayerControl, SurfaceHolderListener {
     public static Handler mainHandler = new Handler();
     static private MediaPlayerService service;
 
@@ -639,11 +637,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
 
     }
-
-    @Override
-    public String getVideoTitle() {
-        return service != null ? service.getVideoTitle() : "";
-    }
+    
 
     @Override
     public void changeSurfaceHolder(SurfaceHolder holder, SurfaceView surfaceView) {
@@ -692,7 +686,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private void viewChangeWhenLandscape() {
         Log.d(TAG, " viewChangeWhenLandscape() ");
         //フラグメント追加
-        Fragment fragment = LandscapeFragment.getNewLandscapeFragment(this);
+        Fragment fragment = LandscapeFragment.getNewLandscapeFragment(this, viewModel);
         FragmentTransaction transaction = getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.parent_layout, fragment, LandscapeFragmentTAG);
@@ -707,7 +701,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private void viewChangeWhenPortrait() {
         Log.d(TAG, "viewChangeWhenPortrait()");
         //フラグメント追加
-        Fragment fragment = new PortraitFragment();
+        Fragment fragment = PortraitFragment.getNewPortraitFragment(this,viewModel);
         FragmentTransaction transaction = getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.parent_layout, fragment, PortraitFragmentTAG);

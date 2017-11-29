@@ -19,7 +19,6 @@ package com.kkkkan.youtube.tubtub.fragments;
 
 import android.app.Activity;
 import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -38,7 +37,6 @@ import com.kkkkan.youtube.tubtub.MainActivityViewModel;
 import com.kkkkan.youtube.tubtub.Settings;
 import com.kkkkan.youtube.tubtub.interfaces.SurfaceHolderListener;
 import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
-import com.kkkkan.youtube.tubtub.interfaces.VideoTitleGetter;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -60,10 +58,13 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
      * <p>
      * LandscapeFragmentの新しいインスタンスを作るときは必ず
      * このメゾッドで作ること
+     * <p>
+     * MainActivity#onCreate()の中で必ず呼んでいるので再生成時もリスナーがnullになることはなし
      */
-    static public LandscapeFragment getNewLandscapeFragment(TitlebarListener titlebarListener) {
+    static public LandscapeFragment getNewLandscapeFragment(TitlebarListener titlebarListener, MainActivityViewModel viewModel) {
         LandscapeFragment fragment = new LandscapeFragment();
         fragment.titlebarListener = titlebarListener;
+        fragment.viewModel = viewModel;
         return fragment;
     }
 
@@ -123,11 +124,6 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
         });
 
         titleView = (TextView) view.findViewById(R.id.title_view);
-        Activity activity = getActivity();
-        if (activity instanceof VideoTitleGetter) {
-            titleView.setText(((VideoTitleGetter) activity).getVideoTitle());
-        }
-        viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         viewModel.getVideoTitle().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
