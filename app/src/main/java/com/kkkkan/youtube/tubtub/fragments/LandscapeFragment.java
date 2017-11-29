@@ -34,10 +34,11 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.kkkkan.youtube.R;
-import com.kkkkan.youtube.tubtub.MainActivity;
 import com.kkkkan.youtube.tubtub.MainActivityViewModel;
 import com.kkkkan.youtube.tubtub.Settings;
+import com.kkkkan.youtube.tubtub.interfaces.SurfaceHolderListener;
 import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
+import com.kkkkan.youtube.tubtub.interfaces.VideoTitleGetter;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -52,6 +53,7 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
     private CheckBox repeatPlaylistBox;
     private TitlebarListener titlebarListener;
     private MainActivityViewModel viewModel;
+
 
     /**
      * When making a new instance of LandscapeFragment make sure to make with this mezzo
@@ -90,7 +92,6 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
                 }
             }
         });
-        titleView = (TextView) view.findViewById(R.id.title_view);
         lockBox = (CheckBox) view.findViewById(R.id.lock_box);
         repeatOneBox = (CheckBox) view.findViewById(R.id.repeat_one_box);
         repeatPlaylistBox = (CheckBox) view.findViewById(R.id.repeat_playlist_box);
@@ -121,6 +122,11 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
             }
         });
 
+        titleView = (TextView) view.findViewById(R.id.title_view);
+        Activity activity = getActivity();
+        if (activity instanceof VideoTitleGetter) {
+            titleView.setText(((VideoTitleGetter) activity).getVideoTitle());
+        }
         viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         viewModel.getVideoTitle().observe(this, new Observer<String>() {
             @Override
@@ -214,8 +220,8 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         Log.d(TAG, "surfaceChanged");
         Activity activity = getActivity();
-        if (activity instanceof MainActivity) {
-            ((MainActivity) activity).changeSurfaceHolderAndTitlebar(surfaceView.getHolder(), surfaceView, titleView);
+        if (activity instanceof SurfaceHolderListener) {
+            ((SurfaceHolderListener) activity).changeSurfaceHolder(surfaceView.getHolder(), surfaceView);
         }
     }
 
@@ -223,9 +229,8 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.d(TAG, "surfaceDestroyed");
         Activity activity = getActivity();
-        if (activity instanceof MainActivity) {
-            //surfaceHolderを解放
-            ((MainActivity) activity).releaseSurfaceHolder(holder);
+        if (activity instanceof SurfaceHolderListener) {
+            ((SurfaceHolderListener) activity).releaseSurfaceHolder(holder);
         }
     }
 

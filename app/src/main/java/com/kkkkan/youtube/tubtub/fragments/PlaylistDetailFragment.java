@@ -48,6 +48,7 @@ import com.kkkkan.youtube.tubtub.adapters.PlaylistDetailAdapter;
 import com.kkkkan.youtube.tubtub.interfaces.ItemEventsListener;
 import com.kkkkan.youtube.tubtub.interfaces.OnFavoritesSelected;
 import com.kkkkan.youtube.tubtub.interfaces.OnItemSelected;
+import com.kkkkan.youtube.tubtub.interfaces.ViewPagerListener;
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
@@ -359,14 +360,17 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     //viewPager見えるようにし、タッチイベントも復活させる
     public void onDestroy() {
         super.onDestroy();
-        ViewPager viewPager = ((MainActivity) getActivity()).getViewPager();
-        viewPager.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return true;
-            }
-        });
-        viewPager.setVisibility(View.VISIBLE);
+        Fragment fragment = getParentFragment();
+        if (fragment instanceof ViewPagerListener) {
+            ViewPager viewPager = ((ViewPagerListener) fragment).getViewPager();
+            viewPager.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return true;
+                }
+            });
+            viewPager.setVisibility(View.VISIBLE);
+        }
     }
 
 

@@ -27,7 +27,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.kkkkan.youtube.R;
-import com.kkkkan.youtube.tubtub.MainActivity;
+import com.kkkkan.youtube.tubtub.interfaces.ViewPagerListener;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -59,13 +59,16 @@ public class PlaylistTitleFragment extends Fragment {
     //tabの可視化とタッチの復活。
     public void onDestroy() {
         super.onDestroy();
-        TabLayout tabLayout = ((MainActivity) getActivity()).getTabLayout();
-        tabLayout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return true;
-            }
-        });
-        tabLayout.setVisibility(View.VISIBLE);
+        Fragment fragment = getParentFragment();
+        if (fragment instanceof ViewPagerListener) {
+            TabLayout tabLayout = ((ViewPagerListener) fragment).getTabLayout();
+            tabLayout.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return true;
+                }
+            });
+            tabLayout.setVisibility(View.VISIBLE);
+        }
     }
 }

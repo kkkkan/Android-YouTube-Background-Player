@@ -122,7 +122,7 @@ public class PlaylistsFragment extends BaseFragment implements
         playlistsAdapter = new PlaylistsAdapter(context, playlists);
         playlistsAdapter.setOnItemEventsListener(this);
         playlistsListView.setAdapter(playlistsAdapter);
-        playlistsAdapter.setOnDetailClickListener((PlaylistsAdapter.OnDetailClickListener) getActivity());
+        playlistsAdapter.setOnDetailClickListener((PlaylistsAdapter.OnDetailClickListener) getParentFragment());
         mainHandler = ((MainActivity) getActivity()).mainHandler;
 
 

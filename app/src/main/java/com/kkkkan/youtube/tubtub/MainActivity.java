@@ -55,21 +55,16 @@ import android.os.IBinder;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -77,13 +72,9 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.MediaController;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.GoogleAuthException;
@@ -96,20 +87,15 @@ import com.google.api.services.youtube.model.PlaylistItemSnippet;
 import com.google.api.services.youtube.model.PlaylistSnippet;
 import com.google.api.services.youtube.model.PlaylistStatus;
 import com.google.api.services.youtube.model.ResourceId;
-import com.kkkkan.youtube.BuildConfig;
 import com.kkkkan.youtube.R;
-import com.kkkkan.youtube.tubtub.adapters.PlaylistsAdapter;
 import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
-import com.kkkkan.youtube.tubtub.fragments.FavoritesFragment;
 import com.kkkkan.youtube.tubtub.fragments.LandscapeFragment;
-import com.kkkkan.youtube.tubtub.fragments.PlaylistDetailFragment;
-import com.kkkkan.youtube.tubtub.fragments.PlaylistTitleFragment;
-import com.kkkkan.youtube.tubtub.fragments.PlaylistsFragment;
-import com.kkkkan.youtube.tubtub.fragments.RecentlyWatchedFragment;
-import com.kkkkan.youtube.tubtub.fragments.SearchFragment;
+import com.kkkkan.youtube.tubtub.fragments.PortraitFragment;
 import com.kkkkan.youtube.tubtub.interfaces.OnFavoritesSelected;
 import com.kkkkan.youtube.tubtub.interfaces.OnItemSelected;
+import com.kkkkan.youtube.tubtub.interfaces.SurfaceHolderListener;
 import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
+import com.kkkkan.youtube.tubtub.interfaces.VideoTitleGetter;
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
@@ -133,7 +119,8 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTubeWithC
  * Activity that manages fragments and action bar
  */
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
-        OnItemSelected, OnFavoritesSelected, SurfaceHolder.Callback, PlaylistsAdapter.OnDetailClickListener, TitlebarListener, MediaController.MediaPlayerControl {
+        OnItemSelected, OnFavoritesSelected, TitlebarListener, MediaController.MediaPlayerControl,
+        VideoTitleGetter, SurfaceHolderListener {
     public static Handler mainHandler = new Handler();
     static private MediaPlayerService service;
 
@@ -145,9 +132,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private static final String TAG = "MainActivity";
     private static final String LandscapeFragmentTAG = "LandscapeFragmentTAG";
-    private Toolbar toolbar;
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
+    private static final String PortraitFragmentTAG = "PortraitFragmentTAG";
 
     private static final int PERMISSIONS = 1;
     public static final String PREF_ACCOUNT_NAME = "accountName";
@@ -157,32 +142,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
     static final int REQUEST_CODE_TOKEN_AUTH = 1006;
 
-    private SearchFragment searchFragment;
-    private RecentlyWatchedFragment recentlyPlayedFragment;
-    private FavoritesFragment favoritesFragment;
-
-
-    //private String videoUrl;
-    //private SurfaceHolder mHolder;
-    private SurfaceView mPreview;
     private MediaController mMediaController;
     private AlertDialog.Builder mListDlg;
     private AlertDialog.Builder mTitleDlg;
     private ProgressDialog mProgressDialog;
-    private CheckBox repeatOneBox;
-    private CheckBox repeatPlaylistBox;
-
     //For movie title
     //動画タイトル用
-    private TextView mTextView;
-
-
-    private int[] tabIcons = {
-            R.drawable.ic_action_heart,
-            R.drawable.ic_recently_wached,
-            R.drawable.ic_search,
-            R.drawable.ic_action_playlist
-    };
 
     private NetworkConf networkConf;
 
@@ -231,13 +196,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 }
             }
         });
-        viewModel.getVideoTitle().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                mTextView.setText(s);
-            }
-        });
-
 
         startService(new Intent(this, MediaPlayerService.class));
         //serviceをmediaControllerにセットするので必ずそこより先にbindServiceすること！！
@@ -249,29 +207,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().setFormat(PixelFormat.TRANSPARENT);
 
-        //Setting for one repeat check box on the title bar
-        //タイトルバーの1リピートチェックボックスについての設定
-        repeatOneBox = (CheckBox) findViewById(R.id.repeat_one_box);
-        repeatOneBox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                repeatOneCheckListener();
-                checkBoxUpdata();
-            }
-        });
-        //Settings for the playlist repeat checkbox on the title bar
-        //タイトルバーのプレイリストリピートチェックボックスについての設定
-        repeatPlaylistBox = (CheckBox) findViewById(R.id.repeat_playlist_box);
-        repeatPlaylistBox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                repeatPlaylistCheckListener();
-                checkBoxUpdata();
-            }
-        });
 
-
-        mTextView = (TextView) findViewById(R.id.title_view);
         mListDlg = new AlertDialog.Builder(this);
         mTitleDlg = new AlertDialog.Builder(this);
         mProgressDialog = new ProgressDialog(this);
@@ -304,37 +240,18 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
         });
 
-        //When you start from landscape screen mPreview etc is not made with onCreate (),
-        // it drops in the process of obscuring mPreview
-        //横画面から始めた時にmPreview等をonCreate()で作っておかないと
-        // mPreviewを見え無くしたりする処理のところで落ちる
-        makeSurfaceViewAndMediaControllerSetting();
-
-
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        //Do not turn back to action bar
-        //アクションバーに戻るボタンをつけない
-        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-        //Set the fragment held by viewPage to 3
-        //viewPageで保持するfragmentを三枚に設定
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
-        viewPager.setOffscreenPageLimit(3);
-        setupViewPager(viewPager);
-
-        tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
-
-        setupTabIcons();
-
 
         networkConf = new NetworkConf(this);
         Configuration config = getResources().getConfiguration();
-        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            //At the time of horizontal screen
-            //横画面の時
-            viewChangeWhenLandscape();
+        switch (config.orientation) {
+            case Configuration.ORIENTATION_PORTRAIT:
+                viewChangeWhenLandscape();
+                break;
+            case Configuration.ORIENTATION_LANDSCAPE:
+                //At the time of horizontal screen
+                //横画面の時
+                viewChangeWhenLandscape();
+                break;
         }
 
         requestPermissions();
@@ -374,17 +291,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     protected void onResume() {
         Log.d(TAG, "onResume");
         super.onResume();
-
-        //ここで改めてmPreviewを作り直さないと、バック画面→ロック→アプリに戻ると落ちる
-        makeSurfaceViewAndMediaControllerSetting();
-
         // allow to continue playing media in the background.
         // バックグラウンド再生を許可する
         requestVisibleBehind(true);
-
-        //チェックボックスの画像を設定に合わせる
-        checkBoxUpdata();
-
     }
 
     @Override
@@ -413,81 +322,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     }
 
-    /**
-     * mPreviewを作り直す
-     * それに伴いMediaplayerの投影先とmHolderも作り直し
-     */
-    private void makeSurfaceViewAndMediaControllerSetting() {
-        mPreview = (SurfaceView) findViewById(R.id.surface);
-        if (mPreview == null) {
-            //通常ありえない
-            Log.d("TAG", "SurfaceView is null!");
-        } else {
-            //Change the vertical and horizontal lengths of the playback space of the movie according to the screen size of the smartphone
-            //スマホの画面サイズに合わせて動画の再生スペースの縦横の長さを変化させる
-            mPreview.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    resizeSurfaceView();
-                }
-            });
-        }
-        mPreview.getHolder().addCallback(this);
-
-         /*mMediaController表示のためのtouchlistener*/
-        mPreview.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView) {
-                    if (!mMediaController.isShowing()) {
-                        mMediaController.show();
-                    } else {
-                        mMediaController.hide();
-                    }
-                }
-                return true;
-            }
-        });
-
-        //mediaControllerの画面に新しく作ったsurfaceviewをセット
-        mMediaController.setAnchorView(mPreview);
-    }
-
-    @Override
-    public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
-        Log.d(TAG, "surfaceCreated");
-    }
-
-
-    @Override
-    public void surfaceChanged(SurfaceHolder paramSurfaceHolder, int paramInt1,
-                               int paramInt2, int paramInt3) {
-        Log.d(TAG, "surfaceChanged");
-        Configuration config = getResources().getConfiguration();
-        //bindService()はすぐ返ってきて、serviceに代入するのはその後コネクションが出来てからなので
-        // ここに来るときservice==nullのことあり
-        if (service != null) {
-            service.setDisplay(mPreview.getHolder());
-        }
-        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            //横画面だったらどちらにしろ投影先はLandscapeFragment上のsurfaceなので
-            // mediaplayerの設定変更系はしない
-            return;
-        }
-        //MediaPlayer、MediaControllerの投影先を変更
-        changeSurfaceHolderAndTitlebar(mPreview.getHolder(), mPreview, mTextView);
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder paramSurfaceHolder) {
-        Log.d(TAG, "surfaceDestroyed");
-        try {
-            releaseSurfaceHolder(paramSurfaceHolder);
-        } catch (IllegalStateException e) {
-            //バックボタンでアプリを落としたとき用
-            //このままonDestroy()まで呼ばれるのでここはスルー
-        }
-    }
 
     /**
      * Attempts to set the account used with the API credentials. If an account
@@ -646,48 +480,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             //When opened from sharing by another application
             //他のアプリによる共有から開かれたとき
             shareHandle(intent);
-        } else if (Intent.ACTION_SEARCH.equals(action)) {
-            //検索の時
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            //スムーズスクロールありでfragmenを2に変更
-            viewPager.setCurrentItem(2, true); //switch to search fragment
-
-            if (searchFragment != null) {
-                searchFragment.searchQuery(query);
-            }
         }
-    }
-
-    /**
-     * Setups icons for 3 tabs
-     */
-    private void setupTabIcons() {
-        tabLayout.getTabAt(0).setIcon(tabIcons[0]);
-        tabLayout.getTabAt(1).setIcon(tabIcons[1]);
-        tabLayout.getTabAt(2).setIcon(tabIcons[2]);
-        tabLayout.getTabAt(3).setIcon(tabIcons[3]);
-    }
-
-    /**
-     * Setups viewPager for switching between pages according to the selected tab
-     *
-     * @param viewPager
-     */
-    private void setupViewPager(ViewPager viewPager) {
-
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-
-        searchFragment = SearchFragment.newInstance();
-        recentlyPlayedFragment = RecentlyWatchedFragment.newInstance();
-        favoritesFragment = FavoritesFragment.newInstance();
-        PlaylistsFragment playlistsFragment = PlaylistsFragment.newInstance();
-
-        adapter.addFragment(favoritesFragment, null);/*0*/
-        adapter.addFragment(recentlyPlayedFragment, null);/*1*/
-        adapter.addFragment(searchFragment, null);/*2*/
-        adapter.addFragment(playlistsFragment, null);/*3*/
-
-        viewPager.setAdapter(adapter);
     }
 
     @Override
@@ -735,16 +528,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
 
-    /**
-     * お気に入りfragmentにビデオを追加したり削除したり
-     */
     @Override
     public void onFavoritesSelected(YouTubeVideo video, boolean isChecked) {
-        if (isChecked) {
-            favoritesFragment.addToFavoritesList(video);
-        } else {
-            favoritesFragment.removeFromFavorites(video);
-        }
+
     }
 
     /**
@@ -928,80 +714,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mListDlg.create().show();
     }
 
-    /*プレイリスト詳細を見るためのリスナーの中身実装*/
-    public void onDetailClick(YouTubePlaylist playlist) {
-        Log.d(TAG, "playlist-detail-checked!!!\n\n");
-    /*ビデオ一覧表示Fragment追加用*/
-        PlaylistDetailFragment playlistDetailFragment = PlaylistDetailFragment.newInstance();
-        playlistDetailFragment.setPlaylist(playlist);
-
-    /*プレイリストタイトル表示Fragment用*/
-        PlaylistTitleFragment playlistTitleFragment = new PlaylistTitleFragment();
-        playlistTitleFragment.setPlaylistTitle(playlist.getTitle());
-
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.add(R.id.frame_layout, playlistDetailFragment);
-        ft.add(R.id.frame_layout_tab, playlistTitleFragment);
-       /*このままだと下のviewpageが見えていて且つタッチできてしまうので対策*
-       playlistdetailのdestroyで、可視化＆タッチ有効化
-        */
-        viewPager.setVisibility(View.INVISIBLE);
-        viewPager.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return false;
-            }
-        });
-    /*tabも見えるし触れちゃうのでoffにする。
-    * playlistTitleFragmentのdestroyで可視化＆タッチ有効化*/
-        tabLayout.setVisibility(View.INVISIBLE);
-        tabLayout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return false;
-            }
-        });
-    /*複数addしてもcommit()呼び出しまでを一つとしてスタックに入れてくれる。*/
-        ft.addToBackStack(null);
-        ft.commit();
-
-
-    }
-
-    /**
-     * Class which provides adapter for fragment pager
-     */
-    class ViewPagerAdapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragmentList = new ArrayList<>();
-        private final List<String> mFragmentTitleList = new ArrayList<>();
-
-        private ViewPagerAdapter(FragmentManager manager) {
-            super(manager);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            return mFragmentList.get(position);
-        }
-
-        @Override
-        public int getCount() {
-            return mFragmentList.size();
-        }
-
-        private void addFragment(Fragment fragment, String title) {
-            mFragmentList.add(fragment);
-            mFragmentTitleList.add(title);
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return mFragmentTitleList.get(position);
-        }
-
-    }
-
-
     /**
      * Options menu in action bar
      *
@@ -1116,69 +828,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         return true;
     }
 
-    /**
-     * Handles selected item from action bar
-     *
-     * @param item
-     * @return
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_about) {
-
-            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-            alertDialog.setTitle(getString(R.string.myName));
-            alertDialog.setIcon(R.drawable.dbwan);
-
-            alertDialog.setMessage(getString(R.string.app_name) + " " + BuildConfig.VERSION_NAME + "\n\n" +
-                    getString(R.string.email) + "\n\n" +
-                    getString(R.string.date) + "\n");
-            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok),
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-            alertDialog.show();
-
-            return true;
-        } else if (id == R.id.action_clear_list) {
-            YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).deleteAll();
-            recentlyPlayedFragment.clearRecentlyPlayedList();
-            return true;
-        } else if (id == R.id.action_search) {
-            MenuItemCompat.expandActionView(item);
-            return true;
-        } else if (id == R.id.log_in) {
-            String[] perms = {Manifest.permission.GET_ACCOUNTS, Manifest.permission.READ_PHONE_STATE};
-            if (!EasyPermissions.hasPermissions(this, perms)) {
-                EasyPermissions.requestPermissions(this, getString(R.string.permissions_request),
-                        PERMISSIONS, perms);
-            } else {
-                startActivityForResult(
-                        getCredential().newChooseAccountIntent(),
-                        REQUEST_ACCOUNT_PICKER);
-            }
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-
-    public ViewPager getViewPager() {
-        return viewPager;
-    }
-
-
-    public TabLayout getTabLayout() {
-        return tabLayout;
-    }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -1194,11 +843,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     }
 
-    /**
-     * UI上のビデオの描写先とタイトルバーが変更された時に
-     * それを反映させるために呼ばれる関数
-     */
-    public void changeSurfaceHolderAndTitlebar(SurfaceHolder holder, SurfaceView surfaceView, TextView textView) {
+    @Override
+    public String getVideoTitle() {
+        return service != null ? service.getVideoTitle() : "";
+    }
+
+    @Override
+    public void changeSurfaceHolder(SurfaceHolder holder, SurfaceView surfaceView) {
         boolean setDisplaySuccess = false;
         if (service != null) {
             setDisplaySuccess = service.setDisplay(holder);
@@ -1207,8 +858,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             Log.d(TAG, "!setDisplaySuccess");
             return;
         }
-
-        mTextView = textView;
         //縦画面の時はsurfaceViewを取得しなおすたびにmMediaController.setAnchorView()しているのでここでセットする必要はないが
         // 横画面の時はfragment内ではmMediaController.setAnchorView()が出来ないのでそれ用
         mMediaController.setAnchorView(surfaceView);
@@ -1226,10 +875,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 return true;
             }
         });
-
-        //ビデオ途中で縦横変わるときだけはviewmodelだけじゃちゃんと移行先のタイトルバーに題名つけるのできなかったのでとりあえずこちらから取りに行く
-        //きれいじゃないのでいつか直したい
-        mTextView.setText(service.getVideoTitle());
     }
 
     /**
@@ -1238,51 +883,23 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      *
      * @param holder
      */
+    @Override
     public void releaseSurfaceHolder(SurfaceHolder holder) {
         service.releaseSurfaceHolder(holder);
     }
+
 
     /**
      * 横画面時の処理
      */
     private void viewChangeWhenLandscape() {
         Log.d(TAG, " viewChangeWhenLandscape() ");
-        //このままだと下のviewpageが見えていて且つタッチできてしまうので対策*
-        viewPager.setVisibility(View.INVISIBLE);
-        viewPager.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return false;
-            }
-        });
-        //tabも見えるし触れちゃうのでoffにする。
-        tabLayout.setVisibility(View.INVISIBLE);
-        tabLayout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return false;
-            }
-        });
-        //アクションバーも
-        toolbar.setVisibility(View.INVISIBLE);
-        toolbar.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return false;
-            }
-        });
-        //動画再生画面も
-        mPreview.setVisibility(View.INVISIBLE);
-        mPreview.setEnabled(false);
-        //タイトルバーも
-        mTextView.setVisibility(View.INVISIBLE);
-
         //フラグメント追加
         Fragment fragment = LandscapeFragment.getNewLandscapeFragment(this);
         FragmentTransaction transaction = getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.parent_layout, fragment, LandscapeFragmentTAG);
-        transaction.addToBackStack(null);
+        //transaction.addToBackStack(null);
         transaction.commitAllowingStateLoss();
     }
 
@@ -1292,92 +909,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      */
     private void viewChangeWhenPortrait() {
         Log.d(TAG, "viewChangeWhenPortrait()");
-        //フラグメント削除
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(LandscapeFragmentTAG);
-        //最初から縦の時はnull
-        if (fragment != null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .remove(fragment)
-                    //onPause()やonStop()直後に呼ばれるonSaveInstanceState()ではFragmentの状態も含めた画面情報を保存するため、それ以降のタイミングでFragmentを操作するとおかしくなる
-                    //しかし画面状態が失われてもいいからコミットしたいのでcommitAllowingStateLoss()
-                    .commitAllowingStateLoss();
-        }
-        //見え無くしたり触れなくしたものを直す
-        viewPager.setVisibility(View.VISIBLE);
-        viewPager.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return true;
-            }
-        });
-        //tabも見えるし触れちゃうのでoffにする。
-        tabLayout.setVisibility(View.VISIBLE);
-        tabLayout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return true;
-            }
-        });
-        //アクションバーも
-        toolbar.setVisibility(View.VISIBLE);
-        toolbar.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return true;
-            }
-        });
-
-        //mPrevieの取得しなおし
-        mPreview = (SurfaceView) findViewById(R.id.surface);
-        mPreview.setVisibility(View.VISIBLE);
-        mPreview.setEnabled(true);
-        //Change the vertical and horizontal lengths of the playback space of the movie according to the screen size of the smartphone
-        //スマホの画面サイズに合わせて動画の再生スペースの縦横の長さを変化させる
-        mPreview.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                resizeSurfaceView();
-            }
-        });
-
-
-        mTextView = (TextView) findViewById(R.id.title_view);
-        mTextView.setVisibility(View.VISIBLE);
-
-        //設定とcheckboxの表示合わせる
-        checkBoxUpdata();
-
-        changeSurfaceHolderAndTitlebar(mPreview.getHolder(), mPreview, mTextView);
+        //フラグメント追加
+        Fragment fragment = new PortraitFragment();
+        FragmentTransaction transaction = getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.parent_layout, fragment, PortraitFragmentTAG);
+        transaction.commitAllowingStateLoss();
     }
-
-    /**
-     * チェックボックスの画像を設定に合わせるメゾッド
-     */
-    private void checkBoxUpdata() {
-        Settings settings = Settings.getInstance();
-        //一曲リピートか否かに合わせてチェックボックス画面変更
-        boolean repeatOne = false;
-        switch (settings.getRepeatOne()) {
-            case ON:
-                repeatOne = true;
-                break;
-            case OFF:
-                repeatOne = false;
-        }
-        repeatOneBox.setChecked(repeatOne);
-        //プレイリストリピートか否かに合わせてチェックボックス画面変更
-        boolean repeatPlaylist = false;
-        switch (settings.getRepeatPlaylist()) {
-            case ON:
-                repeatPlaylist = true;
-                break;
-            case OFF:
-                repeatPlaylist = false;
-        }
-        repeatPlaylistBox.setChecked(repeatPlaylist);
-    }
-
 
     @Override
     public void repeatOneCheckListener() {
@@ -1467,21 +1005,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 }).forceLoad();
 
             }
-        }
-    }
-
-    /**
-     * Change the vertical and horizontal lengths of the playback space of the movie according to the screen size of the smartphone
-     * <p>
-     * surfaceViewの大きさを整えるメゾッド
-     * スマホの画面サイズに合わせて動画の再生スペースの縦横の長さを変化させる
-     */
-    private void resizeSurfaceView() {
-        if (mPreview.isEnabled()) {
-            ViewGroup.LayoutParams svlp = mPreview.getLayoutParams();
-            int width = mPreview.getWidth();
-            svlp.height = width / 16 * 9;
-            mPreview.setLayoutParams(svlp);
         }
     }
 
