@@ -37,7 +37,6 @@ Change to the API key you registered earlier.
   - Machines with this phenomenon seen: FUJITSU arrows M02 (OS: andrid 6.0.1)
   - Machine that did not see this phenomenon: SONY SO - 01G (OS: android 5.0.2)
   
-- The screen turns black when it is set to landscape → portrait, or it gets stationary
   
 ## Functions considering expansion in the future
 
@@ -87,7 +86,6 @@ Change to the API key you registered earlier.
   - この現象の見られた機種:FUJITSU arrows M02(OS:andrid 6.0.1)
   - この現象の見られなかった機種:SONY SO-01G(OS:android 5.0.2)
   
-- 横画面→縦画面にした際に画面が真っ暗になってしまったり、静止してしまったりする。
 
   
 ## 今後拡張を考えている機能
