@@ -22,14 +22,18 @@ import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.MatrixCursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.BaseColumns;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.CursorAdapter;
@@ -39,8 +43,6 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -73,8 +75,12 @@ import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
 import com.kkkkan.youtube.tubtub.interfaces.ViewPagerListener;
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
+import com.kkkkan.youtube.tubtub.utils.Config;
+import com.kkkkan.youtube.tubtub.utils.NetworkConf;
+import com.kkkkan.youtube.tubtub.youtube.SuggestionsLoader;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.kkkkan.youtube.R.layout.suggestions;
@@ -195,6 +201,108 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                 return onOptionsItemSelected(menuItem);
             }
         });
+
+        final SearchView searchView = (SearchView) toolbar.getMenu().findItem(R.id.action_search).getActionView();
+
+        final CursorAdapter suggestionAdapter = new SimpleCursorAdapter(getActivity(),
+                suggestions,
+                null,
+                new String[]{SearchManager.SUGGEST_COLUMN_TEXT_1},
+                new int[]{android.R.id.text1},
+                0);
+        final List<String> suggestions = new ArrayList<>();
+
+        /*setSuggestionsAdaper:独自のadapterをセットする*/
+        searchView.setSuggestionsAdapter(suggestionAdapter);
+
+        searchView.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
+            //suggestionをスクロールしたとき
+            @Override
+            public boolean onSuggestionSelect(int position) {
+                Log.d(TAG, "onSuggestionSelect");
+                return false;
+            }
+
+            //スクロールを選んだ時検索
+            @Override
+            public boolean onSuggestionClick(int position) {
+                Log.d(TAG, "onSuggestionClick");
+                searchView.setQuery(suggestions.get(position), false);
+                searchView.clearFocus();
+
+                Intent suggestionIntent = new Intent(Intent.ACTION_SEARCH);
+                suggestionIntent.putExtra(SearchManager.QUERY, suggestions.get(position));
+                handleIntent(suggestionIntent);
+
+                return true;
+            }
+        });
+
+        //検索窓の文字が変わるたび呼び出される
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                Log.d(TAG, "onQueryTextSubmit");
+                searchView.setQuery(s, false);
+                searchView.clearFocus();
+
+                Intent suggestionIntent = new Intent(Intent.ACTION_SEARCH);
+                suggestionIntent.putExtra(SearchManager.QUERY, s);
+                handleIntent(suggestionIntent);
+                return false; //if true, no new intent is started
+            }
+
+            /*検索ワードが変わったら*/
+            @Override
+            public boolean onQueryTextChange(final String query) {
+                Log.d(TAG, "onQueryTextChange");
+                // check network connection. If not available, do not query.
+                // this also disables onSuggestionClick triggering
+                //二文字以上入力されてたら
+                if (query.length() > 0) { //make suggestions after 3rd letter
+                    Log.d(TAG, "onQueryTextChange:query.length() > 0");
+                    if (new NetworkConf(getActivity()).isNetworkAvailable()) {
+                        Log.d(TAG, "onQueryTextChange:NetworkConf(getActivity()).isNetworkAvailable()");
+                        getActivity().getSupportLoaderManager().restartLoader(Config.SuggestionsLoaderId, null, new LoaderManager.LoaderCallbacks<List<String>>() {
+                            @Override
+                            public Loader<List<String>> onCreateLoader(final int id, final Bundle args) {
+                                return new SuggestionsLoader(getActivity().getApplicationContext(), query);
+                            }
+
+                            @Override
+                            public void onLoadFinished(Loader<List<String>> loader, List<String> data) {
+                                Log.d(TAG, "onQueryTextChange:onLoadFinished");
+                                if (data == null)
+                                    return;
+                                suggestions.clear();
+                                suggestions.addAll(data);
+                                String[] columns = {
+                                        BaseColumns._ID,
+                                        SearchManager.SUGGEST_COLUMN_TEXT_1
+                                };
+                                MatrixCursor cursor = new MatrixCursor(columns);
+
+                                for (int i = 0; i < data.size(); i++) {
+                                    String[] tmp = {Integer.toString(i), data.get(i)};
+                                    cursor.addRow(tmp);
+                                }
+                                suggestionAdapter.swapCursor(cursor);
+                            }
+
+                            @Override
+                            public void onLoaderReset(Loader<List<String>> loader) {
+                                suggestions.clear();
+                                suggestions.addAll(Collections.<String>emptyList());
+                            }
+                        }).forceLoad();
+                        return true;
+                    }
+                }
+                Log.d(TAG, "onQueryTextChange:query.length() = 0");
+                return false;
+            }
+        });
+
         //setSupportActionBar(toolbar);
 
         //Do not turn back to action bar
@@ -490,10 +598,10 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        Log.d(TAG,"onOptionsItemSelected");
+        Log.d(TAG, "onOptionsItemSelected");
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_about) {
-            Log.d(TAG,"onOptionsItemSelected:about");
+            Log.d(TAG, "onOptionsItemSelected:about");
             AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
             alertDialog.setTitle(getString(R.string.myName));
             alertDialog.setIcon(R.drawable.dbwan);
@@ -511,16 +619,16 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
             return true;
         } else if (id == R.id.action_clear_list) {
-            Log.d(TAG,"onOptionsItemSelected:clear");
+            Log.d(TAG, "onOptionsItemSelected:clear");
             YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).deleteAll();
             recentlyPlayedFragment.clearRecentlyPlayedList();
             return true;
         } else if (id == R.id.action_search) {
-            Log.d(TAG,"onOptionsItemSelected:search");
+            Log.d(TAG, "onOptionsItemSelected:search");
             MenuItemCompat.expandActionView(item);
             return true;
         } else if (id == R.id.log_in) {
-            Log.d(TAG,"onOptionsItemSelected:login");
+            Log.d(TAG, "onOptionsItemSelected:login");
             Activity activity = getActivity();
             if (activity instanceof LoginHandler) {
                 ((LoginHandler) activity).checkPermissionAndLoginGoogleAccount();
@@ -528,64 +636,6 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * Options menu in action bar
-     *
-     * @param menu
-     * @return
-     */
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        /*メニューバー追加*/
-        inflater.inflate(R.menu.menu_main, menu);
-
-        /*探すボタンで検索できるよう機能の実装*/
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-
-        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-        if (searchView != null) {
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
-        }
-
-        /*第一引数：context,第二引数:レイアウトid、三：Cursur,四：カラム名（配列）、五：viewid,六：flag*/
-        //suggestions
-        final CursorAdapter suggestionAdapter = new SimpleCursorAdapter(getActivity(),
-                suggestions,
-                null,
-                new String[]{SearchManager.SUGGEST_COLUMN_TEXT_1},
-                new int[]{android.R.id.text1},
-                0);
-        final List<String> suggestions = new ArrayList<>();
-
-        /*setSuggestionsAdaper:独自のadapterをセットする*/
-        searchView.setSuggestionsAdapter(suggestionAdapter);
-
-
-        /*リスナー設定クリックされたら*/
-        searchView.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
-            /*suggestionをスクロールしたとき？*/
-            @Override
-            public boolean onSuggestionSelect(int position) {
-                return false;
-            }
-
-            /*スクロールを選んだ時検索*/
-            @Override
-            public boolean onSuggestionClick(int position) {
-                searchView.setQuery(suggestions.get(position), false);
-                searchView.clearFocus();
-
-                Intent suggestionIntent = new Intent(Intent.ACTION_SEARCH);
-                suggestionIntent.putExtra(SearchManager.QUERY, suggestions.get(position));
-                handleIntent(suggestionIntent);
-
-                return true;
-            }
-        });
     }
 
     private void handleIntent(Intent intent) {

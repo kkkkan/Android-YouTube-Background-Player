@@ -314,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
             return;
         }
-            checkPermissionAndLoginGoogleAccount();
+        checkPermissionAndLoginGoogleAccount();
     }
 
     @Override
