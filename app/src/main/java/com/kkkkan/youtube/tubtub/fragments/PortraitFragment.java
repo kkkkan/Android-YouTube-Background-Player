@@ -34,7 +34,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
@@ -227,12 +226,8 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             @Override
             public boolean onSuggestionClick(int position) {
                 Log.d(TAG, "onSuggestionClick");
-                searchView.setQuery(suggestions.get(position), false);
-                searchView.clearFocus();
 
-                Intent suggestionIntent = new Intent(Intent.ACTION_SEARCH);
-                suggestionIntent.putExtra(SearchManager.QUERY, suggestions.get(position));
-                handleIntent(suggestionIntent);
+                startSearch(searchView, suggestions.get(position));
 
                 return true;
             }
@@ -243,12 +238,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             @Override
             public boolean onQueryTextSubmit(String s) {
                 Log.d(TAG, "onQueryTextSubmit");
-                searchView.setQuery(s, false);
-                searchView.clearFocus();
-
-                Intent suggestionIntent = new Intent(Intent.ACTION_SEARCH);
-                suggestionIntent.putExtra(SearchManager.QUERY, s);
-                handleIntent(suggestionIntent);
+                startSearch(searchView, s);
                 return false; //if true, no new intent is started
             }
 
@@ -259,8 +249,8 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                 // check network connection. If not available, do not query.
                 // this also disables onSuggestionClick triggering
                 //二文字以上入力されてたら
-                if (query.length() > 0) { //make suggestions after 3rd letter
-                    Log.d(TAG, "onQueryTextChange:query.length() > 0");
+                if (query.length() > 1) { //make suggestions after 3rd letter
+                    Log.d(TAG, "onQueryTextChange:query.length() > 1");
                     if (new NetworkConf(getActivity()).isNetworkAvailable()) {
                         Log.d(TAG, "onQueryTextChange:NetworkConf(getActivity()).isNetworkAvailable()");
                         getActivity().getSupportLoaderManager().restartLoader(Config.SuggestionsLoaderId, null, new LoaderManager.LoaderCallbacks<List<String>>() {
@@ -346,6 +336,15 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     public void onDetach() {
         super.onDetach();
         Log.d(TAG, "onDetach");
+    }
+
+    private void startSearch(SearchView searchView, String s) {
+        searchView.setQuery(s, false);
+        searchView.clearFocus();
+
+        Intent suggestionIntent = new Intent(Intent.ACTION_SEARCH);
+        suggestionIntent.putExtra(SearchManager.QUERY, s);
+        handleIntent(suggestionIntent);
     }
 
     /**
@@ -547,23 +546,26 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         }).start();
     }
 
-    /*プレイリスト詳細を見るためのリスナーの中身実装*/
+    /**
+     * プレイリスト詳細を見るためのリスナーの中身実装
+     *
+     * @param playlist
+     */
     public void onDetailClick(YouTubePlaylist playlist) {
         Log.d(TAG, "playlist-detail-checked!!!\n\n");
-    /*ビデオ一覧表示Fragment追加用*/
+        //ビデオ一覧表示Fragment追加用
         PlaylistDetailFragment playlistDetailFragment = PlaylistDetailFragment.newInstance();
         playlistDetailFragment.setPlaylist(playlist);
 
-    /*プレイリストタイトル表示Fragment用*/
+        //プレイリストタイトル表示Fragment用
         PlaylistTitleFragment playlistTitleFragment = new PlaylistTitleFragment();
         playlistTitleFragment.setPlaylistTitle(playlist.getTitle());
 
         FragmentTransaction ft = getChildFragmentManager().beginTransaction();
         ft.add(R.id.frame_layout, playlistDetailFragment);
         ft.add(R.id.frame_layout_tab, playlistTitleFragment);
-       /*このままだと下のviewpageが見えていて且つタッチできてしまうので対策*
-       playlistdetailのdestroyで、可視化＆タッチ有効化
-        */
+        //このままだと下のviewpageが見えていて且つタッチできてしまうので対策
+        //playlistdetailのdestroyで、可視化＆タッチ有効化
         viewPager.setVisibility(View.INVISIBLE);
         viewPager.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -571,8 +573,8 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                 return false;
             }
         });
-    /*tabも見えるし触れちゃうのでoffにする。
-    * playlistTitleFragmentのdestroyで可視化＆タッチ有効化*/
+        //tabも見えるし触れちゃうのでoffにする。
+        // playlistTitleFragmentのdestroyで可視化＆タッチ有効化
         tabLayout.setVisibility(View.INVISIBLE);
         tabLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -580,7 +582,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                 return false;
             }
         });
-    /*複数addしてもcommit()呼び出しまでを一つとしてスタックに入れてくれる。*/
+        //複数addしてもcommit()呼び出しまでを一つとしてスタックに入れてくれる。
         ft.addToBackStack(null);
         ft.commit();
     }
@@ -600,41 +602,44 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
         Log.d(TAG, "onOptionsItemSelected");
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_about) {
-            Log.d(TAG, "onOptionsItemSelected:about");
-            AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-            alertDialog.setTitle(getString(R.string.myName));
-            alertDialog.setIcon(R.drawable.dbwan);
+        switch (id) {
+            case R.id.action_about:
+                Log.d(TAG, "onOptionsItemSelected:about");
+                AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                alertDialog.setTitle(getString(R.string.myName));
+                alertDialog.setIcon(R.drawable.dbwan);
 
-            alertDialog.setMessage(getString(R.string.app_name) + " " + BuildConfig.VERSION_NAME + "\n\n" +
-                    getString(R.string.email) + "\n\n" +
-                    getString(R.string.date) + "\n");
-            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok),
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-            alertDialog.show();
+                alertDialog.setMessage(getString(R.string.app_name) + " " + BuildConfig.VERSION_NAME + "\n\n" +
+                        getString(R.string.email) + "\n\n" +
+                        getString(R.string.date) + "\n");
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok),
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                alertDialog.show();
+                return true;
 
-            return true;
-        } else if (id == R.id.action_clear_list) {
-            Log.d(TAG, "onOptionsItemSelected:clear");
-            YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).deleteAll();
-            recentlyPlayedFragment.clearRecentlyPlayedList();
-            return true;
-        } else if (id == R.id.action_search) {
-            Log.d(TAG, "onOptionsItemSelected:search");
-            MenuItemCompat.expandActionView(item);
-            return true;
-        } else if (id == R.id.log_in) {
-            Log.d(TAG, "onOptionsItemSelected:login");
-            Activity activity = getActivity();
-            if (activity instanceof LoginHandler) {
-                ((LoginHandler) activity).checkPermissionAndLoginGoogleAccount();
-            }
+            case R.id.action_clear_list:
+                Log.d(TAG, "onOptionsItemSelected:clear");
+                new AlertDialog.Builder(getActivity()).setMessage(getString(R.string.ask_delete_all_recetry_list)).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).deleteAll();
+                        recentlyPlayedFragment.clearRecentlyPlayedList();
+                    }
+                }).setNegativeButton("cancel", null).show();
+                return true;
+
+            case R.id.log_in:
+                Log.d(TAG, "onOptionsItemSelected:login");
+                Activity activity = getActivity();
+                if (activity instanceof LoginHandler) {
+                    ((LoginHandler) activity).checkPermissionAndLoginGoogleAccount();
+                }
+                return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 

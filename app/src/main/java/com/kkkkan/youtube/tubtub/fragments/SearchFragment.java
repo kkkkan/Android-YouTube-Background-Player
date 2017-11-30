@@ -132,6 +132,14 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        //Notice that the data changed to reflect the results of favorite operation on other tabs
+        //他のタブでのfavoriteの操作の結果を反映させるためにデータが変化したことをお知らせ
+        videoListAdapter.notifyDataSetChanged();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         this.context = null;
@@ -181,13 +189,6 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         }).forceLoad();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        //Notice that the data changed to reflect the results of favorite operation on other tabs
-        //他のタブでのfavoriteの操作の結果を反映させるためにデータが変化したことをお知らせ
-        videoListAdapter.notifyDataSetChanged();
-    }
 
     @Override
     public void onShareClicked(String itemId) {
@@ -221,4 +222,5 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     public void onDeleteClicked(YouTubePlaylist playlist) {
 
     }
+
 }

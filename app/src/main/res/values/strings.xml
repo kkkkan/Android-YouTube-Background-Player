@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">YT Backgrounder</string>
+    <string name="app_name">BG player</string>
     <string name="action_about">About me</string>
     <string name="action_color_picker">Color picker</string>
     <string name="favorite_watched_tab">Recently watched</string>
@@ -43,4 +43,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="list_empty">List is empty!</string>
+
+    <string name="ask_delete_all_recetry_list">履歴をすべて消しますか？</string>
 </resources>

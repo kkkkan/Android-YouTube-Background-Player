@@ -149,6 +149,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         setContentView(R.layout.activity_main);
 
         viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
+        //serviceにbindする際に渡すコネクション
         viewModel.getLoadingState().observe(this, new Observer<MainActivityViewModel.LoadingState>() {
             @Override
             public void onChanged(@Nullable MainActivityViewModel.LoadingState loadingState) {
@@ -170,7 +171,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         });
 
         startService(new Intent(this, MediaPlayerService.class));
-        //serviceをmediaControllerにセットするので必ずそこより先にbindServiceすること！！
         bindService(new Intent(this, MediaPlayerService.class), connection, BIND_AUTO_CREATE);
 
 
