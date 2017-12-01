@@ -153,6 +153,11 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
      * @param query
      */
     public void searchQuery(final String query) {
+        if (networkConf == null) {
+            //本来ありえないはずだが、一度networkConf.isNetworkAvailable()で
+            //nullアクセス例外で落ちたので一応対策
+            return;
+        }
         //check network connectivity
         //When searching, if you are not connected to the network, issue an error.
         //検索するにあたって、ネットワークにつながってなかったらerrorを出す。
