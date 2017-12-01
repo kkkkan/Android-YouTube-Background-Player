@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -31,9 +32,7 @@ import com.kkkkan.youtube.tubtub.utils.Config;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import at.huber.youtubeExtractor.VideoMeta;
 import at.huber.youtubeExtractor.YouTubeExtractor;
@@ -358,14 +357,12 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     handleNextVideo();
                     return;
                 }
+                //設定によって画質変える
+                SharedPreferences sharedPreferences = getSharedPreferences(VideoQualitys.VideoQualityPreferenceFileName, Context.MODE_PRIVATE);
+                //デフォルトの画質はノーマル
+                int videoQualitySetting = sharedPreferences.getInt(VideoQualitys.VideoQualityPreferenceKey, VideoQualitys.videoQualityNormal);
+                Integer[] itagVideo = VideoQualitys.getVideoQualityTagsMap().get(videoQualitySetting);
 
-                //Videoでは形式を変えて360p（ノーマル画質）で試す。アプリを軽くするため高画質は非対応にした。これ以上落とすと音声が含まれなくなっちゃう。
-
-                //18:Non-DASH/MP4/360p
-                //134:DASH/MP4/360p
-
-
-                int[] itagVideo = {18, 134};
                 int tagVideo = 0;
 
                 for (int i : itagVideo) {
@@ -434,13 +431,13 @@ public class MediaPlayerService extends Service implements MediaController.Media
             Log.d(TAG, "videoCreate");
             //長いビデオだとarrows M02で途中でストリーミングが終わってしまう問題の解決のために
             //分割ストリーミングの設定
-            Map<String, String> headers = new HashMap<>();
+            /*Map<String, String> headers = new HashMap<>();
             headers.put("Content-Type", "video/mp4"); // change content type if necessary
             headers.put("Accept-Ranges", "bytes");
             headers.put("Status", "206");
             headers.put("Cache-control", "no-cache");
-            mediaPlayer.setDataSource(getApplicationContext(), mediaPath, headers);
-            //SingletonMediaplayer.instance.getMediaPlayer().setDataSource(this, mediaPath);
+            mediaPlayer.setDataSource(getApplicationContext(), mediaPath, headers);*/
+            mediaPlayer.setDataSource(this, mediaPath);
             mediaPlayer.setDisplay(mHolder);
             //videoTitleをセット
             if (videoTitle != null) {

@@ -639,6 +639,10 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                     ((LoginHandler) activity).checkPermissionAndLoginGoogleAccount();
                 }
                 return true;
+
+            case R.id.video_quality:
+                Log.d(TAG, "onOptionsItemSelected:video quality");
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

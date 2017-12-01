@@ -311,8 +311,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             if (accountName != null) {
                     /*アカウントをセット*/
                 getCredential().setSelectedAccountName(accountName);
+                return;
             }
-            return;
         }
         checkPermissionAndLoginGoogleAccount();
     }

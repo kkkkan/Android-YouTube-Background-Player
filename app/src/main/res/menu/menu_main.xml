@@ -30,9 +30,15 @@
          app:showAsAction="never" />-->
 
     <item
-        android:id="@+id/log_in"
+    android:id="@+id/log_in"
+    android:orderInCategory="100"
+    android:title="log in"
+    app:showAsAction="never" />
+
+    <item
+        android:id="@+id/video_quality"
         android:orderInCategory="100"
-        android:title="log in"
+        android:title="video quality"
         app:showAsAction="never" />
 
 </menu>
