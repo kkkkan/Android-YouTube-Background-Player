@@ -45,4 +45,7 @@
     <string name="list_empty">List is empty!</string>
 
     <string name="ask_delete_all_recetry_list">履歴をすべて消しますか？</string>
+    <string name="video_quality_setting_success">画質の設定を登録いたしました。</string>
+    <string name="ask_reread_video">今再生中の動画を新しい画質で読み込みなおしますか？</string>
+    <string name="video_quality_setting_fail">画質設定に失敗しました。</string>
 </resources>

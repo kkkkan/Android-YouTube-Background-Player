@@ -766,7 +766,9 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
      * ダイアログを出し、ユーザーにビデオ再生の画質を決めさせるメゾッド
      */
     private void setVideoQuality() {
-        final AlertDialog.Builder mListDlg = new AlertDialog.Builder(getActivity());
+        final Activity activity = getActivity();
+        final AlertDialog.Builder mListDlg = new AlertDialog.Builder(activity);
+        final AlertDialog.Builder mDlg = new AlertDialog.Builder(activity);
 
         //チェックされたやつの番号を入れておく。
         final ArrayList<Integer> checkedItems = new ArrayList<Integer>();
@@ -793,11 +795,25 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                     boolean result = editor.commit();
                     String message = "";
                     if (result) {
-                        message = "画質を設定しました。";
+                        boolean isPlaying = false;
+                        if (activity instanceof android.widget.MediaController.MediaPlayerControl) {
+                            isPlaying = ((android.widget.MediaController.MediaPlayerControl) activity).isPlaying();
+                        }
+                        if (isPlaying) {
+                            mDlg.setMessage(getString(R.string.video_quality_setting_success) + "\n" + getString(R.string.ask_reread_video));
+                            mDlg.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            }).setNegativeButton("cancel", null).show();
+                        } else {
+                            mDlg.setMessage(getString(R.string.video_quality_setting_success)).setPositiveButton("OK", null).show();
+                        }
                     } else {
-                        message = "画質設定に失敗しました。";
+                        mDlg.setMessage(getString(R.string.video_quality_setting_fail)).setPositiveButton("OK", null).show();
                     }
-                    Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+
                 }
             }
         });
