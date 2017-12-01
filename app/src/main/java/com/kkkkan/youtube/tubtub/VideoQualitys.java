@@ -34,22 +34,23 @@ import java.util.HashMap;
  * <p>
  * ->MediaPlayerはdash形式非対応らしい。
  * http://shunirr.hatenablog.jp/entry/2015/09/16/231512
+ * https://developer.android.com/guide/topics/media/exoplayer.html
  */
 
 public class VideoQualitys {
     final static public String VideoQualityPreferenceFileName = "VideoQualityPreferenceFileName";
     final static public String VideoQualityPreferenceKey = "VideoQualityPreferenceKey";
-    final static public int videoQualitySuperLow = 0;
-    final static public int videoQualityLow = 1;
+    final static private int videoQualitySuperLow = 0;
+    final static private int videoQualityLow = 1;
     final static public int videoQualityNormal = 2;
-    final static public int videoQualityHight = 3;
+    final static private int videoQualityHight = 3;
 
     static public CharSequence[] getVideoQualityChoices() {
         CharSequence[] qualityChoices = new CharSequence[4];
-        qualityChoices[0] = "144p (超低画質)";
-        qualityChoices[1] = "240p (低画質)";
-        qualityChoices[2] = "360p (標準)";
-        qualityChoices[3] = "720p (高画質)";
+        qualityChoices[videoQualitySuperLow] = "144p (超低画質)";
+        qualityChoices[videoQualityLow] = "240p (低画質)";
+        qualityChoices[videoQualityNormal] = "360p (標準)";
+        qualityChoices[videoQualityHight] = "720p (高画質)";
         return qualityChoices;
     }
 
