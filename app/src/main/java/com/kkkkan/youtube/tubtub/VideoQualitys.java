@@ -44,6 +44,15 @@ public class VideoQualitys {
     final static public int videoQualityNormal = 2;
     final static public int videoQualityHight = 3;
 
+    static public CharSequence[] getVideoQualityChoices() {
+        CharSequence[] qualityChoices = new CharSequence[4];
+        qualityChoices[0] = "144p (超低画質)";
+        qualityChoices[1] = "240p (低画質)";
+        qualityChoices[2] = "360p (標準)";
+        qualityChoices[3] = "720p (高画質)";
+        return qualityChoices;
+    }
+
     static public HashMap<Integer, Integer[]> getVideoQualityTagsMap() {
         HashMap<Integer, Integer[]> tagMap = new HashMap<>();
         tagMap.put(videoQualitySuperLow, videoQualityTagUnder144);

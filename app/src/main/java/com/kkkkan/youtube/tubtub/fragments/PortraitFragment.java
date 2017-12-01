@@ -22,6 +22,7 @@ import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.MatrixCursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -65,6 +66,7 @@ import com.kkkkan.youtube.BuildConfig;
 import com.kkkkan.youtube.R;
 import com.kkkkan.youtube.tubtub.MainActivityViewModel;
 import com.kkkkan.youtube.tubtub.Settings;
+import com.kkkkan.youtube.tubtub.VideoQualitys;
 import com.kkkkan.youtube.tubtub.adapters.PlaylistsAdapter;
 import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
 import com.kkkkan.youtube.tubtub.interfaces.LoginHandler;
@@ -642,6 +644,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
             case R.id.video_quality:
                 Log.d(TAG, "onOptionsItemSelected:video quality");
+                setVideoQuality();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -757,6 +760,51 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                 repeatPlaylist = false;
         }
         repeatPlaylistBox.setChecked(repeatPlaylist);
+    }
+
+    /**
+     * ダイアログを出し、ユーザーにビデオ再生の画質を決めさせるメゾッド
+     */
+    private void setVideoQuality() {
+        final AlertDialog.Builder mListDlg = new AlertDialog.Builder(getActivity());
+
+        //チェックされたやつの番号を入れておく。
+        final ArrayList<Integer> checkedItems = new ArrayList<Integer>();
+        //デフォルトは標準画質
+        checkedItems.add(VideoQualitys.videoQualityNormal);
+
+        //ダイアログ表示のための準備
+        mListDlg.setTitle("再生画質設定");
+        final SharedPreferences sharedPreferences = getActivity().getSharedPreferences(VideoQualitys.VideoQualityPreferenceFileName, Context.MODE_PRIVATE);
+        int nowQuality = sharedPreferences.getInt(VideoQualitys.VideoQualityPreferenceKey, VideoQualitys.videoQualityNormal);
+        mListDlg.setSingleChoiceItems(VideoQualitys.getVideoQualityChoices(), nowQuality, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                checkedItems.clear();
+                checkedItems.add(which);
+            }
+        });
+        mListDlg.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (!checkedItems.isEmpty()) {
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt(VideoQualitys.VideoQualityPreferenceKey, checkedItems.get(0));
+                    boolean result = editor.commit();
+                    String message = "";
+                    if (result) {
+                        message = "画質を設定しました。";
+                    } else {
+                        message = "画質設定に失敗しました。";
+                    }
+                    Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        mListDlg.setNegativeButton("キャンセル", null);
+
+        mListDlg.create().show();
     }
 
     /**
