@@ -130,6 +130,7 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
                 titleView.setText(s);
             }
         });
+
         return view;
     }
 
@@ -151,18 +152,6 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
-    }
-
-    /**
-     * Retrieving the surfaceView and recreating the instance of the holder accordingly
-     * <p>
-     * surfaceViewの取得しなおしとそれに伴う
-     * holderのインスタンスの作り直し
-     */
-    private void makeSurfaceView() {
-        surfaceView = (SurfaceView) getView().findViewById(R.id.surface);
-        holder = surfaceView.getHolder();
-        holder.addCallback(this);
     }
 
     /**

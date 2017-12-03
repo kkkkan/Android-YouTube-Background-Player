@@ -19,6 +19,7 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.widget.MediaController;
 import android.widget.RemoteViews;
 
@@ -127,15 +128,11 @@ public class MediaPlayerService extends Service implements MediaController.Media
      * @param holder
      */
     public void releaseSurfaceHolder(SurfaceHolder holder) {
-        if (holder == mHolder) {
+        //if (holder == mHolder) {
             mHolder = null;
             ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(null);
             //mediaPlayer.setDisplay(null);
-        }
-    }
-
-    public String getVideoTitle() {
-        return videoTitle;
+        //}
     }
 
     @Override
@@ -251,6 +248,9 @@ public class MediaPlayerService extends Service implements MediaController.Media
             @Override
             public void onPlayerError(ExoPlaybackException error) {
                 Log.d(TAG, "onPlayerError" + error.getMessage());
+                //読み込み中ダイアログ消す
+                viewModel.setStateStopLoading();
+                exoPlayer.setPlayWhenReady(true);
 
             }
 
@@ -264,87 +264,6 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
             }
         });
-        /*mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                Log.d(TAG, " mMediaController.setOnCompletionListener");
-                if (playlist == null) {
-                    //Originally it should not be playlist == null,
-                    // but because there was something that was fallen by null reference with playlist.size ()
-                    //本来ならplaylist==nullとなることは無いはずだが、
-                    // playlist.size()でnull参照で落ちたことがあったので対策
-                    Log.d(TAG, "\nplaylist is null!\n");
-                    return;
-                }
-                handleNextVideo();
-            }
-        });*/
-
-        //For MediaPlayer setting · screen, set it with onResume ()
-        //Because it may fall when coming from the back to the fore if you do not get surfaceView every time with onResume ().
-        // MediaPlayerの設定・画面についてはonResume()で設定する。
-        // onResume()でいちいちsurfaceViewを取得し直さないとバックからフォアに来るときに落ちることがあるため。
-        /*mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-            @Override
-            public boolean onError(MediaPlayer mp, int what, int extra) {
-                Log.d(TAG, "onError:\nwhat:" + String.valueOf(what)
-                        + "\n extra:" + String.valueOf(extra));
-                if (what == MEDIA_INFO_UNKNOWN && extra == MEDIA_ERROR_IO) {
-                    //MediaPlayer.MEDIA_INFO_UNKNOWN==1
-                    //MadiaPlayer.MEDIA_ERROR_IO==-1004
-
-                    //Depending on the model (FUJITSU Arrows M 03: android 6.0.1),
-                    // it is coming here that one video is running for 10 to 20 minutes
-                    //機種によって(FUJITSU Arrows M03:android 6.0.1)は1つのビデオを10～20分程度流しているとここに来るぽい
-
-                    //It was OK with SO 01G (android 5.0.2)
-                    //SO 01G(android 5.0.2)では大丈夫だった
-
-                    //A phenomenon peculiar to android 6?
-                    //android 6特有の現象？
-
-                    //Solved by split streaming setting with videoCreate ()?
-                    //videoCreate()で分割ストリーミング設定することにより解決？
-                }
-                //Calling start () etc. in the idel state
-                //Usually it does not happen
-                //idel状態でstart()等を呼ぶと
-                //通常は起きない
-
-
-                //call setOnComplateListener
-                //setOnComplateListener呼ぶ
-                return false;
-            }
-        });*/
-
-       /* //Depending on the model handling info to prevent log.W from being output a lot at every other second in the form of (SONY SO - 01 G:androd 5.0.2),
-        // MediaPlayer: info / warning (702, 0)
-        //機種によっては(SONY SO-01G:android 5.0.2)、MediaPlayer: info/warning (702, 0)といった形でLog.Wが1秒おきで
-        // たくさん出力されるのを防ぐためにinfoをハンドリング
-        mMediaPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-            @Override
-            public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                Log.d(TAG,"setOnInfoListener:onInfo:\nwhat=="+String.valueOf(what)+"\nextra=="+String.valueOf(extra));
-                if(what==MEDIA_INFO_BUFFERING_END&&extra==0){
-                    //MEDIA_INFO_BUFFERING_END==702
-                    //extra == 0 is a mystery
-                    //extra==0は謎
-
-                    //A notification indicating that playback of MediaPlayer has started since a certain amount of buffer has accumulated
-                    //It seems that you do not need to do anything in particular, and it is annoying to fill the Log and return false
-                    //バッファが一定量溜まったのでMediaPlayerの再生を開始したことを示す通知
-                    //特になにもしなくてもいいようであり、Logを埋め尽くしてうっとうしいのでfalseを返す
-                    return false;
-                }
-                //Others
-                //その他
-                //Give Log.W
-                //Log.Wを出す
-                return true;
-            }
-        });
-        */
 
     }
 
@@ -535,37 +454,6 @@ public class MediaPlayerService extends Service implements MediaController.Media
                 viewModel.setVideoTitle(videoTitle);
             }
             exoPlayer.setPlayWhenReady(true);
-            //prepareに時間かかることを想定し直接startせずにLister使う
-            /*mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    Log.d(TAG, "onPrepared");
-                    /*if (mHolder != null) {
-                        int videoWidth = mp.getVideoWidth();
-                        int videoHeight = mp.getVideoHeight();
-                        try {
-                            int nowWidth = mHolder.getSurfaceFrame().width();
-                            int nowHeight = mHolder.getSurfaceFrame().height();
-                            //動画の縦横比を変えないようにするため画面サイズを変更する
-                            if (videoHeight * nowWidth >= nowHeight * videoWidth) {
-                                //縦幅は今と同じに固定して横幅を縦横比変わらないように合わせる
-                                mHolder.setFixedSize(videoWidth * nowHeight / videoHeight, nowHeight);
-                            } else {
-                                //縦幅を固定して縦横比を固定すると横幅が今より大きくなってしまう場合は
-                                // 横幅固定で縦を合わせる
-                                mHolder.setFixedSize(nowWidth, nowWidth * videoHeight / videoWidth);
-                            }
-                            mp.setDisplay(mHolder);
-                        } catch (Exception e) {
-                            Log.d(TAG, "Exception e:" + e.getMessage());
-                        }
-                    }*/
-            //mp.start();
-            //読み込み中ダイアログ消す
-            // viewModel.setStateStopLoading();
-            // }
-            // });*/
-            //mediaPlayer.prepareAsync();
         } catch (IllegalArgumentException e) {
             Log.d(TAG, "videoCreate-IllegalArgumentException" + e.getMessage());
             e.printStackTrace();
