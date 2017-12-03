@@ -113,7 +113,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
-    static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
     static final int REQUEST_CODE_TOKEN_AUTH = 1006;
 
     private MediaController mMediaController;
@@ -122,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     //動画タイトル用
 
     private NetworkConf networkConf;
+
 
     private MainActivityViewModel viewModel;
 
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         setProgressDialogDismiss();
                         break;
                     case Error:
-                        Toast.makeText(mainContext, "ビデオが読み込めませんでした。次のビデオを再生します。", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mainContext, getString(R.string.video_read_fail), Toast.LENGTH_SHORT).show();
                         break;
                 }
             }
@@ -688,6 +688,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
+    public MainActivityViewModel getViewModel() {
+        return viewModel;
+    }
 
     /**
      * 以下、mediacontroller用のinterface

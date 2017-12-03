@@ -64,6 +64,7 @@ import com.google.api.services.youtube.model.PlaylistStatus;
 import com.google.api.services.youtube.model.ResourceId;
 import com.kkkkan.youtube.BuildConfig;
 import com.kkkkan.youtube.R;
+import com.kkkkan.youtube.tubtub.MainActivity;
 import com.kkkkan.youtube.tubtub.MainActivityViewModel;
 import com.kkkkan.youtube.tubtub.Settings;
 import com.kkkkan.youtube.tubtub.VideoQualitys;
@@ -102,8 +103,6 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     private CheckBox repeatOneBox;
     private CheckBox repeatPlaylistBox;
     private SurfaceView surfaceView;
-    static final int REQUEST_ACCOUNT_PICKER = 1000;
-    private static final int PERMISSIONS = 1;
     private Handler handler = new Handler();
 
     //For movie title
@@ -126,12 +125,11 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
      * PortraitFragmentの新しいインスタンスを作るときは必ず
      * このメゾッドで作ること
      * <p>
-     * MainActivity#onCreate()の中で必ず呼んでいるので再生成時もリスナーがnullになることはなし
      */
     static public PortraitFragment getNewPortraitFragment(TitlebarListener titlebarListener, MainActivityViewModel viewModel) {
         PortraitFragment fragment = new PortraitFragment();
-        fragment.titlebarListener = titlebarListener;
-        fragment.viewModel = viewModel;
+        //fragment.titlebarListener = titlebarListener;
+        //fragment.viewModel = viewModel;
         return fragment;
     }
 
@@ -143,6 +141,13 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     public void onAttach(Context context) {
         super.onAttach(context);
         Log.d(TAG, "onattach");
+        Activity activity = getActivity();
+        if (activity instanceof TitlebarListener) {
+            titlebarListener = (TitlebarListener) activity;
+        }
+        if (activity instanceof MainActivity) {
+            viewModel = ((MainActivity) activity).getViewModel();
+        }
     }
 
     @Override
@@ -770,15 +775,17 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         final AlertDialog.Builder mListDlg = new AlertDialog.Builder(activity);
         final AlertDialog.Builder mDlg = new AlertDialog.Builder(activity);
 
+        final SharedPreferences sharedPreferences = getActivity().getSharedPreferences(VideoQualitys.VideoQualityPreferenceFileName, Context.MODE_PRIVATE);
+        int nowQuality = sharedPreferences.getInt(VideoQualitys.VideoQualityPreferenceKey, VideoQualitys.videoQualityNormal);
+
         //チェックされたやつの番号を入れておく。
         final ArrayList<Integer> checkedItems = new ArrayList<Integer>();
+
         //デフォルトは標準画質
-        checkedItems.add(VideoQualitys.videoQualityNormal);
+        checkedItems.add(nowQuality);
 
         //ダイアログ表示のための準備
         mListDlg.setTitle("再生画質設定");
-        final SharedPreferences sharedPreferences = getActivity().getSharedPreferences(VideoQualitys.VideoQualityPreferenceFileName, Context.MODE_PRIVATE);
-        int nowQuality = sharedPreferences.getInt(VideoQualitys.VideoQualityPreferenceKey, VideoQualitys.videoQualityNormal);
         mListDlg.setSingleChoiceItems(VideoQualitys.getVideoQualityChoices(), nowQuality, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -793,23 +800,8 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putInt(VideoQualitys.VideoQualityPreferenceKey, checkedItems.get(0));
                     boolean result = editor.commit();
-                    String message = "";
                     if (result) {
-                        boolean isPlaying = false;
-                        if (activity instanceof android.widget.MediaController.MediaPlayerControl) {
-                            isPlaying = ((android.widget.MediaController.MediaPlayerControl) activity).isPlaying();
-                        }
-                        if (isPlaying) {
-                            mDlg.setMessage(getString(R.string.video_quality_setting_success) + "\n" + getString(R.string.ask_reread_video));
-                            mDlg.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-
-                                }
-                            }).setNegativeButton("cancel", null).show();
-                        } else {
-                            mDlg.setMessage(getString(R.string.video_quality_setting_success)).setPositiveButton("OK", null).show();
-                        }
+                        mDlg.setMessage(getString(R.string.video_quality_setting_success)).setPositiveButton("OK", null).show();
                     } else {
                         mDlg.setMessage(getString(R.string.video_quality_setting_fail)).setPositiveButton("OK", null).show();
                     }
