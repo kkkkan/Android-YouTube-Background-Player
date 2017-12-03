@@ -9,9 +9,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -22,6 +22,22 @@ import android.view.SurfaceHolder;
 import android.widget.MediaController;
 import android.widget.RemoteViews;
 
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.extractor.ExtractorsFactory;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 import com.kkkkan.youtube.R;
 import com.kkkkan.youtube.tubtub.BroadcastReceiver.NextReceiver;
 import com.kkkkan.youtube.tubtub.BroadcastReceiver.PauseStartReceiver;
@@ -38,8 +54,6 @@ import at.huber.youtubeExtractor.VideoMeta;
 import at.huber.youtubeExtractor.YouTubeExtractor;
 import at.huber.youtubeExtractor.YtFile;
 
-import static android.media.MediaPlayer.MEDIA_ERROR_IO;
-import static android.media.MediaPlayer.MEDIA_INFO_UNKNOWN;
 import static com.kkkkan.youtube.tubtub.Settings.RepeatPlaylist.ON;
 
 /**
@@ -49,7 +63,7 @@ import static com.kkkkan.youtube.tubtub.Settings.RepeatPlaylist.ON;
 public class MediaPlayerService extends Service implements MediaController.MediaPlayerControl {
     static final private String TAG = "MediaPlayerService";
     private final IBinder binder = new MediaPlayerBinder();
-    private final MediaPlayer mediaPlayer = new MediaPlayer();
+    //private final MediaPlayer mediaPlayer = new MediaPlayer();
     public RemoteViews mRemoteViews;
     public NotificationCompat.Builder mNotificationCompatBuilder;
     public NotificationManagerCompat mNotificationManagerCompat;
@@ -62,6 +76,11 @@ public class MediaPlayerService extends Service implements MediaController.Media
     private String videoUrl;
     private String videoTitle;
 
+    //exoPlayerにはMediaPlayerのisPlaying()に当たるメゾッドがないようなので
+    //代わりに今再生中か否か入れとくフラグ
+    private boolean isPlaying = false;
+
+    private ExoPlayer exoPlayer;
 
     public class MediaPlayerBinder extends Binder {
         public MediaPlayerService getService(MainActivityViewModel viewModel) {
@@ -83,13 +102,15 @@ public class MediaPlayerService extends Service implements MediaController.Media
     public boolean setDisplay(SurfaceHolder holder) {
         mHolder = holder;
         try {
-            mediaPlayer.setDisplay(holder);
+            ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(holder);
+            //mediaPlayer.setDisplay(holder);
         } catch (IllegalArgumentException e) {
             //surfaceの解放や生成の処理が前後してしまい、うまくいっておらず
             //既に解放済みのsurfaceのholderが来てしまったとき
             Log.d(TAG, "changeSurfaceHolderAndTitlebar#IllegalArgumentException\n" + e.getMessage());
             mHolder = null;
-            mediaPlayer.setDisplay(null);
+            ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(null);
+            //mediaPlayer.setDisplay(null);
         }
         if (holder == null) {
             //基本的にあり得ない
@@ -108,7 +129,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
     public void releaseSurfaceHolder(SurfaceHolder holder) {
         if (holder == mHolder) {
             mHolder = null;
-            mediaPlayer.setDisplay(null);
+            ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(null);
+            //mediaPlayer.setDisplay(null);
         }
     }
 
@@ -119,6 +141,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
     @Override
     public void onCreate() {
         super.onCreate();
+        exoPlayer = ExoPlayerFactory.newSimpleInstance(this, new DefaultTrackSelector());
+
         //Notification settings
         //Notificationの設定
 
@@ -180,7 +204,67 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
         //Listener to go to the next song after the end
         //終了後次の曲に行くためのリスナー
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        exoPlayer.addListener(new Player.EventListener() {
+            @Override
+            public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+            }
+
+            @Override
+            public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+            }
+
+            @Override
+            public void onLoadingChanged(boolean isLoading) {
+
+            }
+
+            @Override
+            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                Log.d(TAG, "onPlayerStateChanged: playWhenReady is" + String.valueOf(playWhenReady) + " playbackState is " + String.valueOf(playbackState));
+                switch (playbackState) {
+                    case Player.STATE_READY:
+                        //読み込み中ダイアログ消す
+                        viewModel.setStateStopLoading();
+                        isPlaying = playWhenReady;
+                        break;
+                    case Player.STATE_ENDED:
+                        if (playlist == null) {
+                            //Originally it should not be playlist == null,
+                            // but because there was something that was fallen by null reference with playlist.size ()
+                            //本来ならplaylist==nullとなることは無いはずだが、
+                            // playlist.size()でnull参照で落ちたことがあったので対策
+                            Log.d(TAG, "\nplaylist is null!\n");
+                            return;
+                        }
+                        handleNextVideo();
+                        break;
+                }
+            }
+
+            @Override
+            public void onRepeatModeChanged(int repeatMode) {
+
+            }
+
+            @Override
+            public void onPlayerError(ExoPlaybackException error) {
+                Log.d(TAG, "onPlayerError" + error.getMessage());
+
+            }
+
+            @Override
+            public void onPositionDiscontinuity() {
+
+            }
+
+            @Override
+            public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+
+            }
+        });
+        /*mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 Log.d(TAG, " mMediaController.setOnCompletionListener");
@@ -194,13 +278,13 @@ public class MediaPlayerService extends Service implements MediaController.Media
                 }
                 handleNextVideo();
             }
-        });
+        });*/
 
         //For MediaPlayer setting · screen, set it with onResume ()
         //Because it may fall when coming from the back to the fore if you do not get surfaceView every time with onResume ().
         // MediaPlayerの設定・画面についてはonResume()で設定する。
         // onResume()でいちいちsurfaceViewを取得し直さないとバックからフォアに来るときに落ちることがあるため。
-        mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+        /*mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
                 Log.d(TAG, "onError:\nwhat:" + String.valueOf(what)
@@ -232,7 +316,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                 //setOnComplateListener呼ぶ
                 return false;
             }
-        });
+        });*/
 
        /* //Depending on the model handling info to prevent log.W from being output a lot at every other second in the form of (SONY SO - 01 G:androd 5.0.2),
         // MediaPlayer: info / warning (702, 0)
@@ -284,19 +368,20 @@ public class MediaPlayerService extends Service implements MediaController.Media
     private BroadcastReceiver pauseStartBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "pauseStartBroadcastReceiver");
-            if (!mediaPlayer.isPlaying()) {
+            Log.d(TAG, "pauseStartBroadcastReceiver: " + String.valueOf(exoPlayer.getPlaybackState()));
+            if (/*!mediaPlayer.isPlaying()*/!isPlaying) {
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
                 //mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
                 startForeground(notificationId, mNotificationCompatBuilder.build());
-                mediaPlayer.start();
+                exoPlayer.setPlayWhenReady(true);
+                //mediaPlayer.start();
             } else {
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
                 mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
                 stopForeground(false);
-                mediaPlayer.pause();
+                exoPlayer.setPlayWhenReady(false);
+                //mediaPlayer.pause();
             }
-
         }
     };
 
@@ -396,7 +481,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     // mNotificationManagerCompat.notify(notificationId, notification);
                     startForeground(notificationId, notification);
 
-                    Log.d(TAG, "SingletonMediaplayer.instance.getMediaPlayer().isPlaying:" + String.valueOf(mediaPlayer.isPlaying()));
+                    // Log.d(TAG, "SingletonMediaplayer.instance.getMediaPlayer().isPlaying:" + String.valueOf(mediaPlayer.isPlaying()));
 
                     //Progressダイアログ消すのはvideoCreate()のなかでやってる。
                     videoCreate();
@@ -427,25 +512,31 @@ public class MediaPlayerService extends Service implements MediaController.Media
         Uri mediaPath = Uri.parse(videoUrl);
         try {
             //新しいビデオを再生するために一度resetしてMediaPlayerをIDLE状態にする
-            mediaPlayer.reset();
+            //mediaPlayer.reset();
             Log.d(TAG, "videoCreate");
-            //長いビデオだとarrows M02で途中でストリーミングが終わってしまう問題の解決のために
-            //分割ストリーミングの設定
-            /*Map<String, String> headers = new HashMap<>();
-            headers.put("Content-Type", "video/mp4"); // change content type if necessary
-            headers.put("Accept-Ranges", "bytes");
-            headers.put("Status", "206");
-            headers.put("Cache-control", "no-cache");
-            mediaPlayer.setDataSource(getApplicationContext(), mediaPath, headers);*/
-            mediaPlayer.setDataSource(this, mediaPath);
-            mediaPlayer.setDisplay(mHolder);
+
+            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, getPackageName()));
+            ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
+
+            // 任意のイベントリスナー
+            Handler handler = new Handler();
+            ExtractorMediaSource.EventListener eventListener = new ExtractorMediaSource.EventListener() {
+                @Override
+                public void onLoadError(IOException error) {
+                    error.printStackTrace();
+                }
+            };
+            exoPlayer.prepare(new ExtractorMediaSource(mediaPath, dataSourceFactory, extractorsFactory, handler, eventListener));
+            //mediaPlayer.setDataSource(this, mediaPath);
+            ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(mHolder);
+            //mediaPlayer.setDisplay(mHolder);
             //videoTitleをセット
             if (videoTitle != null) {
                 viewModel.setVideoTitle(videoTitle);
             }
-
+            exoPlayer.setPlayWhenReady(true);
             //prepareに時間かかることを想定し直接startせずにLister使う
-            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            /*mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     Log.d(TAG, "onPrepared");
@@ -469,22 +560,22 @@ public class MediaPlayerService extends Service implements MediaController.Media
                             Log.d(TAG, "Exception e:" + e.getMessage());
                         }
                     }*/
-                    mp.start();
-                    //読み込み中ダイアログ消す
-                    viewModel.setStateStopLoading();
-                }
-            });
-            mediaPlayer.prepareAsync();
+            //mp.start();
+            //読み込み中ダイアログ消す
+            // viewModel.setStateStopLoading();
+            // }
+            // });*/
+            //mediaPlayer.prepareAsync();
         } catch (IllegalArgumentException e) {
             Log.d(TAG, "videoCreate-IllegalArgumentException" + e.getMessage());
             e.printStackTrace();
         } catch (IllegalStateException e) {
             Log.d(TAG, "videoCreate-IllegalStateException" + e.getMessage());
             e.printStackTrace();
-        } catch (IOException e) {
+        } /*catch (IOException e) {
             Log.d(TAG, "videoCreate-IOException" + e.getMessage());
             e.printStackTrace();
-        }
+        }*/
     }
 
 
@@ -534,7 +625,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
     @Override
     public void start() {
-        mediaPlayer.start();
+        //mediaPlayer.start();
+        exoPlayer.setPlayWhenReady(true);
         mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
         startForeground(notificationId, mNotificationCompatBuilder.build());
         //mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
@@ -542,7 +634,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
     @Override
     public void pause() {
-        mediaPlayer.pause();
+        //mediaPlayer.pause();
+        exoPlayer.setPlayWhenReady(false);
         mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
         mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
         stopForeground(false);
@@ -553,7 +646,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
         //MediaPlayer#getDuration()はnativeメゾッドで、
         // かつ再生対象のないとき(setDataSource()前？/start()前？)のMediaPlayerに呼んだ時の挙動については定義されてないので
         //再生対象のないMediaPlayerに対してよんだ時の挙動は機種によって違う。
-        return mediaPlayer.getDuration();
+        return (int) exoPlayer.getDuration();
+        //mediaPlayer.getDuration();
     }
 
     @Override
@@ -561,17 +655,20 @@ public class MediaPlayerService extends Service implements MediaController.Media
         //MediaPlayer#getPositon()はnativeメゾッドで、
         // かつ再生対象のないとき(setDataSource()前？/start()前？)のMediaPlayerに呼んだ時の挙動については定義されてないので
         //再生対象のないMediaPlayerに対してよんだ時の挙動は機種によって違う。
-        return mediaPlayer.getCurrentPosition();
+        return (int) exoPlayer.getCurrentPosition();
+        //mediaPlayer.getCurrentPosition();
     }
 
     @Override
     public void seekTo(int pos) {
-        mediaPlayer.seekTo(pos);
+        exoPlayer.seekTo(pos);
+        //mediaPlayer.seekTo(pos);
     }
 
     @Override
     public boolean isPlaying() {
-        return mediaPlayer.isPlaying();
+        return isPlaying;
+        //mediaPlayer.isPlaying();
     }
 
     @Override
