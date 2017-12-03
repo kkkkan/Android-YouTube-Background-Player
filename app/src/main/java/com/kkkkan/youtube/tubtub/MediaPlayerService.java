@@ -113,6 +113,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(null);
             //mediaPlayer.setDisplay(null);
         }
+        exoPlayer.setPlayWhenReady(true);
         if (holder == null) {
             //基本的にあり得ない
             Log.d(TAG, "changeSurfaceHolderAndTitlebar#\nholder==null");
@@ -128,11 +129,12 @@ public class MediaPlayerService extends Service implements MediaController.Media
      * @param holder
      */
     public void releaseSurfaceHolder(SurfaceHolder holder) {
-        //if (holder == mHolder) {
+        if (holder == mHolder) {
             mHolder = null;
             ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(null);
             //mediaPlayer.setDisplay(null);
-        //}
+        }
+        exoPlayer.setPlayWhenReady(true);
     }
 
     @Override
