@@ -33,10 +33,14 @@ Change to the API key you registered earlier.
 
 ## Known Bug
 
-- Depending on the model, long-term videos may be played for 9 to 25 minutes and playback may end in the middle and playback of the next video may begin.
-  - Machines with this phenomenon seen: FUJITSU arrows M02 (OS: andrid 6.0.1)
-  - Machine that did not see this phenomenon: SONY SO - 01G (OS: android 5.0.2)
+- ~~Depending on the model, long-term videos may be played for 9 to 25 minutes and playback may end in the middle and playback of the next video may begin.~~
+
+  - ~~Machines with this phenomenon seen: FUJITSU arrows M02 (OS: andrid 6.0.1)~~
+  - ~~Machine that did not see this phenomenon: SONY SO - 01G (OS: android 5.0.2)~~
   
+  </br>
+  **This phenomenon can be seen when playing back with MP4 (playback image quality 360p / 720p), but this phenomenon can not be seen in 3GP playback (240p / 144p).**
+  
   
 ## Functions considering expansion in the future
 
