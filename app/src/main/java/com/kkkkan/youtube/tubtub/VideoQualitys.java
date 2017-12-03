@@ -69,7 +69,7 @@ public class VideoQualitys {
     };
 
     final static private Integer[] videoQualityTagUnder240 = {
-            36,//36:MP3/240p
+            36,//36:3gp/240p
             92, //92:Live Stream/240p
 
             17,//17:3gp/144p
@@ -96,10 +96,10 @@ public class VideoQualitys {
             43,//43:Non-DASH/WEBM/360p
             93,//93:Live Stream/360p
 
-            36,//36:MP3/240p
+            36,//36:3gp/240p
             92, //92:Live Stream/240p
 
-            17,//17:MP3/144p
+            17,//17:3gp/144p
             91//91:Live Stream/144p
 
     };
