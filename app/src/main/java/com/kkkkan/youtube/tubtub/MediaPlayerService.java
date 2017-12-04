@@ -100,9 +100,11 @@ public class MediaPlayerService extends Service implements MediaController.Media
      * @param holder
      * @return
      */
-    public boolean setDisplay(SurfaceHolder holder) {
+    synchronized public boolean setDisplay(SurfaceHolder holder) {
+        Log.d(TAG,"setDisplay");
         mHolder = holder;
         try {
+            Log.d(TAG,"((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(holder)");
             ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(holder);
             //mediaPlayer.setDisplay(holder);
         } catch (IllegalArgumentException e) {
@@ -113,7 +115,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
             ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(null);
             //mediaPlayer.setDisplay(null);
         }
-        exoPlayer.setPlayWhenReady(true);
+        Log.d(TAG,"exoPlayer.setPlayWhenReady(isPlaying)");
+        exoPlayer.setPlayWhenReady(isPlaying);
         if (holder == null) {
             //基本的にあり得ない
             Log.d(TAG, "changeSurfaceHolderAndTitlebar#\nholder==null");
@@ -128,13 +131,15 @@ public class MediaPlayerService extends Service implements MediaController.Media
      *
      * @param holder
      */
-    public void releaseSurfaceHolder(SurfaceHolder holder) {
+    synchronized public void releaseSurfaceHolder(SurfaceHolder holder) {
+        Log.d(TAG,"releaseSurfaceHolder : "+String.valueOf(holder == mHolder));
         if (holder == mHolder) {
             mHolder = null;
             ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(null);
             //mediaPlayer.setDisplay(null);
+            exoPlayer.setPlayWhenReady(true);
         }
-        exoPlayer.setPlayWhenReady(true);
+
     }
 
     @Override
@@ -206,22 +211,22 @@ public class MediaPlayerService extends Service implements MediaController.Media
         exoPlayer.addListener(new Player.EventListener() {
             @Override
             public void onTimelineChanged(Timeline timeline, Object manifest) {
-
+                Log.d(TAG,"onTimelineChanged");
             }
 
             @Override
             public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-
+                Log.d(TAG,"onTracksChanged");
             }
 
             @Override
             public void onLoadingChanged(boolean isLoading) {
-
+                Log.d(TAG,"onLoadingChanged");
             }
 
             @Override
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-                Log.d(TAG, "onPlayerStateChanged: playWhenReady is" + String.valueOf(playWhenReady) + " playbackState is " + String.valueOf(playbackState));
+                Log.d(TAG, "onPlayerStateChanged: playWhenReady is " + String.valueOf(playWhenReady) + " playbackState is " + String.valueOf(playbackState));
                 switch (playbackState) {
                     case Player.STATE_READY:
                         //読み込み中ダイアログ消す
@@ -244,26 +249,39 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
             @Override
             public void onRepeatModeChanged(int repeatMode) {
-
+                Log.d(TAG,"onRepeatModeChanged");
             }
 
             @Override
             public void onPlayerError(ExoPlaybackException error) {
-                Log.d(TAG, "onPlayerError" + error.getMessage());
+                Log.d(TAG, "onPlayerError : " +String.valueOf(error.type));
+                switch (error.type) {
+                    case ExoPlaybackException.TYPE_SOURCE:
+                        Log.e(TAG, "TYPE_SOURCE: " + error.getSourceException().getMessage());
+                        break;
+
+                    case ExoPlaybackException.TYPE_RENDERER:
+                        Log.e(TAG, "TYPE_RENDERER: " + error.getRendererException().getMessage());
+                        break;
+
+                    case ExoPlaybackException.TYPE_UNEXPECTED:
+                        Log.e(TAG, "TYPE_UNEXPECTED: " + error.getUnexpectedException().getMessage());
+                        break;
+                }
                 //読み込み中ダイアログ消す
                 viewModel.setStateStopLoading();
-                exoPlayer.setPlayWhenReady(true);
+                //exoPlayer.setPlayWhenReady(true);
 
             }
 
             @Override
             public void onPositionDiscontinuity() {
-
+                Log.d(TAG,"onPositionDiscontinuity()");
             }
 
             @Override
             public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-
+                Log.d(TAG,"onPlaybackParametersChanged");
             }
         });
 
@@ -290,19 +308,15 @@ public class MediaPlayerService extends Service implements MediaController.Media
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "pauseStartBroadcastReceiver: " + String.valueOf(exoPlayer.getPlaybackState()));
-            if (/*!mediaPlayer.isPlaying()*/!isPlaying) {
+            if (!isPlaying) {
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
-                //mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
                 startForeground(notificationId, mNotificationCompatBuilder.build());
-                exoPlayer.setPlayWhenReady(true);
-                //mediaPlayer.start();
             } else {
                 mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
                 mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
                 stopForeground(false);
-                exoPlayer.setPlayWhenReady(false);
-                //mediaPlayer.pause();
             }
+            exoPlayer.setPlayWhenReady(!isPlaying);
         }
     };
 
