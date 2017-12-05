@@ -69,7 +69,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
     public NotificationManagerCompat mNotificationManagerCompat;
     static private int notificationId = 1;
     private boolean playlistSelectedCancelFlag = false;
-    private SurfaceHolder mHolder;
+    //private SurfaceHolder mHolder;
     private MainActivityViewModel viewModel;
     private List<YouTubeVideo> playlist;
     private int currentVideoIndex;
@@ -99,9 +99,9 @@ public class MediaPlayerService extends Service implements MediaController.Media
      * @param holder
      * @return
      */
-    synchronized public boolean setDisplay(SurfaceHolder holder) {
+    public boolean setDisplay(SurfaceHolder holder) {
         Log.d(TAG, "setDisplay");
-        mHolder = holder;
+        //mHolder = holder;
         try {
             Log.d(TAG, "((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(holder)");
             ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(holder);
@@ -110,11 +110,11 @@ public class MediaPlayerService extends Service implements MediaController.Media
             //surfaceの解放や生成の処理が前後してしまい、うまくいっておらず
             //既に解放済みのsurfaceのholderが来てしまったとき
             Log.d(TAG, "changeSurfaceHolderAndTitlebar#IllegalArgumentException\n" + e.getMessage());
-            mHolder = null;
+            //mHolder = null;
             ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(null);
             //mediaPlayer.setDisplay(null);
         }
-        Log.d(TAG, "exoPlayer.setPlayWhenReady(isPlaying)");
+        Log.d(TAG, "exoPlayer.setPlayWhenReady(isPlaying) : " + String.valueOf(isPlaying));
         exoPlayer.setPlayWhenReady(isPlaying);
         if (holder == null) {
             //基本的にあり得ない
@@ -130,15 +130,15 @@ public class MediaPlayerService extends Service implements MediaController.Media
      *
      * @param holder
      */
-    synchronized public void releaseSurfaceHolder(SurfaceHolder holder) {
-        Log.d(TAG, "releaseSurfaceHolder : " + String.valueOf(holder == mHolder));
-        if (holder == mHolder) {
+    public void releaseSurfaceHolder(SurfaceHolder holder) {
+        Log.d(TAG, "releaseSurfaceHolder : " /*+ String.valueOf(holder == mHolder)*/);
+        /*if (holder == mHolder) {
             mHolder = null;
             ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(null);
             //mediaPlayer.setDisplay(null);
             exoPlayer.setPlayWhenReady(isPlaying);
-        }
-
+        }*/
+        ((SimpleExoPlayer) exoPlayer).clearVideoSurfaceHolder(holder);
     }
 
     @Override
@@ -210,17 +210,17 @@ public class MediaPlayerService extends Service implements MediaController.Media
         exoPlayer.addListener(new Player.EventListener() {
             @Override
             public void onTimelineChanged(Timeline timeline, Object manifest) {
-                Log.d(TAG, "onTimelineChanged");
+                //Log.d(TAG, "onTimelineChanged");
             }
 
             @Override
             public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-                Log.d(TAG, "onTracksChanged");
+                //Log.d(TAG, "onTracksChanged");
             }
 
             @Override
             public void onLoadingChanged(boolean isLoading) {
-                Log.d(TAG, "onLoadingChanged");
+                //Log.d(TAG, "onLoadingChanged");
             }
 
             @Override
@@ -248,7 +248,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
             @Override
             public void onRepeatModeChanged(int repeatMode) {
-                Log.d(TAG, "onRepeatModeChanged");
+                //Log.d(TAG, "onRepeatModeChanged");
             }
 
             @Override
@@ -260,33 +260,38 @@ public class MediaPlayerService extends Service implements MediaController.Media
                         break;
 
                     case ExoPlaybackException.TYPE_RENDERER:
+                        Exception exception = error.getRendererException();
                         Log.d(TAG, "TYPE_RENDERER: " + error.getRendererException().getMessage());
                         break;
 
                     case ExoPlaybackException.TYPE_UNEXPECTED:
+                        //surfaceViewの解放タイミングが遅かった？時
                         Log.d(TAG, "TYPE_UNEXPECTED: " + error.getUnexpectedException().getMessage());
                         break;
                 }
+
                 ExtractorMediaSource mediaSource = makeExtractorMediaSource();
                 if (mediaSource == null) {
+                    Log.d(TAG, "onPlayerError : mediaSource == null");
                     //通常あり得ない
                     return;
                 }
-                exoPlayer.prepare(mediaSource, false, false);
+                Log.d(TAG, "onPlayerError : exoPlayer.prepare(mediaSource, false, true)");
+                exoPlayer.prepare(mediaSource, false, true);
                 //読み込み中ダイアログ消す
                 viewModel.setStateStopLoading();
-                //exoPlayer.setPlayWhenReady(true);
-
+                Log.d(TAG, "onPlayerError : exoPlayer.setPlayWhenReady(isPlaying)");
+                exoPlayer.setPlayWhenReady(isPlaying);
             }
 
             @Override
             public void onPositionDiscontinuity() {
-                Log.d(TAG, "onPositionDiscontinuity()");
+                //Log.d(TAG, "onPositionDiscontinuity()");
             }
 
             @Override
             public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-                Log.d(TAG, "onPlaybackParametersChanged");
+                //Log.d(TAG, "onPlaybackParametersChanged");
             }
         });
 
@@ -436,6 +441,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
     }
 
     private void videoCreate() {
+        Log.d(TAG, "videoCreate()");
         ExtractorMediaSource mediaSource = makeExtractorMediaSource();
         if (mediaSource == null) {
             //通常あり得ない
@@ -443,7 +449,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         }
         exoPlayer.prepare(mediaSource);
         //mediaPlayer.setDataSource(this, mediaPath);
-        ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(mHolder);
+        //((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(mHolder);
         //mediaPlayer.setDisplay(mHolder);
         //videoTitleをセット
         if (videoTitle != null) {
@@ -466,7 +472,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         Uri mediaPath = Uri.parse(videoUrl);
         //新しいビデオを再生するために一度resetしてMediaPlayerをIDLE状態にする
         //mediaPlayer.reset();
-        Log.d(TAG, "videoCreate");
+        Log.d(TAG, "makeExtractorMediaSource()");
 
         DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, getPackageName()));
         ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
