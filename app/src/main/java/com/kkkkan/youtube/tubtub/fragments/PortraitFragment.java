@@ -46,7 +46,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -55,6 +54,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.PlaylistItem;
@@ -102,8 +102,9 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     private FavoritesFragment favoritesFragment;
     private CheckBox repeatOneBox;
     private CheckBox repeatPlaylistBox;
-    private SurfaceView surfaceView;
+    //private SurfaceView surfaceView;
     private Handler handler = new Handler();
+    private SimpleExoPlayerView simpleExoPlayerView;
 
     //For movie title
     //動画タイトル用
@@ -162,11 +163,13 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                 titleView.setText(s);
             }
         });
-        surfaceView = (SurfaceView) view.findViewById(R.id.surface);
-        surfaceView.getHolder().addCallback(this);
+        //surfaceView = (SurfaceView) view.findViewById(R.id.surface);
+        //surfaceView.getHolder().addCallback(this);
+        //simpleExoPlayerView=new SimpleExoPlayerView(getActivity());
+        simpleExoPlayerView = (SimpleExoPlayerView) view.findViewById(R.id.player_view);
         //Change the vertical and horizontal lengths of the playback space of the movie according to the screen size of the smartphone
         //スマホの画面サイズに合わせて動画の再生スペースの縦横の長さを変化させる
-        surfaceView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        /*surfaceView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 if (surfaceView.isEnabled()) {
@@ -174,6 +177,17 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                     int width = surfaceView.getWidth();
                     svlp.height = width / 16 * 9;
                     surfaceView.setLayoutParams(svlp);
+                }
+            }
+        });*/
+        simpleExoPlayerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (simpleExoPlayerView.isEnabled()) {
+                    ViewGroup.LayoutParams svlp = simpleExoPlayerView.getLayoutParams();
+                    int width = simpleExoPlayerView.getWidth();
+                    svlp.height = width / 16 * 9;
+                    simpleExoPlayerView.setLayoutParams(svlp);
                 }
             }
         });
@@ -324,6 +338,10 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
+        Activity activity = getActivity();
+        if (activity instanceof SurfaceHolderListener) {
+            ((SurfaceHolderListener) activity).changeSurfaceHolder(/*surfaceView.getHolder(), surfaceView*/simpleExoPlayerView);
+        }
         checkBoxUpdata();
     }
 
@@ -331,6 +349,10 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     public void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
+        Activity activity = getActivity();
+        if (activity instanceof SurfaceHolderListener) {
+            ((SurfaceHolderListener) activity).releaseSurfaceHolder(/*paramSurfaceHolder*/simpleExoPlayerView);
+        }
     }
 
     @Override
@@ -683,7 +705,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         Log.d(TAG, "surfaceChanged");
         Activity activity = getActivity();
         if (activity instanceof SurfaceHolderListener) {
-            ((SurfaceHolderListener) activity).changeSurfaceHolder(surfaceView.getHolder(), surfaceView);
+            ((SurfaceHolderListener) activity).changeSurfaceHolder(/*surfaceView.getHolder(), surfaceView*/simpleExoPlayerView);
         }
     }
 
@@ -692,7 +714,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         Log.d(TAG, "surfaceDestroyed");
         Activity activity = getActivity();
         if (activity instanceof SurfaceHolderListener) {
-            ((SurfaceHolderListener) activity).releaseSurfaceHolder(paramSurfaceHolder);
+            ((SurfaceHolderListener) activity).releaseSurfaceHolder(/*paramSurfaceHolder*/simpleExoPlayerView);
         }
     }
 

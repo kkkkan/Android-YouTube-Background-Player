@@ -25,13 +25,13 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.kkkkan.youtube.R;
 import com.kkkkan.youtube.tubtub.MainActivityViewModel;
 import com.kkkkan.youtube.tubtub.Settings;
@@ -43,7 +43,7 @@ import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
  */
 public class LandscapeFragment extends Fragment implements SurfaceHolder.Callback {
     private final static String TAG = "LandscapeFragment";
-    private SurfaceView surfaceView;
+    //private SurfaceView surfaceView;
     private SurfaceHolder holder;
     private TextView titleView;
     private CheckBox repeatOneBox;
@@ -51,6 +51,7 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
     private CheckBox repeatPlaylistBox;
     private TitlebarListener titlebarListener;
     private MainActivityViewModel viewModel;
+    private SimpleExoPlayerView simpleExoPlayerView;
 
 
     /**
@@ -74,15 +75,17 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+                             final Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_landscape, container, false);
-        surfaceView = (SurfaceView) view.findViewById(R.id.surface);
-        surfaceView.getHolder().addCallback(this);
+        //simpleExoPlayerView=new SimpleExoPlayerView(getActivity());
+        simpleExoPlayerView = (SimpleExoPlayerView) view.findViewById(R.id.player_view);
+        //surfaceView = (SurfaceView) view.findViewById(R.id.surface);
+        //surfaceView.getHolder().addCallback(this);
         //Change the vertical and horizontal lengths of the playback space of the movie according to the screen size of the smartphone
         //スマホの画面サイズに合わせて動画の再生スペースの縦横の長さを変化させる
-        surfaceView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        /*surfaceView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 if (surfaceView.isEnabled()) {
@@ -90,6 +93,17 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
                     int width = surfaceView.getWidth();
                     svlp.height = width / 16 * 9;
                     surfaceView.setLayoutParams(svlp);
+                }
+            }
+        });*/
+        simpleExoPlayerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (simpleExoPlayerView.isEnabled()) {
+                    ViewGroup.LayoutParams svlp = simpleExoPlayerView.getLayoutParams();
+                    int width = simpleExoPlayerView.getWidth();
+                    svlp.height = width / 16 * 9;
+                    simpleExoPlayerView.setLayoutParams(svlp);
                 }
             }
         });
@@ -137,6 +151,10 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
     @Override
     public void onResume() {
         super.onResume();
+        Activity activity = getActivity();
+        if (activity instanceof SurfaceHolderListener) {
+            ((SurfaceHolderListener) activity).changeSurfaceHolder(/*surfaceView.getHolder(), surfaceView*/simpleExoPlayerView);
+        }
         //Adjust the state of the check box to the setting
         //チェックボックスの状態を設定に合わせる
         checkBoxUpdata();
@@ -146,6 +164,10 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
     public void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
+        Activity activity = getActivity();
+        if (activity instanceof SurfaceHolderListener) {
+            ((SurfaceHolderListener) activity).releaseSurfaceHolder(/*holder*/simpleExoPlayerView);
+        }
     }
 
     @Override
@@ -206,7 +228,7 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
         Log.d(TAG, "surfaceChanged");
         Activity activity = getActivity();
         if (activity instanceof SurfaceHolderListener) {
-            ((SurfaceHolderListener) activity).changeSurfaceHolder(surfaceView.getHolder(), surfaceView);
+            ((SurfaceHolderListener) activity).changeSurfaceHolder(/*surfaceView.getHolder(), surfaceView*/simpleExoPlayerView);
         }
     }
 
@@ -215,7 +237,7 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
         Log.d(TAG, "surfaceDestroyed");
         Activity activity = getActivity();
         if (activity instanceof SurfaceHolderListener) {
-            ((SurfaceHolderListener) activity).releaseSurfaceHolder(holder);
+            ((SurfaceHolderListener) activity).releaseSurfaceHolder(/*holder*/simpleExoPlayerView);
         }
     }
 

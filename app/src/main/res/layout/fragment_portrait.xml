@@ -24,11 +24,17 @@
                 app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
 
 
-            <SurfaceView
+           <!-- <SurfaceView
                 android:id="@+id/surface"
                 android:layout_width="fill_parent"
                 android:layout_height="190dp"
-                android:visibility="visible" />
+                android:visibility="visible" />-->
+
+            <com.google.android.exoplayer2.ui.SimpleExoPlayerView
+                android:id="@+id/player_view"
+                android:layout_width="fill_parent"
+                android:layout_height="190dp"
+                android:visibility="visible"/>
 
             <FrameLayout
                 android:layout_width="match_parent"
