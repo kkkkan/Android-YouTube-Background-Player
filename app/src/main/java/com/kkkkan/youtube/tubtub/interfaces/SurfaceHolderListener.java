@@ -15,10 +15,11 @@
  */
 package com.kkkkan.youtube.tubtub.interfaces;
 
-import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 
 public interface SurfaceHolderListener {
-    void changeSurfaceHolder(/*SurfaceHolder holder, SurfaceView surfaceView*/SimpleExoPlayerView simpleExoPlayerView);
+    void changeSurfaceHolder(SurfaceHolder holder, SurfaceView surfaceView);
 
-    void releaseSurfaceHolder(/*SurfaceHolder holder*/SimpleExoPlayerView simpleExoPlayerView);
+    void releaseSurfaceHolder(SurfaceHolder holder);
 }

@@ -18,6 +18,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.SurfaceHolder;
 import android.widget.MediaController;
 import android.widget.RemoteViews;
 
@@ -34,7 +35,6 @@ import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
@@ -69,7 +69,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
     public NotificationManagerCompat mNotificationManagerCompat;
     static private int notificationId = 1;
     private boolean playlistSelectedCancelFlag = false;
-    //private SurfaceHolder mHolder;
+    private SurfaceHolder mHolder;
     private MainActivityViewModel viewModel;
     private List<YouTubeVideo> playlist;
     private int currentVideoIndex;
@@ -99,11 +99,11 @@ public class MediaPlayerService extends Service implements MediaController.Media
      * @param holder
      * @return
      */
-    synchronized public boolean setDisplay(/*SurfaceHolder holder*/SimpleExoPlayerView holder) {
+    synchronized public boolean setDisplay(SurfaceHolder holder) {
         Log.d(TAG, "setDisplay");
-        /*mHolder = holder;
+        mHolder = holder;
         try {
-            Log.d(TAG,"((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(holder)");
+            Log.d(TAG, "((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(holder)");
             ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(holder);
             //mediaPlayer.setDisplay(holder);
         } catch (IllegalArgumentException e) {
@@ -114,17 +114,17 @@ public class MediaPlayerService extends Service implements MediaController.Media
             ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(null);
             //mediaPlayer.setDisplay(null);
         }
-        Log.d(TAG,"exoPlayer.setPlayWhenReady(isPlaying)");
+        Log.d(TAG, "exoPlayer.setPlayWhenReady(isPlaying)");
         exoPlayer.setPlayWhenReady(isPlaying);
         if (holder == null) {
             //基本的にあり得ない
             Log.d(TAG, "changeSurfaceHolderAndTitlebar#\nholder==null");
             return false;
         }
-        return true;*/
-        holder.setPlayer((SimpleExoPlayer) exoPlayer);
-        exoPlayer.setPlayWhenReady(isPlaying);
         return true;
+        //holder.setPlayer((SimpleExoPlayer) exoPlayer);
+        //exoPlayer.setPlayWhenReady(isPlaying);
+        //return true;
     }
 
     /**
@@ -133,17 +133,17 @@ public class MediaPlayerService extends Service implements MediaController.Media
      *
      * @param holder
      */
-    synchronized public void releaseSurfaceHolder(/*SurfaceHolder holder*/SimpleExoPlayerView holder) {
-        /*Log.d(TAG,"releaseSurfaceHolder : "+String.valueOf(holder == mHolder));
+    synchronized public void releaseSurfaceHolder(SurfaceHolder holder) {
+        Log.d(TAG, "releaseSurfaceHolder : " + String.valueOf(holder == mHolder));
         if (holder == mHolder) {
             mHolder = null;
             ((SimpleExoPlayer) exoPlayer).setVideoSurfaceHolder(null);
             //mediaPlayer.setDisplay(null);
-            exoPlayer.setPlayWhenReady(true);
-        }*/
-        if (holder.getPlayer() != null) {
-            holder.setPlayer(null);
+            exoPlayer.setPlayWhenReady(isPlaying);
         }
+        /*if (holder.getPlayer() != null) {
+            holder.setPlayer(null);
+        }*/
     }
 
     @Override

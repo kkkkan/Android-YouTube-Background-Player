@@ -59,13 +59,13 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.MediaController;
 import android.widget.Toast;
 
-import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -498,7 +498,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
     @Override
-    public void changeSurfaceHolder(/*SurfaceHolder holder, SurfaceView surfaceView*/SimpleExoPlayerView holder) {
+    public void changeSurfaceHolder(SurfaceHolder holder, SurfaceView surfaceView) {
         boolean setDisplaySuccess = false;
         if (service != null) {
             setDisplaySuccess = service.setDisplay(holder);
@@ -509,23 +509,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
         //縦画面の時はsurfaceViewを取得しなおすたびにmMediaController.setAnchorView()しているのでここでセットする必要はないが
         // 横画面の時はfragment内ではmMediaController.setAnchorView()が出来ないのでそれ用
-        //mMediaController.setAnchorView(surfaceView);
-        mMediaController.setAnchorView(holder);
+        mMediaController.setAnchorView(surfaceView);
+        mMediaController.setAnchorView(surfaceView);
         //mMediaController表示のためのtouchlistener
-        /*surfaceView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView) {
-                    if (!mMediaController.isShowing()) {
-                        mMediaController.show();
-                    } else {
-                        mMediaController.hide();
-                    }
-                }
-                return true;
-            }
-        });*/
-        holder.setOnTouchListener(new View.OnTouchListener() {
+        surfaceView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView) {
@@ -538,6 +525,19 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 return true;
             }
         });
+        /*holder.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN && v instanceof SurfaceView) {
+                    if (!mMediaController.isShowing()) {
+                        mMediaController.show();
+                    } else {
+                        mMediaController.hide();
+                    }
+                }
+                return true;
+            }
+        });*/
     }
 
     /**
@@ -547,7 +547,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      * @param holder
      */
     @Override
-    public void releaseSurfaceHolder(/*SurfaceHolder holder*/SimpleExoPlayerView holder) {
+    public void releaseSurfaceHolder(SurfaceHolder holder) {
         //アプリ起動直後に画面向きを変えるとserver==nullでここにくる
         if (service != null) {
             service.releaseSurfaceHolder(holder);
