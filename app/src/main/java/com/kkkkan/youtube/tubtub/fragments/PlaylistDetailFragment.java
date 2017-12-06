@@ -97,10 +97,25 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if (context instanceof MainActivity) {
+            this.context = context;
+            itemSelected = (MainActivity) context;
+        }
+        Fragment fragment = getParentFragment();
+        if (fragment instanceof OnFavoritesSelected) {
+            onFavoritesSelected = (OnFavoritesSelected) fragment;
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         playlistDetailList = new ArrayList<>();
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -174,19 +189,31 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         acquirePlaylistVideos(playlist.getId());
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        if (context instanceof MainActivity) {
-            this.context = context;
-            itemSelected = (MainActivity) context;
-        }
+    //Make it viewPager visible, and restore touch events
+    //viewPager見えるようにし、タッチイベントも復活させる
+    public void onDestroy() {
+        super.onDestroy();
         Fragment fragment = getParentFragment();
-        if (fragment instanceof OnFavoritesSelected) {
-            onFavoritesSelected = (OnFavoritesSelected) fragment;
+        if (fragment instanceof ViewPagerListener) {
+            ViewPager viewPager = ((ViewPagerListener) fragment).getViewPager();
+            viewPager.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return true;
+                }
+            });
+            viewPager.setVisibility(View.VISIBLE);
+            TabLayout tabLayout = ((ViewPagerListener) fragment).getTabLayout();
+            tabLayout.setVisibility(View.VISIBLE);
+            tabLayout.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return true;
+                }
+            });
         }
     }
+
 
     @Override
     public void onDetach() {
@@ -291,7 +318,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     public void onItemClick(YouTubeVideo video) {
         //Recently added lists are playlistselected
         //最近見たリスト追加はplaylistselectedでやる
-        itemSelected.onPlaylistSelected(playlistDetailList, playlistDetailList.indexOf(video));
+        itemSelected.onPlaylistSelected(detailFoundListView, playlistDetailList, playlistDetailList.indexOf(video));
     }
 
     /**
@@ -364,31 +391,6 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     @Override
     public void onDeleteClicked(YouTubePlaylist playlist) {
 
-    }
-
-    //Make it viewPager visible, and restore touch events
-    //viewPager見えるようにし、タッチイベントも復活させる
-    public void onDestroy() {
-        super.onDestroy();
-        Fragment fragment = getParentFragment();
-        if (fragment instanceof ViewPagerListener) {
-            ViewPager viewPager = ((ViewPagerListener) fragment).getViewPager();
-            viewPager.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    return true;
-                }
-            });
-            viewPager.setVisibility(View.VISIBLE);
-            TabLayout tabLayout = ((ViewPagerListener) fragment).getTabLayout();
-            tabLayout.setVisibility(View.VISIBLE);
-            tabLayout.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    return true;
-                }
-            });
-        }
     }
 
 

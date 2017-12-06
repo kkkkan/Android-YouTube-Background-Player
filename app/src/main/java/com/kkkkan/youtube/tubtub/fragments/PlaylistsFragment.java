@@ -145,19 +145,20 @@ public class PlaylistsFragment extends BaseFragment implements
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        this.context = null;
-        this.itemSelected = null;
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         playlists.clear();
         playlists.addAll(YouTubeSqlDb.getInstance().playlists().readAll());
         playlistsAdapter.notifyDataSetChanged();
     }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        this.context = null;
+        this.itemSelected = null;
+    }
+
 
     public void searchPlaylists() {
         getLoaderManager().restartLoader(2, null, new LoaderManager.LoaderCallbacks<List<YouTubePlaylist>>() {
@@ -226,7 +227,7 @@ public class PlaylistsFragment extends BaseFragment implements
                 if (data == null || data.isEmpty()) {
                     return;
                 }
-                itemSelected.onPlaylistSelected(data, 0);
+                itemSelected.onPlaylistSelected(playlistsListView, data, 0);
             }
 
             @Override

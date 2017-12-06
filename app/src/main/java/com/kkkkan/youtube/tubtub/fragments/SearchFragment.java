@@ -93,6 +93,20 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if (context instanceof MainActivity) {
+            this.context = context;
+            itemSelected = (MainActivity) context;
+        }
+        Fragment fragment = getParentFragment();
+        if (fragment instanceof OnFavoritesSelected) {
+            onFavoritesSelected = (OnFavoritesSelected) fragment;
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -117,19 +131,6 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         return v;
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        if (context instanceof MainActivity) {
-            this.context = context;
-            itemSelected = (MainActivity) context;
-        }
-        Fragment fragment = getParentFragment();
-        if (fragment instanceof OnFavoritesSelected) {
-            onFavoritesSelected = (OnFavoritesSelected) fragment;
-        }
-    }
 
     @Override
     public void onResume() {
@@ -215,7 +216,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     public void onItemClick(YouTubeVideo video) {
         //Recently added lists are playlistselected
         //最近見たリスト追加はplaylistselectedでやる！
-        itemSelected.onPlaylistSelected(searchResultsList, searchResultsList.indexOf(video));
+        itemSelected.onPlaylistSelected(videosFoundListView, searchResultsList, searchResultsList.indexOf(video));
     }
 
     @Override

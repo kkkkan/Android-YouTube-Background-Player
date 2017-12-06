@@ -96,6 +96,19 @@ public class RecentlyWatchedFragment extends BaseFragment implements
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof MainActivity) {
+            this.context = context;
+            itemSelected = (MainActivity) context;
+        }
+        Fragment fragment = getParentFragment();
+        if (fragment instanceof OnFavoritesSelected) {
+            onFavoritesSelected = (OnFavoritesSelected) fragment;
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         recentlyPlayedVideos = new ArrayList<>();
@@ -141,19 +154,6 @@ public class RecentlyWatchedFragment extends BaseFragment implements
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof MainActivity) {
-            this.context = context;
-            itemSelected = (MainActivity) context;
-        }
-        Fragment fragment = getParentFragment();
-        if (fragment instanceof OnFavoritesSelected) {
-            onFavoritesSelected = (OnFavoritesSelected) fragment;
-        }
-    }
-
-    @Override
     public void onDetach() {
         super.onDetach();
         this.context = null;
@@ -186,7 +186,7 @@ public class RecentlyWatchedFragment extends BaseFragment implements
 
     @Override
     public void onItemClick(YouTubeVideo video) {
-        itemSelected.onPlaylistSelected(recentlyPlayedVideos, recentlyPlayedVideos.indexOf(video));
+        itemSelected.onPlaylistSelected(recentlyPlayedListView, recentlyPlayedVideos, recentlyPlayedVideos.indexOf(video));
     }
 
     public void onDeleteClicked(final YouTubeVideo video) {

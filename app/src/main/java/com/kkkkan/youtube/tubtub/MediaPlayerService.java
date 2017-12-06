@@ -16,6 +16,8 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v7.widget.LinearSmoothScroller;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
@@ -59,6 +61,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
     private MainActivityViewModel viewModel;
     private List<YouTubeVideo> playlist;
     private int currentVideoIndex;
+    private RecyclerView recyclerView;
     private String videoUrl;
     private String videoTitle;
 
@@ -306,7 +309,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "prevBroadcastReceiver");
-            onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+            onPlaylistSelected(recyclerView, playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
         }
 
     };
@@ -315,7 +318,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "nextStartBroadcastReceiver");
-            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+            onPlaylistSelected(recyclerView, playlist, (currentVideoIndex + 1) % playlist.size());
         }
     };
 
@@ -324,7 +327,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
      * 選んだビデオをmediaplayerで再生するためのurlをvideoUrlにセットし、バックグラウンド再生かフォアグランド再生かによって
      * 次の制御をvideoCreate()に振る
      */
-    public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
+    public void onPlaylistSelected(@Nullable final RecyclerView recyclerView, List<YouTubeVideo> playlist, final int position) {
         Log.d(TAG, "onPlaylistSelected");
         if (playlistSelectedCancelFlag) {
             //もしユーザーがビデオ読み込みやめるよう操作していたら
@@ -338,6 +341,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         viewModel.setStateStartLoading();
         this.playlist = playlist;
         currentVideoIndex = position;
+        this.recyclerView = recyclerView;
 
         //ネット環境にちゃんとつながってるかチェック
         /*if (!networkConf.isNetworkAvailable()) {
@@ -399,7 +403,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     Log.d(TAG, "SingletonMediaplayer.instance.getMediaPlayer().isPlaying:" + String.valueOf(mediaPlayer.isPlaying()));
 
                     //Progressダイアログ消すのはvideoCreate()のなかでやってる。
-                    videoCreate();
+                    videoCreate(recyclerView, position);
                 } else {
                     Log.d(TAG, "ytFile-null-next:" + video.getId());
                     viewModel.setStateError();
@@ -410,7 +414,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
     }
 
-    private void videoCreate() {
+    private void videoCreate(final RecyclerView recyclerView, final int position) {
         if (videoUrl == null) {
             //通常あり得ない
             Log.d(TAG, "videoCreate()-videoUrl==null");
@@ -472,6 +476,18 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     mp.start();
                     //読み込み中ダイアログ消す
                     viewModel.setStateStopLoading();
+                    //今再生中のビデオへ自動スクロール
+                    if (recyclerView != null) {
+                        //共有から開かれたときrecyclerView=null
+                        RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(recyclerView.getContext()) {
+                            @Override
+                            protected int getVerticalSnapPreference() {
+                                return LinearSmoothScroller.SNAP_TO_START;
+                            }
+                        };
+                        smoothScroller.setTargetPosition(position);
+                        recyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
+                    }
                 }
             });
             mediaPlayer.prepareAsync();
@@ -499,16 +515,16 @@ public class MediaPlayerService extends Service implements MediaController.Media
         if (settings.getRepeatOne() == Settings.RepeatOne.ON) {
             // one song repeat
             //1曲リピート時
-            onPlaylistSelected(playlist, currentVideoIndex);
+            onPlaylistSelected(recyclerView, playlist, currentVideoIndex);
         } else if (settings.getRepeatPlaylist() == ON) {
             // It is not a repeat of one song, and at play list repeat
             //1曲リピートではなく、かつプレイリストリピート時
-            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+            onPlaylistSelected(recyclerView, playlist, (currentVideoIndex + 1) % playlist.size());
         } else {
             // When it is neither a single song repeat nor a play list repeat
             //一曲リピートでもプレイリストリピートでもないとき
             if (currentVideoIndex + 1 < playlist.size()) {
-                onPlaylistSelected(playlist, currentVideoIndex + 1);
+                onPlaylistSelected(recyclerView, playlist, currentVideoIndex + 1);
             } else {
                 //最後の曲のときはprogressbarが出ていたらそれを消すだけ。
                 viewModel.setStateStopLoading();
@@ -520,7 +536,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         if (playlist != null) {
             //When playlist is not set, you can also press it so that it will not fall at that time
             //playlistセットされてないときも押せてしまうからその時落ちないように
-            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+            onPlaylistSelected(recyclerView, playlist, (currentVideoIndex + 1) % playlist.size());
         }
     }
 
@@ -528,7 +544,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         //When playlist is not set, you can also press it so that it will not fall at that time
         //playlistセットされてないときも押せてしまうからその時落ちないように
         if (playlist != null) {
-            onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+            onPlaylistSelected(recyclerView, playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
         }
     }
 
