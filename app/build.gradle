@@ -1,10 +1,12 @@
 buildscript {
     repositories {
         maven { url 'https://maven.fabric.io/public' }
+        google()
     }
 
     dependencies {
         classpath 'io.fabric.tools:gradle:1.+'
+        classpath 'com.android.tools.build:gradle:3.0.1'
     }
 }
 apply plugin: 'com.android.application'
@@ -45,11 +47,12 @@ android {
     buildTypes {
         debug {
             applicationVariants.all { variant ->
-                variant.outputs.each { output ->
+                variant.outputs.all { output ->
                     def file = output.outputFile
                     def appId = android.defaultConfig.applicationId
                     def fileName = appId + "-" + variant.buildType.name + "-" + defaultConfig.versionName + ".apk"
-                    output.outputFile = new File(file.parent, fileName)
+                    //output.outputFile = new File(file.parent, fileName)
+                    outputFileName=fileName
                 }
             }
         }
@@ -58,11 +61,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debug {
                 applicationVariants.all { variant ->
-                    variant.outputs.each { output ->
+                    variant.outputs.all { output ->
                         def file = output.outputFile
                         def appId = android.defaultConfig.applicationId
                         def fileName = appId + "-" + variant.buildType.name + ".apk"
-                        output.outputFile = new File(file.parent, fileName)
+                        //output.outputFile = new File(file.parent, fileName)
+                        outputFileName=fileName
                     }
                 }
             }
