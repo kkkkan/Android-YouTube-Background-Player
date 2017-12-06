@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/grey"
-    android:paddingBottom="1dp">
+    android:paddingBottom="1dp"
+    android:id="@+id/item_background">
 
     <LinearLayout
         android:id="@+id/row_item"

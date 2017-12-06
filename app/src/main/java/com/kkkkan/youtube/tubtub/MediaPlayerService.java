@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -21,6 +22,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
+import android.view.View;
 import android.widget.MediaController;
 import android.widget.RemoteViews;
 
@@ -487,6 +489,12 @@ public class MediaPlayerService extends Service implements MediaController.Media
                         };
                         smoothScroller.setTargetPosition(position);
                         recyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
+                        View view=recyclerView.getLayoutManager().findViewByPosition(position);
+                        if(Build.VERSION.SDK_INT>=23) {
+                            view.findViewById(R.id.item_background).setBackgroundColor(getColor(R.color.red));
+                        }else{
+                            view.findViewById(R.id.item_background).setBackgroundColor(recyclerView.getResources().getColor(R.color.red));
+                        }
                     }
                 }
             });
