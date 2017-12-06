@@ -25,17 +25,25 @@ import android.widget.RemoteViews;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.extractor.ExtractorsFactory;
+import com.google.android.exoplayer2.source.AdaptiveMediaSourceEventListener;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.source.dash.DashChunkSource;
+import com.google.android.exoplayer2.source.dash.DashMediaSource;
+import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
+import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.kkkkan.youtube.R;
@@ -429,7 +437,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     // Log.d(TAG, "SingletonMediaplayer.instance.getMediaPlayer().isPlaying:" + String.valueOf(mediaPlayer.isPlaying()));
 
                     //Progressダイアログ消すのはvideoCreate()のなかでやってる。
-                    videoCreate();
+                    videoCreate(tagVideo);
                 } else {
                     Log.d(TAG, "ytFile-null-next:" + video.getId());
                     viewModel.setStateError();
@@ -440,9 +448,20 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
     }
 
-    private void videoCreate() {
+    private void videoCreate(int tag) {
         Log.d(TAG, "videoCreate()");
-        ExtractorMediaSource mediaSource = makeExtractorMediaSource();
+        MediaSource mediaSource = null;
+        for (int itag : VideoQualitys.dashTags) {
+            if (tag == itag) {
+                mediaSource = makeDashMediaSource();
+            }
+        }
+        for (int itag : VideoQualitys.hlsTags) {
+            if (tag == itag) {
+                mediaSource = makeHlsMediaSource();
+            }
+        }
+
         if (mediaSource == null) {
             //通常あり得ない
             return;
@@ -488,6 +507,120 @@ public class MediaPlayerService extends Service implements MediaController.Media
         };
 
         return new ExtractorMediaSource(mediaPath, dataSourceFactory, extractorsFactory, handler, eventListener);
+    }
+
+    @Nullable
+    private DashMediaSource makeDashMediaSource() {
+        if (videoUrl == null) {
+            //通常あり得ない
+            Log.d(TAG, "videoUrl==null");
+            return null;
+        }
+
+        // mediaplayer関係
+        // URLの先にある動画を再生する
+
+        Uri mediaPath = Uri.parse(videoUrl);
+        //新しいビデオを再生するために一度resetしてMediaPlayerをIDLE状態にする
+        //mediaPlayer.reset();
+        Log.d(TAG, "makeExtractorMediaSource()");
+
+        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, getPackageName()));
+        DashChunkSource.Factory dashChunkSourceFactory = new DefaultDashChunkSource.Factory(dataSourceFactory);
+
+        // 任意のイベントリスナー
+        Handler handler = new Handler();
+        AdaptiveMediaSourceEventListener eventListener = new AdaptiveMediaSourceEventListener() {
+
+            @Override
+            public void onLoadStarted(DataSpec dataSpec, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs, long mediaEndTimeMs, long elapsedRealtimeMs) {
+                Log.d(TAG, "onLoadStarted: ");
+            }
+
+            @Override
+            public void onLoadCompleted(DataSpec dataSpec, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs, long mediaEndTimeMs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded) {
+                Log.d(TAG, "onLoadCompleted: ");
+            }
+
+            @Override
+            public void onLoadCanceled(DataSpec dataSpec, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs, long mediaEndTimeMs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded) {
+                Log.d(TAG, "onLoadCanceled: ");
+            }
+
+            @Override
+            public void onLoadError(DataSpec dataSpec, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs, long mediaEndTimeMs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded, IOException error, boolean wasCanceled) {
+                Log.d(TAG, "onLoadError: ");
+            }
+
+            @Override
+            public void onUpstreamDiscarded(int trackType, long mediaStartTimeMs, long mediaEndTimeMs) {
+                Log.d(TAG, "onUpstreamDiscarded: ");
+            }
+
+            @Override
+            public void onDownstreamFormatChanged(int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaTimeMs) {
+                Log.d(TAG, "onDownstreamFormatChanged: ");
+            }
+        };
+
+        return new DashMediaSource(mediaPath, dataSourceFactory, dashChunkSourceFactory, handler, eventListener);
+
+    }
+
+    @Nullable
+    private HlsMediaSource makeHlsMediaSource() {
+        if (videoUrl == null) {
+            //通常あり得ない
+            Log.d(TAG, "videoUrl==null");
+            return null;
+        }
+
+        // mediaplayer関係
+        // URLの先にある動画を再生する
+
+        Uri mediaPath = Uri.parse(videoUrl);
+        //新しいビデオを再生するために一度resetしてMediaPlayerをIDLE状態にする
+        //mediaPlayer.reset();
+        Log.d(TAG, "makeExtractorMediaSource()");
+
+        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, getPackageName()));
+
+        // 任意のイベントリスナー
+        Handler handler = new Handler();
+        AdaptiveMediaSourceEventListener eventListener = new AdaptiveMediaSourceEventListener() {
+            @Override
+            public void onLoadStarted(DataSpec dataSpec, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs, long mediaEndTimeMs, long elapsedRealtimeMs) {
+                Log.d(TAG, "onLoadStarted: ");
+            }
+
+            @Override
+            public void onLoadCompleted(DataSpec dataSpec, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs, long mediaEndTimeMs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded) {
+                Log.d(TAG, "onLoadCompleted: ");
+            }
+
+            @Override
+            public void onLoadCanceled(DataSpec dataSpec, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs, long mediaEndTimeMs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded) {
+                Log.d(TAG, "onLoadCanceled: ");
+            }
+
+            @Override
+            public void onLoadError(DataSpec dataSpec, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs, long mediaEndTimeMs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded, IOException error, boolean wasCanceled) {
+                Log.d(TAG, "onLoadError: ");
+            }
+
+            @Override
+            public void onUpstreamDiscarded(int trackType, long mediaStartTimeMs, long mediaEndTimeMs) {
+                Log.d(TAG, "onUpstreamDiscarded: ");
+            }
+
+            @Override
+            public void onDownstreamFormatChanged(int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaTimeMs) {
+                Log.d(TAG, "onDownstreamFormatChanged: ");
+            }
+        };
+
+        return new HlsMediaSource(mediaPath, dataSourceFactory, handler, eventListener);
+
     }
 
     /**

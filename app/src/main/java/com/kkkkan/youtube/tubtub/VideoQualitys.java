@@ -80,8 +80,9 @@ public class VideoQualitys {
     };
 
     final static private Integer[] videoQualityTagUnder360 = {
-            18,//18:Non-DASH/MP4/360p
-            43,//43:Non-DASH/WEBM/360p
+            //18,//18:Non-DASH/MP4/360p
+            //43,//43:Non-DASH/WEBM/360p
+            134,//134:DASH/MP4/360p
             93,//93:Live Stream/360p
 
             //36,//36:Non-DASH/3gp/240p
@@ -94,7 +95,8 @@ public class VideoQualitys {
     };
 
     final static private Integer[] videoQualityTagUnder720 = {
-            22,//22:Non-DASH/MP4/720p
+            //22,//22:Non-DASH/MP4/720p
+            136,//136:DASH/MP4/720p
             95,//95:Live Stream/720p
 
             18,//18:Non-DASH/MP4/360p
@@ -110,4 +112,16 @@ public class VideoQualitys {
             91//91:Live Stream/144p
 
     };
+
+    final static public int[] dashTags = {
+            videoQualityTagUnder144[0],
+            videoQualityTagUnder240[0],
+            videoQualityTagUnder360[0],
+            videoQualityTagUnder720[0]};
+
+    final static public int[] hlsTags = {
+            videoQualityTagUnder144[1],
+            videoQualityTagUnder240[1],
+            videoQualityTagUnder360[1],
+            videoQualityTagUnder720[1]};
 }
