@@ -41,7 +41,7 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTube;
  */
 
 public class YouTubeVideosLoader extends AsyncTaskLoader<List<YouTubeVideo>> {
-
+    private final String TAG = "YouTubeVideosLoader";
     private YouTube youtube = getYouTube();
     private String keywords;
 
@@ -105,7 +105,7 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<List<YouTubeVideo>> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Log.d("SMEDIC", "loadInBackground: return " + items.size());
+        Log.d(TAG, "loadInBackground: return " + items.size());
         return items;
     }
 

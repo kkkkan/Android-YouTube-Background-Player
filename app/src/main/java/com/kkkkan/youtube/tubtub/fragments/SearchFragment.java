@@ -32,6 +32,7 @@
 
 package com.kkkkan.youtube.tubtub.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -40,6 +41,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -75,7 +77,7 @@ import java.util.List;
  */
 
 public class SearchFragment extends BaseFragment implements ItemEventsListener<YouTubeVideo> {
-
+    private final String TAG = "SearchFragment";
     private RecyclerView videosFoundListView;
     private List<YouTubeVideo> searchResultsList;
     private VideosAdapter videoListAdapter;
@@ -105,6 +107,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         if (fragment instanceof OnFavoritesSelected) {
             onFavoritesSelected = (OnFavoritesSelected) fragment;
         }
+        networkConf = new NetworkConf((Activity) context);
     }
 
     @Override
@@ -112,7 +115,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         super.onCreate(savedInstanceState);
 
         searchResultsList = new ArrayList<>();
-        networkConf = new NetworkConf(getActivity());
+
     }
 
     @Override
@@ -161,9 +164,11 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
      * @param query
      */
     public void searchQuery(final String query) {
+        Log.d(TAG, "searchQuery : " + query);
         if (networkConf == null) {
             //本来ありえないはずだが、一度networkConf.isNetworkAvailable()で
             //nullアクセス例外で落ちたので一応対策
+            Log.d(TAG, "networkConf == null");
             return;
         }
         //check network connectivity
@@ -184,8 +189,10 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
 
             @Override
             public void onLoadFinished(Loader<List<YouTubeVideo>> loader, List<YouTubeVideo> data) {
+                Log.d(TAG, "onLoadFinished");
                 if (data == null)
                     return;
+                Log.d(TAG, "onLoadFinished : data != null");
                 videosFoundListView.smoothScrollToPosition(0);
                 searchResultsList.clear();
                 searchResultsList.addAll(data);

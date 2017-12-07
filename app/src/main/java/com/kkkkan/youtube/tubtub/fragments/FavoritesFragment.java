@@ -84,11 +84,16 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
     }
 
     public static FavoritesFragment newInstance() {
-        return new FavoritesFragment();
+        Log.d(TAG, "newInstance()");
+        FavoritesFragment favoritesFragment = new FavoritesFragment();
+        favoritesFragment.favoriteVideos = new ArrayList<>();
+        favoritesFragment.favoriteVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).readAll());
+        return favoritesFragment;
     }
 
     @Override
     public void onAttach(Context context) {
+        Log.d(TAG, "onAttach");
         super.onAttach(context);
         if (context instanceof MainActivity) {
             this.itemSelected = (MainActivity) context;
@@ -98,6 +103,7 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         favoriteVideos = new ArrayList<>();
         favoriteVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).readAll());
@@ -107,6 +113,7 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        Log.d(TAG, "onCreateView");
         View v = inflater.inflate(R.layout.fragment_list, container, false);
         favoritesListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
@@ -137,15 +144,28 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
 
     @Override
     public void onResume() {
+        Log.d(TAG, "onResume");
         super.onResume();
         favoriteVideos.clear();
         favoriteVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).readAll());
         videoListAdapter.notifyDataSetChanged();
     }
 
+    @Override
+    public void onPause() {
+        Log.d(TAG, "onPause");
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "onDestroy");
+        super.onDestroy();
+    }
 
     @Override
     public void onDetach() {
+        Log.d(TAG, "onDetach");
         super.onDetach();
         this.itemSelected = null;
         this.context = null;

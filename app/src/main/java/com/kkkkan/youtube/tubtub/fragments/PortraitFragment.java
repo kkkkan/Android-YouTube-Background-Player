@@ -66,8 +66,6 @@ import com.kkkkan.youtube.BuildConfig;
 import com.kkkkan.youtube.R;
 import com.kkkkan.youtube.tubtub.MainActivity;
 import com.kkkkan.youtube.tubtub.MainActivityViewModel;
-import com.kkkkan.youtube.tubtub.Settings;
-import com.kkkkan.youtube.tubtub.VideoQualitys;
 import com.kkkkan.youtube.tubtub.adapters.PlaylistsAdapter;
 import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
 import com.kkkkan.youtube.tubtub.interfaces.LoginHandler;
@@ -79,6 +77,8 @@ import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
+import com.kkkkan.youtube.tubtub.utils.Settings;
+import com.kkkkan.youtube.tubtub.utils.VideoQualitys;
 import com.kkkkan.youtube.tubtub.youtube.SuggestionsLoader;
 
 import java.util.ArrayList;
@@ -306,7 +306,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         //アクションバーに戻るボタンをつけない
         //getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         //Set the fragment held by viewPage to 3
-        //viewPageで保持するfragmentを三枚に設定
+        //viewPageでキャッシュして保持するfragmentを三枚に設定
         viewPager = (ViewPager) view.findViewById(R.id.viewpager);
         viewPager.setOffscreenPageLimit(3);
         setupViewPager(viewPager);
@@ -656,15 +656,18 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     }
 
     private void handleIntent(Intent intent) {
+        Log.d(TAG, "handleIntent(");
         String action = intent.getAction();
         String type = intent.getType();
         if (Intent.ACTION_SEARCH.equals(action)) {
+            Log.d(TAG, "Intent.ACTION_SEARCH.equals(action)");
             //検索の時
             String query = intent.getStringExtra(SearchManager.QUERY);
             //スムーズスクロールありでfragmenを2に変更
             viewPager.setCurrentItem(2, true); //switch to search fragment
 
             if (searchFragment != null) {
+                Log.d(TAG, "searchFragment != null");
                 searchFragment.searchQuery(query);
             }
         }
@@ -723,7 +726,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
      * @param viewPager
      */
     private void setupViewPager(ViewPager viewPager) {
-
+        Log.d(TAG, "setupViewPager");
         ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager());
 
         searchFragment = SearchFragment.newInstance();

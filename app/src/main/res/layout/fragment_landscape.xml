@@ -11,22 +11,22 @@
         android:layout_weight="1"
         android:visibility="visible" />
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="40dp">
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:background="@color/colorPrimary">
 
         <TextView
             android:id="@+id/title_view"
-            android:layout_width="fill_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="match_parent"
-            android:background="@color/colorPrimary"
             android:textColor="@color/textColorPrimary"
-            android:gravity="center" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical|right">
+            android:gravity="center"
+            android:singleLine="true"
+            android:scrollHorizontally="true"
+            android:ellipsize="end"/>
 
             <CheckBox
                 android:layout_width="wrap_content"
@@ -36,7 +36,6 @@
                 android:layout_marginBottom="5dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
-                android:layout_toLeftOf="@+id/repeat_playlist_box"
                 android:button="@null"
                 android:id="@+id/lock_box" />
 
@@ -49,7 +48,6 @@
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
                 android:button="@null"
-                android:layout_toLeftOf="@+id/repeat_one_box"
                 android:id="@+id/repeat_playlist_box" />
 
             <CheckBox
@@ -59,10 +57,9 @@
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
                 android:layout_marginLeft="10dp"
-                android:layout_marginRight="20dp"
+                android:layout_marginRight="10dp"
                 android:button="@null"
                 android:id="@+id/repeat_one_box" />
-        </RelativeLayout>
-    </FrameLayout>
+    </LinearLayout>
 
 </LinearLayout>

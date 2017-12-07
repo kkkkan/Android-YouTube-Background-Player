@@ -80,6 +80,7 @@ import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
+import com.kkkkan.youtube.tubtub.utils.Settings;
 import com.kkkkan.youtube.tubtub.youtube.YouTubeShareVideoGetLoader;
 
 import java.io.IOException;

@@ -34,9 +34,9 @@ import android.widget.TextView;
 
 import com.kkkkan.youtube.R;
 import com.kkkkan.youtube.tubtub.MainActivityViewModel;
-import com.kkkkan.youtube.tubtub.Settings;
 import com.kkkkan.youtube.tubtub.interfaces.SurfaceHolderListener;
 import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
+import com.kkkkan.youtube.tubtub.utils.Settings;
 
 /**
  * A simple {@link Fragment} subclass.

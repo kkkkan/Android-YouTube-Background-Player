@@ -93,6 +93,7 @@ public class RecentlyWatchedFragment extends BaseFragment implements
     }
 
     public static RecentlyWatchedFragment newInstance() {
+        Log.d(TAG, "newInstance()");
         return new RecentlyWatchedFragment();
     }
 
@@ -112,6 +113,7 @@ public class RecentlyWatchedFragment extends BaseFragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
         recentlyPlayedVideos = new ArrayList<>();
         recentlyPlayedVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).readAll());
     }
@@ -119,6 +121,7 @@ public class RecentlyWatchedFragment extends BaseFragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView");
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_list, container, false);
         recentlyPlayedListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
@@ -155,6 +158,7 @@ public class RecentlyWatchedFragment extends BaseFragment implements
 
     @Override
     public void onResume() {
+        Log.d(TAG, "onResume");
         super.onResume();
         recentlyPlayedVideos.clear();
         recentlyPlayedVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).readAll());
@@ -162,7 +166,20 @@ public class RecentlyWatchedFragment extends BaseFragment implements
     }
 
     @Override
+    public void onPause() {
+        Log.d(TAG, "onPause");
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "onDestroy");
+        super.onDestroy();
+    }
+
+    @Override
     public void onDetach() {
+        Log.d(TAG, "onDetach");
         super.onDetach();
         this.context = null;
         itemSelected = null;

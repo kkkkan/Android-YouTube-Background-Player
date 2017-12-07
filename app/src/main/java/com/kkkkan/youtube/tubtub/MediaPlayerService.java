@@ -21,7 +21,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
-import android.view.View;
 import android.widget.MediaController;
 import android.widget.RemoteViews;
 
@@ -32,6 +31,8 @@ import com.kkkkan.youtube.tubtub.BroadcastReceiver.PrevReceiver;
 import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
+import com.kkkkan.youtube.tubtub.utils.Settings;
+import com.kkkkan.youtube.tubtub.utils.VideoQualitys;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -43,7 +44,7 @@ import at.huber.youtubeExtractor.YtFile;
 
 import static android.media.MediaPlayer.MEDIA_ERROR_IO;
 import static android.media.MediaPlayer.MEDIA_INFO_UNKNOWN;
-import static com.kkkkan.youtube.tubtub.Settings.RepeatPlaylist.ON;
+import static com.kkkkan.youtube.tubtub.utils.Settings.RepeatPlaylist.ON;
 
 /**
  * Created by ka1n9 on 2017/11/24.
@@ -488,11 +489,11 @@ public class MediaPlayerService extends Service implements MediaController.Media
                         };
                         smoothScroller.setTargetPosition(position);
                         recyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
-                        View view = recyclerView.getLayoutManager().findViewByPosition(position);
+                        /*View view = recyclerView.getLayoutManager().findViewByPosition(position);
                         View backgroundView = view.findViewById(R.id.item_background);
                         backgroundView.requestFocus();
                         Log.d(TAG, "isFocusable() : " + String.valueOf(backgroundView.isFocusable()) + " isFocusableInTouchMode() : " + String.valueOf(view.findViewById(R.id.item_background).isFocusableInTouchMode()));
-                        /*if (Build.VERSION.SDK_INT >= 23) {
+                        *//*if (Build.VERSION.SDK_INT >= 23) {
                             view.findViewById(R.id.row_item).setBackgroundColor(getColor(R.color.red));
                         } else {
                             view.findViewById(R.id.row_item).setBackgroundColor(recyclerView.getResources().getColor(R.color.red));
