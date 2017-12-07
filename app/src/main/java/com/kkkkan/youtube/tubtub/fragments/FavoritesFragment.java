@@ -85,10 +85,7 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
 
     public static FavoritesFragment newInstance() {
         Log.d(TAG, "newInstance()");
-        FavoritesFragment favoritesFragment = new FavoritesFragment();
-        favoritesFragment.favoriteVideos = new ArrayList<>();
-        favoritesFragment.favoriteVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).readAll());
-        return favoritesFragment;
+        return new FavoritesFragment();
     }
 
     @Override
@@ -124,6 +121,7 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
         favoritesListView.addItemDecoration(dividerItemDecoration);
 
         videoListAdapter = new VideosAdapter(context, favoriteVideos);
+        Log.d(TAG, "videoListAdapter is create!");
         videoListAdapter.setOnItemEventsListener(this);
         favoritesListView.setAdapter(videoListAdapter);
 
@@ -171,13 +169,6 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
         this.context = null;
     }
 
-    /**
-     * Clears recently played list items
-     */
-    public void clearFavoritesList() {
-        favoriteVideos.clear();
-        videoListAdapter.notifyDataSetChanged();
-    }
 
     public void addToFavoritesList(YouTubeVideo video) {
         YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).create(video);
@@ -185,8 +176,10 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
 
     public void removeFromFavorites(YouTubeVideo video) {
         YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).deleteByVideoId(video.getId());
+
         favoriteVideos.remove(video);
         videoListAdapter.notifyDataSetChanged();
+
     }
 
     @Override

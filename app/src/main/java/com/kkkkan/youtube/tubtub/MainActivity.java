@@ -548,15 +548,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      */
     private void viewChangeWhenLandscape() {
         Log.d(TAG, " viewChangeWhenLandscape() ");
-        Fragment portraitFragment = getSupportFragmentManager().findFragmentByTag(PortraitFragmentTAG);
         FragmentTransaction transaction = getSupportFragmentManager()
                 .beginTransaction();
-        if (portraitFragment != null) {
-            transaction.detach(portraitFragment);
-        }
         //フラグメント追加
         Fragment fragment = LandscapeFragment.getNewLandscapeFragment(this, viewModel);
-        transaction.add(R.id.parent_layout, fragment, LandscapeFragmentTAG);
+        transaction.replace(R.id.parent_layout, fragment, LandscapeFragmentTAG);
         //transaction.addToBackStack(null);
         transaction.commitAllowingStateLoss();
     }
@@ -567,20 +563,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      */
     private void viewChangeWhenPortrait() {
         Log.d(TAG, "viewChangeWhenPortrait()");
-        Fragment portraitFragment = getSupportFragmentManager().findFragmentByTag(PortraitFragmentTAG);
-        Fragment landscapeFragment = getSupportFragmentManager().findFragmentByTag(LandscapeFragmentTAG);
         FragmentTransaction transaction = getSupportFragmentManager()
                 .beginTransaction();
-        if (portraitFragment == null) {
-            //フラグメント追加
-            Fragment fragment = PortraitFragment.getNewPortraitFragment(this, viewModel);
-            transaction.replace(R.id.parent_layout, fragment, PortraitFragmentTAG);
-        } else {
-            transaction.attach(portraitFragment);
-            if (landscapeFragment != null) {
-                transaction.remove(landscapeFragment);
-            }
-        }
+        Fragment fragment = PortraitFragment.getNewPortraitFragment(this, viewModel);
+        transaction.replace(R.id.parent_layout, fragment, PortraitFragmentTAG);
         transaction.commitAllowingStateLoss();
     }
 

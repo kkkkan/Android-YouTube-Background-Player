@@ -57,6 +57,7 @@ import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
+import com.kkkkan.youtube.tubtub.utils.PlaylistsCash;
 import com.kkkkan.youtube.tubtub.youtube.YouTubeVideosLoader;
 
 import java.util.ArrayList;
@@ -113,9 +114,10 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        searchResultsList = new ArrayList<>();
-
+        searchResultsList = PlaylistsCash.Instance.getSearchResultsList();
+        if (searchResultsList == null) {
+            searchResultsList = new ArrayList<>();
+        }
     }
 
     @Override
@@ -165,12 +167,6 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
      */
     public void searchQuery(final String query) {
         Log.d(TAG, "searchQuery : " + query);
-        if (networkConf == null) {
-            //本来ありえないはずだが、一度networkConf.isNetworkAvailable()で
-            //nullアクセス例外で落ちたので一応対策
-            Log.d(TAG, "networkConf == null");
-            return;
-        }
         //check network connectivity
         //When searching, if you are not connected to the network, issue an error.
         //検索するにあたって、ネットワークにつながってなかったらerrorを出す。
@@ -178,7 +174,6 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
             networkConf.createNetErrorDialog();
             return;
         }
-
         loadingProgressBar.setVisibility(View.VISIBLE);
 
         getLoaderManager().restartLoader(Config.YouTubeVideosLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
@@ -193,6 +188,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
                 if (data == null)
                     return;
                 Log.d(TAG, "onLoadFinished : data != null");
+                PlaylistsCash.Instance.setSearchResultsList(data);
                 videosFoundListView.smoothScrollToPosition(0);
                 searchResultsList.clear();
                 searchResultsList.addAll(data);
