@@ -23,6 +23,7 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.RemoteViews;
 
@@ -489,12 +490,15 @@ public class MediaPlayerService extends Service implements MediaController.Media
                         };
                         smoothScroller.setTargetPosition(position);
                         recyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
-                        View view=recyclerView.getLayoutManager().findViewByPosition(position);
-                        if(Build.VERSION.SDK_INT>=23) {
-                            view.findViewById(R.id.item_background).setBackgroundColor(getColor(R.color.red));
-                        }else{
-                            view.findViewById(R.id.item_background).setBackgroundColor(recyclerView.getResources().getColor(R.color.red));
-                        }
+                        View view = recyclerView.getLayoutManager().findViewByPosition(position);
+                        View backgroundView=view.findViewById(R.id.item_background);
+                        backgroundView.requestFocus();
+                        Log.d(TAG,"isFocusable() : "+String.valueOf(backgroundView.isFocusable())+" isFocusableInTouchMode() : "+String.valueOf(view.findViewById(R.id.item_background).isFocusableInTouchMode()));
+                        /*if (Build.VERSION.SDK_INT >= 23) {
+                            view.findViewById(R.id.row_item).setBackgroundColor(getColor(R.color.red));
+                        } else {
+                            view.findViewById(R.id.row_item).setBackgroundColor(recyclerView.getResources().getColor(R.color.red));
+                        }*/
                     }
                 }
             });

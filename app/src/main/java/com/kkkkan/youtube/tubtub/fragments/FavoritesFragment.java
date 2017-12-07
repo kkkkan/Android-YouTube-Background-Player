@@ -87,6 +87,15 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof MainActivity) {
+            this.itemSelected = (MainActivity) context;
+            this.context = context;
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         favoriteVideos = new ArrayList<>();
@@ -128,14 +137,6 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
         videoListAdapter.notifyDataSetChanged();
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof MainActivity) {
-            this.itemSelected = (MainActivity) context;
-            this.context = context;
-        }
-    }
 
     @Override
     public void onDetach() {

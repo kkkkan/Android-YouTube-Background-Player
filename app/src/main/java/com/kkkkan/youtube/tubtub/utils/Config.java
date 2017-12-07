@@ -41,7 +41,8 @@ public final class Config {
 
 
     final static public int YouTubeVideosLoaderId = 1;
-    final static public int YouTubePlaylistLoaderId = 3;
+    final static public int YouTubePlaylistLoaderId = 2;
+    final static public int YouTubePlaylistDetailLoaderId = 3;
     final static public int SuggestionsLoaderId = 4;
     final static public int YouTubeShareVideoGetLoader = 5;
 

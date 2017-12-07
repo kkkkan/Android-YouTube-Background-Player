@@ -244,7 +244,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
     private void acquirePlaylistVideos(final String playlistId) {
         Log.d(TAG, "acquirePlaylistVideos");
-        getLoaderManager().restartLoader(Config.YouTubePlaylistLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
+        getLoaderManager().restartLoader(Config.YouTubePlaylistDetailLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
             //このフラグがないとこのfragmentに戻ったときなぜか onLoadFinishedが呼ばれてしまうことがある
             boolean loaderRunning = false;
 

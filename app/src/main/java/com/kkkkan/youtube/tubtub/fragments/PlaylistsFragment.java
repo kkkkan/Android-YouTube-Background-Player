@@ -101,6 +101,16 @@ public class PlaylistsFragment extends BaseFragment implements
         return new PlaylistsFragment();
     }
 
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof MainActivity) {
+            this.context = context;
+            itemSelected = (MainActivity) context;
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -136,15 +146,6 @@ public class PlaylistsFragment extends BaseFragment implements
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof MainActivity) {
-            this.context = context;
-            itemSelected = (MainActivity) context;
-        }
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         playlists.clear();
@@ -161,7 +162,7 @@ public class PlaylistsFragment extends BaseFragment implements
 
 
     public void searchPlaylists() {
-        getLoaderManager().restartLoader(2, null, new LoaderManager.LoaderCallbacks<List<YouTubePlaylist>>() {
+        getLoaderManager().restartLoader(Config.YouTubePlaylistLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubePlaylist>>() {
             @Override
             public Loader<List<YouTubePlaylist>> onCreateLoader(final int id, final Bundle args) {
                 Log.d(TAG, "onCreateLoader");
@@ -206,7 +207,7 @@ public class PlaylistsFragment extends BaseFragment implements
 
     private void acquirePlaylistVideos(final String playlistId) {
         Log.d(TAG, "acquirePlaylistVideos");
-        getLoaderManager().restartLoader(Config.YouTubePlaylistLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
+        getLoaderManager().restartLoader(Config.YouTubePlaylistDetailLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
             //このフラグがないとこのfragmentに戻ったときなぜか onLoadFinishedが呼ばれてしまうことがある
             boolean loaderRunning = false;
 

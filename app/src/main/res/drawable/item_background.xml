@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- フォーカス時 -->
+    <!--<item
+        android:state_focused="true"
+        android:state_enabled="true"
+        android:state_pressed="false"
+        >
+        <color android:color="@color/red"/>-->
+    <!--</item>-->
+
+    <!-- 無効状態 かつ フォーカス時 -->
+    <!--<item
+        android:state_focused="true"
+        android:state_enabled="false"
+        android:state_pressed="false"
+         />-->
+    <!-- 押下状態 -->
+    <item
+        android:state_enabled="true"
+        android:state_pressed="true">
+        <color android:color="@color/grey"/>
+    </item>
+    <!-- 無効状態 -->
+    <!--<item
+        android:state_enabled="false"
+        />-->
+    <!-- 通常状態 -->
+    <item>
+        <color android:color="@color/windowBackground"/>
+    </item>
+</selector>

@@ -3,15 +3,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@color/grey"
     android:paddingBottom="1dp"
-    android:id="@+id/item_background">
+    android:id="@+id/item_background"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:background="@drawable/item_background">
 
     <LinearLayout
         android:id="@+id/row_item"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:background="@color/windowBackground"
         android:orientation="horizontal"
         android:paddingTop="4dp"
         android:weightSum="100">
@@ -45,7 +47,8 @@
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="60">
+            android:layout_weight="60"
+            >
 
             <TextView
                 android:id="@+id/video_title"
