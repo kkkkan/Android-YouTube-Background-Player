@@ -37,6 +37,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -120,7 +121,13 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_list, container, false);
         videosFoundListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
-        videosFoundListView.setLayoutManager(new LinearLayoutManager(context));
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
+        videosFoundListView.setLayoutManager(linearLayoutManager);
+        //区切り線追加
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(videosFoundListView.getContext(),
+                linearLayoutManager.getOrientation());
+        videosFoundListView.addItemDecoration(dividerItemDecoration);
+
         loadingProgressBar = (ProgressBar) v.findViewById(R.id.fragment_progress_bar);
         videoListAdapter = new VideosAdapter(context, searchResultsList);
         videoListAdapter.setOnItemEventsListener(this);

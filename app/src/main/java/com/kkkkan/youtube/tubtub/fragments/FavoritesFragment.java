@@ -35,6 +35,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -108,7 +109,12 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_list, container, false);
         favoritesListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
-        favoritesListView.setLayoutManager(new LinearLayoutManager(context));
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
+        favoritesListView.setLayoutManager(linearLayoutManager);
+        //区切り線追加
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(favoritesListView.getContext(),
+                linearLayoutManager.getOrientation());
+        favoritesListView.addItemDecoration(dividerItemDecoration);
 
         videoListAdapter = new VideosAdapter(context, favoriteVideos);
         videoListAdapter.setOnItemEventsListener(this);

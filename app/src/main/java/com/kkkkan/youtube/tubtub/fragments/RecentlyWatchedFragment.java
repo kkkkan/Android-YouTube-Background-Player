@@ -39,6 +39,7 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -121,7 +122,14 @@ public class RecentlyWatchedFragment extends BaseFragment implements
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_list, container, false);
         recentlyPlayedListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
-        recentlyPlayedListView.setLayoutManager(new LinearLayoutManager(context));
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
+        recentlyPlayedListView.setLayoutManager(linearLayoutManager);
+        //区切り線追加
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recentlyPlayedListView.getContext(),
+                linearLayoutManager.getOrientation());
+        recentlyPlayedListView.addItemDecoration(dividerItemDecoration);
+
+
         videoListAdapter = new RecentlyVideosAdapter(context, recentlyPlayedVideos);
         videoListAdapter.setOnItemEventsListener(this);
         recentlyPlayedListView.setAdapter(videoListAdapter);

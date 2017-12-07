@@ -30,6 +30,7 @@ import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -125,7 +126,13 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_list, container, false);
         detailFoundListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
-        detailFoundListView.setLayoutManager(new LinearLayoutManager(context));
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
+        detailFoundListView.setLayoutManager(linearLayoutManager);
+        //区切り線追加
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(detailFoundListView.getContext(),
+                linearLayoutManager.getOrientation());
+        detailFoundListView.addItemDecoration(dividerItemDecoration);
+
         detailListAdapter = new PlaylistDetailAdapter(context, playlistDetailList);
         detailListAdapter.setOnItemEventsListener(this);
         detailFoundListView.setAdapter(detailListAdapter);

@@ -40,6 +40,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -125,7 +126,12 @@ public class PlaylistsFragment extends BaseFragment implements
         Log.d(TAG, "Playlistfragment-onCreateView");
         /* Setup the ListView */
         playlistsListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
-        playlistsListView.setLayoutManager(new LinearLayoutManager(context));
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
+        playlistsListView.setLayoutManager(linearLayoutManager);
+        //区切り線追加
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(playlistsListView.getContext(),
+                linearLayoutManager.getOrientation());
+        playlistsListView.addItemDecoration(dividerItemDecoration);
 
         swipeToRefresh = (SwipeRefreshLayout) v.findViewById(R.id.swipe_to_refresh);
 
