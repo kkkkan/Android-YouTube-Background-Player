@@ -51,6 +51,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -92,6 +93,7 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTubeWithC
  */
 public class PortraitFragment extends Fragment implements OnFavoritesSelected, PlaylistsAdapter.OnDetailClickListener, SurfaceHolder.Callback, ViewPagerListener {
     final private static String TAG = "PortraitFragment";
+    final private static String nowPlayingListFragmentTAG = "nowPlayingListFragmentTAG";
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -101,6 +103,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     private FavoritesFragment favoritesFragment;
     private CheckBox repeatOneBox;
     private CheckBox repeatPlaylistBox;
+    private CheckBox nowPlayingListBox;
     private SurfaceView surfaceView;
     private Handler handler = new Handler();
 
@@ -189,6 +192,15 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             public void onClick(View v) {
                 titlebarListener.repeatPlaylistCheckListener();
                 checkBoxUpdata();
+            }
+        });
+
+        //タイトルバーの現在再生中リストのチェックボックスについての設定
+        nowPlayingListBox = (CheckBox) view.findViewById(R.id.now_playlinglist_show_button);
+        nowPlayingListBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                nowPlayingListBoxHandler(isChecked);
             }
         });
 
@@ -810,6 +822,19 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         mListDlg.setNegativeButton("キャンセル", null);
 
         mListDlg.create().show();
+    }
+
+    /**
+     * 今再生中のプレイリストの表示のフラグメントを出すかしまうかのハンドリングメゾッド
+     *
+     * @param isChecked
+     */
+    private void nowPlayingListBoxHandler(boolean isChecked) {
+        if (isChecked) {
+
+        } else {
+
+        }
     }
 
     /**
