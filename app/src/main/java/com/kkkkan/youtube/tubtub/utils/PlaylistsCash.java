@@ -30,6 +30,7 @@ public class PlaylistsCash {
 
     }
 
+    //回転しても検索内容覚えておくためのList
     private List<YouTubeVideo> searchResultsList;
 
     public void setSearchResultsList(List<YouTubeVideo> searchResultsList) {
@@ -40,4 +41,23 @@ public class PlaylistsCash {
         return searchResultsList;
     }
 
+    //NowPlayingListFragment用の、今再生しているplaylistとpositionを入れとくためのList
+    private List<YouTubeVideo> nowPlaylist;
+    private int currentVideoIndex;
+
+    public void setCurrentVideoIndex(int currentVideoIndex) {
+        this.currentVideoIndex = currentVideoIndex;
+    }
+
+    public void setNowPlaylist(List<YouTubeVideo> nowPlaylist) {
+        this.nowPlaylist = nowPlaylist;
+    }
+
+    public int getCurrentVideoIndex() {
+        return currentVideoIndex;
+    }
+
+    public List<YouTubeVideo> getNowPlaylist() {
+        return nowPlaylist;
+    }
 }

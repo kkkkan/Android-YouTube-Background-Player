@@ -226,7 +226,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     public void onItemClick(YouTubeVideo video) {
         //Recently added lists are playlistselected
         //最近見たリスト追加はplaylistselectedでやる！
-        itemSelected.onPlaylistSelected(videosFoundListView, searchResultsList, searchResultsList.indexOf(video));
+        itemSelected.onPlaylistSelected(searchResultsList, searchResultsList.indexOf(video));
     }
 
     @Override

@@ -325,7 +325,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     public void onItemClick(YouTubeVideo video) {
         //Recently added lists are playlistselected
         //最近見たリスト追加はplaylistselectedでやる
-        itemSelected.onPlaylistSelected(detailFoundListView, playlistDetailList, playlistDetailList.indexOf(video));
+        itemSelected.onPlaylistSelected(playlistDetailList, playlistDetailList.indexOf(video));
     }
 
     /**

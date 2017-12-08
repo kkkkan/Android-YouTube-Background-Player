@@ -16,9 +16,6 @@
 
 package com.kkkkan.youtube.tubtub.interfaces;
 
-import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
-
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 
 import java.util.List;
@@ -29,5 +26,5 @@ import java.util.List;
 
 public interface OnItemSelected {
 
-    void onPlaylistSelected(@Nullable RecyclerView recyclerView, List<YouTubeVideo> playlist, int position);
+    void onPlaylistSelected(List<YouTubeVideo> playlist, int position);
 }

@@ -211,7 +211,7 @@ public class RecentlyWatchedFragment extends BaseFragment implements
 
     @Override
     public void onItemClick(YouTubeVideo video) {
-        itemSelected.onPlaylistSelected(recentlyPlayedListView, recentlyPlayedVideos, recentlyPlayedVideos.indexOf(video));
+        itemSelected.onPlaylistSelected(recentlyPlayedVideos, recentlyPlayedVideos.indexOf(video));
     }
 
     public void onDeleteClicked(final YouTubeVideo video) {

@@ -234,7 +234,7 @@ public class PlaylistsFragment extends BaseFragment implements
                 if (data == null || data.isEmpty()) {
                     return;
                 }
-                itemSelected.onPlaylistSelected(playlistsListView, data, 0);
+                itemSelected.onPlaylistSelected(data, 0);
             }
 
             @Override

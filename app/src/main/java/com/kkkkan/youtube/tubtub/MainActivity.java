@@ -57,7 +57,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -455,8 +454,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      * 次の制御をvideoCreate()に振る
      */
     @Override
-    public void onPlaylistSelected(RecyclerView recyclerView, List<YouTubeVideo> playlist, final int position) {
-        service.onPlaylistSelected(recyclerView, playlist, position);
+    public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
+        service.onPlaylistSelected(playlist, position);
     }
 
 
@@ -667,7 +666,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         }
                         List<YouTubeVideo> video = new ArrayList<YouTubeVideo>();
                         video.add(data);
-                        onPlaylistSelected(null, video, 0);
+                        onPlaylistSelected(video, 0);
                     }
 
                     @Override

@@ -16,8 +16,6 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.v7.widget.LinearSmoothScroller;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
@@ -31,6 +29,7 @@ import com.kkkkan.youtube.tubtub.BroadcastReceiver.PrevReceiver;
 import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
+import com.kkkkan.youtube.tubtub.utils.PlaylistsCash;
 import com.kkkkan.youtube.tubtub.utils.Settings;
 import com.kkkkan.youtube.tubtub.utils.VideoQualitys;
 import com.squareup.picasso.Picasso;
@@ -61,9 +60,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
     private boolean playlistSelectedCancelFlag = false;
     private SurfaceHolder mHolder;
     private MainActivityViewModel viewModel;
-    private List<YouTubeVideo> playlist;
-    private int currentVideoIndex;
-    private RecyclerView recyclerView;
+    //private List<YouTubeVideo> playlist;
+    //private int currentVideoIndex;
     private String videoUrl;
     private String videoTitle;
 
@@ -189,7 +187,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             @Override
             public void onCompletion(MediaPlayer mp) {
                 Log.d(TAG, " mMediaController.setOnCompletionListener");
-                if (playlist == null) {
+                if (PlaylistsCash.Instance.getNowPlaylist() == null) {
                     //Originally it should not be playlist == null,
                     // but because there was something that was fallen by null reference with playlist.size ()
                     //本来ならplaylist==nullとなることは無いはずだが、
@@ -311,7 +309,9 @@ public class MediaPlayerService extends Service implements MediaController.Media
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "prevBroadcastReceiver");
-            onPlaylistSelected(recyclerView, playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+            List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNowPlaylist();
+            int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
+            onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
         }
 
     };
@@ -320,7 +320,9 @@ public class MediaPlayerService extends Service implements MediaController.Media
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "nextStartBroadcastReceiver");
-            onPlaylistSelected(recyclerView, playlist, (currentVideoIndex + 1) % playlist.size());
+            List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNowPlaylist();
+            int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
+            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
         }
     };
 
@@ -329,7 +331,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
      * 選んだビデオをmediaplayerで再生するためのurlをvideoUrlにセットし、バックグラウンド再生かフォアグランド再生かによって
      * 次の制御をvideoCreate()に振る
      */
-    public void onPlaylistSelected(@Nullable final RecyclerView recyclerView, List<YouTubeVideo> playlist, final int position) {
+    public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
         Log.d(TAG, "onPlaylistSelected");
         if (playlistSelectedCancelFlag) {
             //もしユーザーがビデオ読み込みやめるよう操作していたら
@@ -341,9 +343,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
         }
         //読み込み中ダイアログ表示
         viewModel.setStateStartLoading();
-        this.playlist = playlist;
-        currentVideoIndex = position;
-        this.recyclerView = recyclerView;
+        PlaylistsCash.Instance.setNowPlaylist(playlist);
+        PlaylistsCash.Instance.setCurrentVideoIndex(position);
 
         //ネット環境にちゃんとつながってるかチェック
         /*if (!networkConf.isNetworkAvailable()) {
@@ -405,7 +406,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     Log.d(TAG, "SingletonMediaplayer.instance.getMediaPlayer().isPlaying:" + String.valueOf(mediaPlayer.isPlaying()));
 
                     //Progressダイアログ消すのはvideoCreate()のなかでやってる。
-                    videoCreate(recyclerView, position);
+                    videoCreate(position);
                 } else {
                     Log.d(TAG, "ytFile-null-next:" + video.getId());
                     viewModel.setStateError();
@@ -416,7 +417,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
     }
 
-    private void videoCreate(final RecyclerView recyclerView, final int position) {
+    private void videoCreate(final int position) {
         if (videoUrl == null) {
             //通常あり得ない
             Log.d(TAG, "videoCreate()-videoUrl==null");
@@ -479,7 +480,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     //読み込み中ダイアログ消す
                     viewModel.setStateStopLoading();
                     //今再生中のビデオへ自動スクロール
-                    if (recyclerView != null) {
+                    /*if (recyclerView != null) {
                         //共有から開かれたときrecyclerView=null
                         RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(recyclerView.getContext()) {
                             @Override
@@ -488,7 +489,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                             }
                         };
                         smoothScroller.setTargetPosition(position);
-                        recyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
+                        recyclerView.getLayoutManager().startSmoothScroll(smoothScroller);*/
                         /*View view = recyclerView.getLayoutManager().findViewByPosition(position);
                         View backgroundView = view.findViewById(R.id.item_background);
                         backgroundView.requestFocus();
@@ -498,7 +499,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                         } else {
                             view.findViewById(R.id.row_item).setBackgroundColor(recyclerView.getResources().getColor(R.color.red));
                         }*/
-                    }
+                    //}
                 }
             });
             mediaPlayer.prepareAsync();
@@ -523,19 +524,21 @@ public class MediaPlayerService extends Service implements MediaController.Media
     private void handleNextVideo() {
         Log.d(TAG, "handleNextVideo");
         Settings settings = Settings.getInstance();
+        List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNowPlaylist();
+        int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
         if (settings.getRepeatOne() == Settings.RepeatOne.ON) {
             // one song repeat
             //1曲リピート時
-            onPlaylistSelected(recyclerView, playlist, currentVideoIndex);
+            onPlaylistSelected(playlist, currentVideoIndex);
         } else if (settings.getRepeatPlaylist() == ON) {
             // It is not a repeat of one song, and at play list repeat
             //1曲リピートではなく、かつプレイリストリピート時
-            onPlaylistSelected(recyclerView, playlist, (currentVideoIndex + 1) % playlist.size());
+            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
         } else {
             // When it is neither a single song repeat nor a play list repeat
             //一曲リピートでもプレイリストリピートでもないとき
             if (currentVideoIndex + 1 < playlist.size()) {
-                onPlaylistSelected(recyclerView, playlist, currentVideoIndex + 1);
+                onPlaylistSelected(playlist, currentVideoIndex + 1);
             } else {
                 //最後の曲のときはprogressbarが出ていたらそれを消すだけ。
                 viewModel.setStateStopLoading();
@@ -544,18 +547,22 @@ public class MediaPlayerService extends Service implements MediaController.Media
     }
 
     public void nextPlay() {
+        List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNowPlaylist();
+        int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
         if (playlist != null) {
             //When playlist is not set, you can also press it so that it will not fall at that time
             //playlistセットされてないときも押せてしまうからその時落ちないように
-            onPlaylistSelected(recyclerView, playlist, (currentVideoIndex + 1) % playlist.size());
+            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
         }
     }
 
     public void prevPlay() {
+        List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNowPlaylist();
+        int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
         //When playlist is not set, you can also press it so that it will not fall at that time
         //playlistセットされてないときも押せてしまうからその時落ちないように
         if (playlist != null) {
-            onPlaylistSelected(recyclerView, playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+            onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
         }
     }
 

@@ -206,7 +206,7 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
 
     @Override
     public void onItemClick(YouTubeVideo video) {
-        itemSelected.onPlaylistSelected(favoritesListView, favoriteVideos, favoriteVideos.indexOf(video));
+        itemSelected.onPlaylistSelected(favoriteVideos, favoriteVideos.indexOf(video));
     }
 
     @Override
