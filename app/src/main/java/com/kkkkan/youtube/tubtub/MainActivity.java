@@ -627,7 +627,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 break;
             case OFF:
                 //画面横固定
-                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
                 settings.setScreenLock(Settings.ScreenLock.ON);
                 break;
         }
