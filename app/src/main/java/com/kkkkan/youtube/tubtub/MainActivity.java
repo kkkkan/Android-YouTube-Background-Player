@@ -579,8 +579,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Configuration config = getResources().getConfiguration();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(PortraitFragmentTAG);
         if (config.orientation == Configuration.ORIENTATION_PORTRAIT && fragment != null) {
-            fragment.getChildFragmentManager().popBackStack();
-            return;
+            android.support.v4.app.FragmentManager fragmentManager = fragment.getChildFragmentManager();
+            int popCount = fragmentManager.getBackStackEntryCount();
+            if (popCount != 0) {
+                fragmentManager.popBackStack();
+                return;
+            }
         }
         super.onBackPressed();
     }
