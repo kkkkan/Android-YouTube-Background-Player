@@ -49,6 +49,18 @@
                 <CheckBox
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
+                    android:background="@drawable/now_playinglist_show_selector"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_gravity="center_vertical"
+                    android:button="@null"
+                    android:id="@+id/now_playlinglist_show_button" />
+
+                <CheckBox
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
                     android:background="@drawable/playlist_repeat_selector"
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"

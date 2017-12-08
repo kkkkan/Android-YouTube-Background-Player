@@ -16,10 +16,8 @@
         android:state_pressed="false"
          />-->
     <!-- 押下状態 -->
-    <item
-        android:state_enabled="true"
-        android:state_pressed="true">
-        <color android:color="@color/grey"/>
+    <item android:state_enabled="true" android:state_pressed="true">
+        <color android:color="@color/grey" />
     </item>
     <!-- 無効状態 -->
     <!--<item
@@ -27,6 +25,6 @@
         />-->
     <!-- 通常状態 -->
     <item>
-        <color android:color="@color/windowBackground"/>
+        <color android:color="@color/windowBackground" />
     </item>
 </selector>

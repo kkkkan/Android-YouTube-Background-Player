@@ -26,40 +26,40 @@
             android:gravity="center"
             android:singleLine="true"
             android:scrollHorizontally="true"
-            android:ellipsize="end"/>
+            android:ellipsize="end" />
 
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:background="@drawable/landscape_lock_selector"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:button="@null"
-                android:id="@+id/lock_box" />
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/landscape_lock_selector"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:button="@null"
+            android:id="@+id/lock_box" />
 
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:background="@drawable/playlist_repeat_selector"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:button="@null"
-                android:id="@+id/repeat_playlist_box" />
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/playlist_repeat_selector"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:button="@null"
+            android:id="@+id/repeat_playlist_box" />
 
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:background="@drawable/repeat_selector"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:button="@null"
-                android:id="@+id/repeat_one_box" />
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/repeat_selector"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:button="@null"
+            android:id="@+id/repeat_one_box" />
     </LinearLayout>
 
 </LinearLayout>

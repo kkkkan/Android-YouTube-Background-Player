@@ -2,13 +2,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.smedic.tubtub.fragments.PlaylistTitleFragment">
+    tools:context="com.kkkkan.youtube.tubtub.fragments.PlaylistTitleFragment">
 
     <TextView
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/aquamarine"
+        android:background="@color/playlistDetailTitlebarColor"
         android:textColor="@android:color/black"
         android:gravity="center" />
 

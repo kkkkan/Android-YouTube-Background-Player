@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#27997f</color>
-    <color name="colorPrimaryDark">#22856e</color>
+    <color name="colorPrimary">#ffa500</color>
+    <color name="colorPrimaryDark">#ff8c00</color>
     <color name="textColorPrimary">#FFFFFF</color>
     <color name="windowBackground">#FFFFFF</color>
     <color name="navigationBarColor">#000000</color>
@@ -9,5 +9,6 @@
     <color name="grey">#D3D3D3</color>
     <color name="pink">#ffc0cb</color>
     <color name="aquamarine">#7fffd4</color>
+    <color name="playlistDetailTitlebarColor">#ffff00</color>
     <color name="red">#dc143c</color>
 </resources>
