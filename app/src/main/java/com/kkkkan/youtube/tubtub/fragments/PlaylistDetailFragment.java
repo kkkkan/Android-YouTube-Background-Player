@@ -40,6 +40,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.api.services.youtube.YouTube;
@@ -89,12 +90,16 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     final private Handler mainHandler = ((MainActivity) getActivity()).mainHandler;
     private ProgressDialog progressDialog;
 
+    private String playlistTitle;
+
     public PlaylistDetailFragment() {
         // Required empty public constructor
     }
 
-    public static PlaylistDetailFragment newInstance() {
-        return new PlaylistDetailFragment();
+    public static PlaylistDetailFragment newInstance(String playlistTitle) {
+        PlaylistDetailFragment fragment = new PlaylistDetailFragment();
+        fragment.playlistTitle = playlistTitle;
+        return fragment;
     }
 
     @Override
@@ -124,7 +129,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
 
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_list, container, false);
+        View v = inflater.inflate(R.layout.fragment_playlist_detail_root, container, false);
         detailFoundListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         detailFoundListView.setLayoutManager(linearLayoutManager);
@@ -150,6 +155,9 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                 acquirePlaylistVideos(playlist.getId());
             }
         });
+
+        TextView textView = (TextView) v.findViewById(R.id.title_view);
+        textView.setText(playlistTitle);
 
         return v;
     }
@@ -196,8 +204,15 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         acquirePlaylistVideos(playlist.getId());
     }
 
+
     //Make it viewPager visible, and restore touch events
     //viewPager見えるようにし、タッチイベントも復活させる
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+    }
+
     public void onDestroy() {
         super.onDestroy();
         Fragment fragment = getParentFragment();
@@ -219,6 +234,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                 }
             });
         }
+
     }
 
 

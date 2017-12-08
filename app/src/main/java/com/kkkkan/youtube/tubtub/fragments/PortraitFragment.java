@@ -24,6 +24,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.MatrixCursor;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.BaseColumns;
@@ -47,6 +48,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.TouchDelegate;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -94,6 +96,8 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTubeWithC
 public class PortraitFragment extends Fragment implements OnFavoritesSelected, PlaylistsAdapter.OnDetailClickListener, SurfaceHolder.Callback, ViewPagerListener {
     final private static String TAG = "PortraitFragment";
     final private static String nowPlayingListFragmentTAG = "nowPlayingListFragmentTAG";
+    final private static String playlistDetailBackstackTAG = "playlistDetailBackstackTAG";
+    final private static String nowplayingFragmentBackstackTAG = "nowplayingFragmentBackstackTAG";
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -151,7 +155,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
-        View view = inflater.inflate(R.layout.fragment_portrait, container, false);
+        final View view = inflater.inflate(R.layout.fragment_portrait, container, false);
         titleView = (TextView) view.findViewById(R.id.title_view);
         viewModel.getVideoTitle().observe(this, new Observer<String>() {
             @Override
@@ -204,7 +208,21 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             }
         });
 
-
+        //nowPlayingListBoxのタッチ面積を増やす
+        view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int dp = 4;
+                int px = (int) (view.getResources().getDisplayMetrics().density * dp);
+                Rect delegateArea = new Rect();
+                nowPlayingListBox.getHitRect(delegateArea);
+                delegateArea.top -= px;
+                delegateArea.left -= px;
+                delegateArea.right += px;
+                delegateArea.bottom += px;
+                ((View) nowPlayingListBox.getParent()).setTouchDelegate(new TouchDelegate(delegateArea, nowPlayingListBox));
+            }
+        });
         toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.menu_main);
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
@@ -567,16 +585,12 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     public void onDetailClick(YouTubePlaylist playlist) {
         Log.d(TAG, "playlist-detail-checked!!!\n\n");
         //ビデオ一覧表示Fragment追加用
-        PlaylistDetailFragment playlistDetailFragment = PlaylistDetailFragment.newInstance();
+        PlaylistDetailFragment playlistDetailFragment = PlaylistDetailFragment.newInstance(playlist.getTitle());
         playlistDetailFragment.setPlaylist(playlist);
 
-        //プレイリストタイトル表示Fragment用
-        PlaylistTitleFragment playlistTitleFragment = new PlaylistTitleFragment();
-        playlistTitleFragment.setPlaylistTitle(playlist.getTitle());
 
         FragmentTransaction ft = getChildFragmentManager().beginTransaction();
-        ft.add(R.id.frame_layout, playlistDetailFragment);
-        ft.add(R.id.frame_layout_tab, playlistTitleFragment);
+        ft.add(R.id.tab_and_viewpager, playlistDetailFragment);
         //このままだと下のviewpageが見えていて且つタッチできてしまうので対策
         //playlistdetailのdestroyで、可視化＆タッチ有効化
         viewPager.setVisibility(View.INVISIBLE);
@@ -830,10 +844,42 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
      * @param isChecked
      */
     private void nowPlayingListBoxHandler(boolean isChecked) {
+        Log.d(TAG, "nowPlayingListBoxHandler : " + String.valueOf(isChecked));
+        FragmentManager fragmentManager = getChildFragmentManager();
+
         if (isChecked) {
+            //今再生中のビデオ一覧のためのフラグメントを作成
+            NowPlayingListFragment nowPlayingListFragment = new NowPlayingListFragment();
+            FragmentTransaction ft = fragmentManager.beginTransaction();
+            ft.replace(R.id.tab_and_viewpager, nowPlayingListFragment, nowPlayingListFragmentTAG);
+            //このままだと下のviewpageが見えていて且つタッチできてしまうので対策
+            //playlistdetailのdestroyで、可視化＆タッチ有効化
+            viewPager.setVisibility(View.INVISIBLE);
+            viewPager.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return false;
+                }
+            });
+            //tabも見えるし触れちゃうのでoffにする。
+            // playlistTitleFragmentのdestroyで可視化＆タッチ有効化
+            tabLayout.setVisibility(View.INVISIBLE);
+            tabLayout.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return false;
+                }
+            });
+            ft.commit();
 
         } else {
-
+            Fragment fragment = fragmentManager.findFragmentByTag(nowPlayingListFragmentTAG);
+            Log.d(TAG, "nowPlayingListFragmentTAG : " + String.valueOf(fragment != null));
+            if (fragment != null) {
+                FragmentTransaction ft = fragmentManager.beginTransaction();
+                ft.remove(fragment);
+                ft.commit();
+            }
         }
     }
 
