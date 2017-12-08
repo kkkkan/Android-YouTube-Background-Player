@@ -60,8 +60,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
     private boolean playlistSelectedCancelFlag = false;
     private SurfaceHolder mHolder;
     private MainActivityViewModel viewModel;
-    //private List<YouTubeVideo> playlist;
-    //private int currentVideoIndex;
+
     private String videoUrl;
     private String videoTitle;
 
@@ -311,7 +310,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             Log.d(TAG, "prevBroadcastReceiver");
             List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNowPlaylist();
             int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
-            onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+            playlistHandle((currentVideoIndex - 1 + playlist.size()) % playlist.size());
         }
 
     };
@@ -322,17 +321,17 @@ public class MediaPlayerService extends Service implements MediaController.Media
             Log.d(TAG, "nextStartBroadcastReceiver");
             List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNowPlaylist();
             int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
-            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+            playlistHandle((currentVideoIndex + 1) % playlist.size());
         }
     };
 
 
     /**
-     * 選んだビデオをmediaplayerで再生するためのurlをvideoUrlにセットし、バックグラウンド再生かフォアグランド再生かによって
-     * 次の制御をvideoCreate()に振る
+     * 検索画面や、プレイリスト詳細表示画面や履歴などでビデオを選んで再生始めた時に呼ばれるメゾッド。
+     * その時点でのリストが渡る。（履歴などは動的に変わるため、再生を始めた時の状態を別に保持しておきたいため）
      */
-    public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
-        Log.d(TAG, "onPlaylistSelected");
+    public void newPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
+        Log.d(TAG, "newPlaylistSelected");
         if (playlistSelectedCancelFlag) {
             //もしユーザーがビデオ読み込みやめるよう操作していたら
             //Flagをfalseにする
@@ -341,18 +340,33 @@ public class MediaPlayerService extends Service implements MediaController.Media
             viewModel.setStateStopLoading();
             return;
         }
-        //読み込み中ダイアログ表示
-        viewModel.setStateStartLoading();
         PlaylistsCash.Instance.setNowPlaylist(playlist);
-        PlaylistsCash.Instance.setCurrentVideoIndex(position);
+        playlistHandle(position);
+    }
 
-        //ネット環境にちゃんとつながってるかチェック
-        /*if (!networkConf.isNetworkAvailable()) {
-            networkConf.createNetErrorDialog();
+    /**
+     * 選んだビデオをmediaplayerで再生するためのurlをvideoUrlにセットし、バックグラウンド再生かフォアグランド再生かによって
+     * 次の制御をvideoCreate()に振る
+     *
+     * @param position
+     */
+    private void playlistHandle(final int position) {
+        Log.d(TAG, "playlistHandle");
+        if (playlistSelectedCancelFlag) {
+            //もしユーザーがビデオ読み込みやめるよう操作していたら
+            //Flagをfalseにする
+            playlistSelectedCancelFlag = false;
+            //一応Loading…出てたら消す
+            viewModel.setStateStopLoading();
             return;
         }
-*/
-        final YouTubeVideo video = playlist.get(position);
+
+        PlaylistsCash.Instance.setCurrentVideoIndex(position);
+        Log.d(TAG, "position is " + String.valueOf(position));
+        final YouTubeVideo video = PlaylistsCash.Instance.getNowPlaylist().get(position);
+
+        //読み込み中ダイアログ表示
+        viewModel.setStateStartLoading();
 
         String youtubeLink = Config.YOUTUBE_BASE_URL + video.getId();
         new YouTubeExtractor(this) {
@@ -415,6 +429,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             }
         }.execute(youtubeLink);
 
+
     }
 
     private void videoCreate(final int position) {
@@ -436,14 +451,6 @@ public class MediaPlayerService extends Service implements MediaController.Media
             //新しいビデオを再生するために一度resetしてMediaPlayerをIDLE状態にする
             mediaPlayer.reset();
             Log.d(TAG, "videoCreate");
-            //長いビデオだとarrows M02で途中でストリーミングが終わってしまう問題の解決のために
-            //分割ストリーミングの設定
-            /*Map<String, String> headers = new HashMap<>();
-            headers.put("Content-Type", "video/mp4"); // change content type if necessary
-            headers.put("Accept-Ranges", "bytes");
-            headers.put("Status", "206");
-            headers.put("Cache-control", "no-cache");
-            mediaPlayer.setDataSource(getApplicationContext(), mediaPath, headers);*/
             mediaPlayer.setDataSource(this, mediaPath);
             mediaPlayer.setDisplay(mHolder);
             //videoTitleをセット
@@ -529,16 +536,16 @@ public class MediaPlayerService extends Service implements MediaController.Media
         if (settings.getRepeatOne() == Settings.RepeatOne.ON) {
             // one song repeat
             //1曲リピート時
-            onPlaylistSelected(playlist, currentVideoIndex);
+            playlistHandle(currentVideoIndex);
         } else if (settings.getRepeatPlaylist() == ON) {
             // It is not a repeat of one song, and at play list repeat
             //1曲リピートではなく、かつプレイリストリピート時
-            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+            playlistHandle((currentVideoIndex + 1) % playlist.size());
         } else {
             // When it is neither a single song repeat nor a play list repeat
             //一曲リピートでもプレイリストリピートでもないとき
             if (currentVideoIndex + 1 < playlist.size()) {
-                onPlaylistSelected(playlist, currentVideoIndex + 1);
+                playlistHandle(currentVideoIndex + 1);
             } else {
                 //最後の曲のときはprogressbarが出ていたらそれを消すだけ。
                 viewModel.setStateStopLoading();
@@ -552,7 +559,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         if (playlist != null) {
             //When playlist is not set, you can also press it so that it will not fall at that time
             //playlistセットされてないときも押せてしまうからその時落ちないように
-            onPlaylistSelected(playlist, (currentVideoIndex + 1) % playlist.size());
+            playlistHandle((currentVideoIndex + 1) % playlist.size());
         }
     }
 
@@ -562,7 +569,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         //When playlist is not set, you can also press it so that it will not fall at that time
         //playlistセットされてないときも押せてしまうからその時落ちないように
         if (playlist != null) {
-            onPlaylistSelected(playlist, (currentVideoIndex - 1 + playlist.size()) % playlist.size());
+            playlistHandle((currentVideoIndex - 1 + playlist.size()) % playlist.size());
         }
     }
 

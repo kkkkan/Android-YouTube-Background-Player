@@ -94,7 +94,8 @@
                     android:id="@+id/tabs"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:tabGravity="fill" />
+                    app:tabGravity="fill"
+                    app:tabIndicatorColor="@drawable/tab_selector"/>
             </FrameLayout>
 
         </android.support.design.widget.AppBarLayout>

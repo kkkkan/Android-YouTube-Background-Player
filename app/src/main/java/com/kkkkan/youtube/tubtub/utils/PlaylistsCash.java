@@ -17,6 +17,7 @@ package com.kkkkan.youtube.tubtub.utils;
 
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,6 +25,7 @@ import java.util.List;
  */
 
 public class PlaylistsCash {
+    private final String TAG = "PlaylistsCash";
     static public PlaylistsCash Instance = new PlaylistsCash();
 
     private PlaylistsCash() {
@@ -50,7 +52,8 @@ public class PlaylistsCash {
     }
 
     public void setNowPlaylist(List<YouTubeVideo> nowPlaylist) {
-        this.nowPlaylist = nowPlaylist;
+        //nowPlaylistと参照先を変えないと履歴の再読み込みとかでthis.nowPlaylistまで変わっちゃう
+        this.nowPlaylist = new ArrayList<>(nowPlaylist);
     }
 
     public int getCurrentVideoIndex() {

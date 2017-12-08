@@ -11,4 +11,5 @@
     <color name="aquamarine">#7fffd4</color>
     <color name="playlistDetailTitlebarColor">#ffff00</color>
     <color name="red">#dc143c</color>
+    <color name="selectedTab">#b8860b</color>
 </resources>
