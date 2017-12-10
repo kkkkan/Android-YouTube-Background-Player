@@ -16,8 +16,6 @@
 package com.kkkkan.youtube.tubtub.fragments
 
 import android.os.Bundle
-import android.support.design.widget.TabLayout
-import android.support.v4.view.ViewPager
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -26,7 +24,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.kkkkan.youtube.R
-import com.kkkkan.youtube.tubtub.interfaces.ViewPagerListener
 
 /**
  * Created by admin on 2017/12/08.
@@ -55,7 +52,7 @@ class NowPlayingListFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         Log.d(TAG, "onDestroyView")
-        val fragment: android.support.v4.app.Fragment? = parentFragment
+        /*val fragment: android.support.v4.app.Fragment? = parentFragment
         if (fragment is ViewPagerListener) {
             val viewPager: ViewPager = fragment.viewPager
             viewPager.setOnTouchListener { v, event -> true }
@@ -63,7 +60,7 @@ class NowPlayingListFragment : BaseFragment() {
             val tabLayout: TabLayout = fragment.tabLayout
             tabLayout.setOnTouchListener { v, event -> true }
             tabLayout.visibility = View.VISIBLE
-        }
+        }*/
     }
 
     override fun onDestroy() {

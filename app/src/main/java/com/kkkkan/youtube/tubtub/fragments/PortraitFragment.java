@@ -29,14 +29,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.BaseColumns;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AlertDialog;
@@ -45,7 +43,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TouchDelegate;
@@ -74,7 +71,6 @@ import com.kkkkan.youtube.tubtub.interfaces.LoginHandler;
 import com.kkkkan.youtube.tubtub.interfaces.OnFavoritesSelected;
 import com.kkkkan.youtube.tubtub.interfaces.SurfaceHolderListener;
 import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
-import com.kkkkan.youtube.tubtub.interfaces.ViewPagerListener;
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
@@ -93,18 +89,20 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTubeWithC
 /**
  * A simple {@link Fragment} subclass.
  */
-public class PortraitFragment extends Fragment implements OnFavoritesSelected, PlaylistsAdapter.OnDetailClickListener, SurfaceHolder.Callback, ViewPagerListener {
+public class PortraitFragment extends Fragment implements OnFavoritesSelected, PlaylistsAdapter.OnDetailClickListener, SurfaceHolder.Callback {
     final private static String TAG = "PortraitFragment";
+
+    final private static String tabLayoutFragmentTAG = "tabLayoutFragmentTAG";
+    final private static String playlistDetailFragmentTAG = "playlistDetailFragmentTAG";
     final private static String nowPlayingListFragmentTAG = "nowPlayingListFragmentTAG";
+
+
+    final private static String tabLayoutFragmentBackstackTAG = "tabLayoutFragmentBackstackTAG";
     final private static String playlistDetailBackstackTAG = "playlistDetailBackstackTAG";
     final private static String nowplayingFragmentBackstackTAG = "nowplayingFragmentBackstackTAG";
+
     private Toolbar toolbar;
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
     private TitlebarListener titlebarListener;
-    private SearchFragment searchFragment;
-    private RecentlyWatchedFragment recentlyPlayedFragment;
-    private FavoritesFragment favoritesFragment;
     private CheckBox repeatOneBox;
     private CheckBox repeatPlaylistBox;
     private CheckBox nowPlayingListBox;
@@ -115,15 +113,6 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     //動画タイトル用
     private TextView titleView;
     private MainActivityViewModel viewModel;
-
-
-    private int[] tabIcons = {
-            R.drawable.ic_action_heart,
-            R.drawable.ic_recently_wached,
-            R.drawable.ic_search,
-            R.drawable.ic_action_playlist
-    };
-
 
     /**
      * When making a new instance of PortraitFragment make sure to make with this mezzo
@@ -156,6 +145,12 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
         final View view = inflater.inflate(R.layout.fragment_portrait, container, false);
+        if (savedInstanceState == null) {
+            FragmentTransaction ft = getChildFragmentManager().beginTransaction();
+            TabLayoutFragment fragment = TabLayoutFragment.newInstance();
+            ft.add(R.id.tab_and_viewpager, fragment, tabLayoutFragmentTAG);
+            ft.commit();
+        }
         titleView = (TextView) view.findViewById(R.id.title_view);
         viewModel.getVideoTitle().observe(this, new Observer<String>() {
             @Override
@@ -225,6 +220,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         });
         toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.menu_main);
+        toolbar.setTitle(getString(R.string.app_name));
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
@@ -234,6 +230,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
         final SearchView searchView = (SearchView) toolbar.getMenu().findItem(R.id.action_search).getActionView();
 
+
         final CursorAdapter suggestionAdapter = new SimpleCursorAdapter(getActivity(),
                 suggestions,
                 null,
@@ -242,7 +239,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                 0);
         final List<String> suggestions = new ArrayList<>();
 
-        /*setSuggestionsAdaper:独自のadapterをセットする*/
+        //setSuggestionsAdaper:独自のadapterをセットする
         searchView.setSuggestionsAdapter(suggestionAdapter);
 
         searchView.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
@@ -257,10 +254,12 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             @Override
             public boolean onSuggestionClick(int position) {
                 Log.d(TAG, "onSuggestionClick");
-
                 startSearch(searchView, suggestions.get(position));
-
-                return true;
+                //searchView.clearFocus();
+                //searchView.setQueryHint(suggestions.get(position));
+                searchView.onActionViewCollapsed();
+                toolbar.setSubtitle(suggestions.get(position));
+                return false;
             }
         });
 
@@ -270,8 +269,13 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             public boolean onQueryTextSubmit(String s) {
                 Log.d(TAG, "onQueryTextSubmit");
                 startSearch(searchView, s);
+                //searchView.clearFocus();
+                //searchView.setQueryHint(s);
+                searchView.onActionViewCollapsed();
+                toolbar.setSubtitle(s);
                 return false; //if true, no new intent is started
             }
+
 
             /*検索ワードが変わったら*/
             @Override
@@ -316,30 +320,15 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                                 suggestions.addAll(Collections.<String>emptyList());
                             }
                         }).forceLoad();
-                        return true;
+                        return false;
                     }
                 }
                 Log.d(TAG, "onQueryTextChange:query.length() = 0");
                 return false;
             }
+
+
         });
-
-        //setSupportActionBar(toolbar);
-
-        //Do not turn back to action bar
-        //アクションバーに戻るボタンをつけない
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-        //Set the fragment held by viewPage to 3
-        //viewPageでキャッシュして保持するfragmentを三枚に設定
-        viewPager = (ViewPager) view.findViewById(R.id.viewpager);
-        viewPager.setOffscreenPageLimit(3);
-        setupViewPager(viewPager);
-
-        tabLayout = (TabLayout) view.findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
-
-        setupTabIcons();
-
         setHasOptionsMenu(true);
         return view;
     }
@@ -384,9 +373,15 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     @Override
     public void onFavoritesSelected(YouTubeVideo video, boolean isChecked) {
         if (isChecked) {
-            favoritesFragment.addToFavoritesList(video);
+            FavoritesFragment.addToFavoritesList(video);
         } else {
-            favoritesFragment.removeFromFavorites(video);
+            Fragment fragment = getChildFragmentManager().findFragmentByTag(tabLayoutFragmentTAG);
+            if (fragment instanceof TabLayoutFragment) {
+                //今表示がviewPagerの乗っているfragmentだったらviewpager上のfavoritefragmentにおしらせ
+                ((TabLayoutFragment) fragment).removeFromFavorites(video);
+            } else {
+                YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).deleteByVideoId(video.getId());
+            }
         }
     }
 
@@ -590,27 +585,9 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
 
         FragmentTransaction ft = getChildFragmentManager().beginTransaction();
-        ft.add(R.id.tab_and_viewpager, playlistDetailFragment);
-        //このままだと下のviewpageが見えていて且つタッチできてしまうので対策
-        //playlistdetailのdestroyで、可視化＆タッチ有効化
-        viewPager.setVisibility(View.INVISIBLE);
-        viewPager.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return false;
-            }
-        });
-        //tabも見えるし触れちゃうのでoffにする。
-        // playlistTitleFragmentのdestroyで可視化＆タッチ有効化
-        tabLayout.setVisibility(View.INVISIBLE);
-        tabLayout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return false;
-            }
-        });
-        //複数addしてもcommit()呼び出しまでを一つとしてスタックに入れてくれる。
-        ft.addToBackStack(null);
+        ft.replace(R.id.tab_and_viewpager, playlistDetailFragment, playlistDetailFragmentTAG);
+
+        ft.addToBackStack(playlistDetailBackstackTAG);
         ft.commit();
     }
 
@@ -654,7 +631,10 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).deleteAll();
-                        recentlyPlayedFragment.clearRecentlyPlayedList();
+                        Fragment fragment = getChildFragmentManager().findFragmentByTag(tabLayoutFragmentTAG);
+                        if (fragment instanceof TabLayoutFragment) {
+                            ((TabLayoutFragment) fragment).clearRecentlyPlayedList();
+                        }
                     }
                 }).setNegativeButton("cancel", null).show();
                 return true;
@@ -683,12 +663,17 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             Log.d(TAG, "Intent.ACTION_SEARCH.equals(action)");
             //検索の時
             String query = intent.getStringExtra(SearchManager.QUERY);
-            //スムーズスクロールありでfragmenを2に変更
-            viewPager.setCurrentItem(2, true); //switch to search fragment
+            FragmentManager fragmentManager = getChildFragmentManager();
 
-            if (searchFragment != null) {
-                Log.d(TAG, "searchFragment != null");
-                searchFragment.searchQuery(query);
+            FragmentTransaction fragmentTransaction=fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.tab_and_viewpager,TabLayoutFragment.newInstance(),tabLayoutFragmentTAG);
+            fragmentTransaction.addToBackStack(tabLayoutFragmentBackstackTAG);
+            fragmentTransaction.commit();
+
+            Fragment fragment = fragmentManager.findFragmentByTag(tabLayoutFragmentTAG);
+
+            if (fragment instanceof TabLayoutFragment) {
+                ((TabLayoutFragment) fragment).handleSearch(query);
             }
         }
     }
@@ -718,50 +703,6 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             ((SurfaceHolderListener) activity).releaseSurfaceHolder(paramSurfaceHolder);
         }
     }
-
-    @Override
-    public ViewPager getViewPager() {
-        return viewPager;
-    }
-
-    @Override
-    public TabLayout getTabLayout() {
-        return tabLayout;
-    }
-
-
-    /**
-     * Setups icons for 3 tabs
-     */
-    private void setupTabIcons() {
-        tabLayout.getTabAt(0).setIcon(tabIcons[0]);
-        tabLayout.getTabAt(1).setIcon(tabIcons[1]);
-        tabLayout.getTabAt(2).setIcon(tabIcons[2]);
-        tabLayout.getTabAt(3).setIcon(tabIcons[3]);
-    }
-
-    /**
-     * Setups viewPager for switching between pages according to the selected tab
-     *
-     * @param viewPager
-     */
-    private void setupViewPager(ViewPager viewPager) {
-        Log.d(TAG, "setupViewPager");
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager());
-
-        searchFragment = SearchFragment.newInstance();
-        recentlyPlayedFragment = RecentlyWatchedFragment.newInstance();
-        favoritesFragment = FavoritesFragment.newInstance();
-        PlaylistsFragment playlistsFragment = PlaylistsFragment.newInstance();
-
-        adapter.addFragment(favoritesFragment, null);//0
-        adapter.addFragment(recentlyPlayedFragment, null);//1
-        adapter.addFragment(searchFragment, null);//2
-        adapter.addFragment(playlistsFragment, null);//3
-
-        viewPager.setAdapter(adapter);
-    }
-
 
     /**
      * チェックボックスの画像を設定に合わせるメゾッド
@@ -854,31 +795,33 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             ft.replace(R.id.tab_and_viewpager, nowPlayingListFragment, nowPlayingListFragmentTAG);
             //このままだと下のviewpageが見えていて且つタッチできてしまうので対策
             //playlistdetailのdestroyで、可視化＆タッチ有効化
-            viewPager.setVisibility(View.INVISIBLE);
-            viewPager.setOnTouchListener(new View.OnTouchListener() {
+            //viewPager.setVisibility(View.INVISIBLE);
+            /*viewPager.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
                     return false;
                 }
-            });
+            });*/
             //tabも見えるし触れちゃうのでoffにする。
             // playlistTitleFragmentのdestroyで可視化＆タッチ有効化
-            tabLayout.setVisibility(View.INVISIBLE);
-            tabLayout.setOnTouchListener(new View.OnTouchListener() {
+            //tabLayout.setVisibility(View.INVISIBLE);
+            /*tabLayout.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
                     return false;
                 }
-            });
+            });*/
+            ft.addToBackStack(nowplayingFragmentBackstackTAG);
             ft.commit();
 
         } else {
             Fragment fragment = fragmentManager.findFragmentByTag(nowPlayingListFragmentTAG);
             Log.d(TAG, "nowPlayingListFragmentTAG : " + String.valueOf(fragment != null));
             if (fragment != null) {
-                FragmentTransaction ft = fragmentManager.beginTransaction();
-                ft.remove(fragment);
-                ft.commit();
+                //FragmentTransaction ft = fragmentManager.beginTransaction();
+                //ft.remove(fragment);
+                fragmentManager.popBackStack();
+                //ft.commit();
             }
         }
     }

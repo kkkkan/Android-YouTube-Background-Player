@@ -23,11 +23,9 @@ import android.content.DialogInterface;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
@@ -35,7 +33,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -51,7 +48,6 @@ import com.kkkkan.youtube.tubtub.adapters.PlaylistDetailAdapter;
 import com.kkkkan.youtube.tubtub.interfaces.ItemEventsListener;
 import com.kkkkan.youtube.tubtub.interfaces.OnFavoritesSelected;
 import com.kkkkan.youtube.tubtub.interfaces.OnItemSelected;
-import com.kkkkan.youtube.tubtub.interfaces.ViewPagerListener;
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
@@ -186,8 +182,8 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
         //Get the height of playlistDetailFragment
         //playlistDetailFragmentの高さを取得
-        FrameLayout frameLayout = (FrameLayout) (getActivity()).findViewById(R.id.frame_layout);
-        int framelayoutHeight = frameLayout.getHeight();
+       // FrameLayout frameLayout = (FrameLayout) getView().findViewById(R.id.frame_layout);
+        int framelayoutHeight = getView().getHeight();
 
         //Set in the middle of playlistDetailFragment
         //playlistDetailFragmentの真ん中にセット
@@ -215,7 +211,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
     public void onDestroy() {
         super.onDestroy();
-        Fragment fragment = getParentFragment();
+        /*Fragment fragment = getParentFragment();
         if (fragment instanceof ViewPagerListener) {
             ViewPager viewPager = ((ViewPagerListener) fragment).getViewPager();
             viewPager.setOnTouchListener(new View.OnTouchListener() {
@@ -234,7 +230,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                 }
             });
         }
-
+*/
     }
 
 
