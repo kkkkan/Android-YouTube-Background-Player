@@ -36,7 +36,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -182,7 +181,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
         //Get the height of playlistDetailFragment
         //playlistDetailFragmentの高さを取得
-       // FrameLayout frameLayout = (FrameLayout) getView().findViewById(R.id.frame_layout);
+        // FrameLayout frameLayout = (FrameLayout) getView().findViewById(R.id.frame_layout);
         int framelayoutHeight = getView().getHeight();
 
         //Set in the middle of playlistDetailFragment

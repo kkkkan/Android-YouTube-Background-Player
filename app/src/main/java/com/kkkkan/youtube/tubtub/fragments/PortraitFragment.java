@@ -665,8 +665,8 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             String query = intent.getStringExtra(SearchManager.QUERY);
             FragmentManager fragmentManager = getChildFragmentManager();
 
-            FragmentTransaction fragmentTransaction=fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.tab_and_viewpager,TabLayoutFragment.newInstance(),tabLayoutFragmentTAG);
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.tab_and_viewpager, TabLayoutFragment.newInstance(), tabLayoutFragmentTAG);
             fragmentTransaction.addToBackStack(tabLayoutFragmentBackstackTAG);
             fragmentTransaction.commit();
 
@@ -674,6 +674,8 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
             if (fragment instanceof TabLayoutFragment) {
                 ((TabLayoutFragment) fragment).handleSearch(query);
+            } else {
+
             }
         }
     }

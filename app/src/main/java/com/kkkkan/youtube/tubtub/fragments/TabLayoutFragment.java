@@ -15,7 +15,6 @@
  */
 package com.kkkkan.youtube.tubtub.fragments;
 
-import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -23,8 +22,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v4.widget.CursorAdapter;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,8 +35,6 @@ import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.kkkkan.youtube.R.layout.suggestions;
 
 /**
  * Created by ka1n9 on 2017/12/10.
