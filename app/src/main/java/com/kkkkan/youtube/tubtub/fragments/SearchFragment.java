@@ -35,6 +35,7 @@ package com.kkkkan.youtube.tubtub.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -196,6 +197,13 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
             networkConf.createNetErrorDialog();
             return;
         }
+        //すぐ検索中のくるくる出そうとするとpopBackStack()で戻ってきたときうまく表示されないので少し遅らせる
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                loadingProgressBar.setVisibility(View.VISIBLE);
+            }
+        },50);
         loadingProgressBar.setVisibility(View.VISIBLE);
 
         getLoaderManager().restartLoader(Config.YouTubeVideosLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
