@@ -320,7 +320,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
 
         });
-        
+
         //バックボタンで今再生中のリストを消した時にnowPlayingListBoxの表示を合わせる
         getChildFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override

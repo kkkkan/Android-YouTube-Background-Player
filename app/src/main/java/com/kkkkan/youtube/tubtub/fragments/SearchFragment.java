@@ -203,7 +203,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
             public void run() {
                 loadingProgressBar.setVisibility(View.VISIBLE);
             }
-        },50);
+        }, 50);
         loadingProgressBar.setVisibility(View.VISIBLE);
 
         getLoaderManager().restartLoader(Config.YouTubeVideosLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {

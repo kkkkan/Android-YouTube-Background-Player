@@ -210,26 +210,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
     public void onDestroy() {
         super.onDestroy();
-        /*Fragment fragment = getParentFragment();
-        if (fragment instanceof ViewPagerListener) {
-            ViewPager viewPager = ((ViewPagerListener) fragment).getViewPager();
-            viewPager.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    return true;
-                }
-            });
-            viewPager.setVisibility(View.VISIBLE);
-            TabLayout tabLayout = ((ViewPagerListener) fragment).getTabLayout();
-            tabLayout.setVisibility(View.VISIBLE);
-            tabLayout.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    return true;
-                }
-            });
-        }
-*/
+
     }
 
 
