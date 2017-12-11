@@ -88,7 +88,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     private OnItemSelected itemSelected;
     private OnFavoritesSelected onFavoritesSelected;
 
-    private final int tag=PlaylistsCash.tag;
+    private final int tag = PlaylistsCash.tag;
 
     public SearchFragment() {
         // Required empty public constructor
@@ -96,9 +96,9 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     }
 
     public static SearchFragment newInstance() {
-        SearchFragment fragment=new SearchFragment();
-        Log.d(TAG,"newInstance()");
-        Log.d(TAG,"tag is : "+String.valueOf(fragment.tag));
+        SearchFragment fragment = new SearchFragment();
+        Log.d(TAG, "newInstance()");
+        Log.d(TAG, "tag is : " + String.valueOf(fragment.tag));
         return fragment;
     }
 
@@ -106,7 +106,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     public void onAttach(Context context) {
         super.onAttach(context);
         super.onAttach(context);
-        Log.d(TAG,"onAttach");
+        Log.d(TAG, "onAttach");
         if (context instanceof MainActivity) {
             this.context = context;
             itemSelected = (MainActivity) context;
@@ -121,7 +121,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG,"onCreate");
+        Log.d(TAG, "onCreate");
         searchResultsList = PlaylistsCash.Instance.getSearchResultsList();
         if (searchResultsList == null) {
             searchResultsList = new ArrayList<>();
@@ -132,9 +132,9 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        super.onCreateView(inflater,container,savedInstanceState);
-        Log.d(TAG,"onCreateView");
-        Log.d(TAG,"tag is : "+String.valueOf(tag));
+        super.onCreateView(inflater, container, savedInstanceState);
+        Log.d(TAG, "onCreateView");
+        Log.d(TAG, "tag is : " + String.valueOf(tag));
         View v = inflater.inflate(R.layout.fragment_list, container, false);
         videosFoundListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
@@ -158,7 +158,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     @Override
     public void onResume() {
         super.onResume();
-        Log.d(TAG,"onResume");
+        Log.d(TAG, "onResume");
         //Notice that the data changed to reflect the results of favorite operation on other tabs
         //他のタブでのfavoriteの操作の結果を反映させるためにデータが変化したことをお知らせ
         videoListAdapter.notifyDataSetChanged();
@@ -167,20 +167,21 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     @Override
     public void onDetach() {
         super.onDetach();
-        Log.d(TAG,"onDetach");
+        Log.d(TAG, "onDetach");
         this.context = null;
         this.itemSelected = null;
         this.onFavoritesSelected = null;
     }
 
-    public void reflectSearchResult(List<YouTubeVideo> data){
-        Log.d(TAG," reflectSearchResult tag is : "+String.valueOf(tag));
+    public void reflectSearchResult(List<YouTubeVideo> data) {
+        Log.d(TAG, " reflectSearchResult tag is : " + String.valueOf(tag));
         videosFoundListView.smoothScrollToPosition(0);
         searchResultsList.clear();
         searchResultsList.addAll(data);
         videoListAdapter.notifyDataSetChanged();
         //loadingProgressBar.setVisibility(View.INVISIBLE);
     }
+
     /**
      * Search for query on youTube by using YouTube Data API V3
      *

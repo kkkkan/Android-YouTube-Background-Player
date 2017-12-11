@@ -21,7 +21,6 @@ import android.app.SearchManager;
 import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.MatrixCursor;
 import android.graphics.Rect;
@@ -146,7 +145,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
-        super.onCreateView(inflater,container,savedInstanceState);
+        super.onCreateView(inflater, container, savedInstanceState);
         final View view = inflater.inflate(R.layout.fragment_portrait, container, false);
         if (savedInstanceState == null) {
             FragmentTransaction ft = getChildFragmentManager().beginTransaction();
@@ -643,7 +642,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
 
     private void startSearch(SearchView searchView, String s) {
-       // searchView.setQuery(s, false);
+        // searchView.setQuery(s, false);
         searchView.clearFocus();
 
         searchView.onActionViewCollapsed();
@@ -656,12 +655,12 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
      *
      * @param query
      */
-    private  void searchQuery(final String query) {
+    private void searchQuery(final String query) {
         Log.d(TAG, "searchQuery : " + query);
         //check network connectivity
         //When searching, if you are not connected to the network, issue an error.
         //検索するにあたって、ネットワークにつながってなかったらerrorを出す。
-        NetworkConf networkConf=new NetworkConf(getActivity());
+        NetworkConf networkConf = new NetworkConf(getActivity());
         if (!networkConf.isNetworkAvailable()) {
             networkConf.createNetErrorDialog();
             return;
@@ -686,20 +685,21 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
             @Override
             public void onLoaderReset(Loader<List<YouTubeVideo>> loader) {
-                List<YouTubeVideo> newList=new ArrayList<>();
+                List<YouTubeVideo> newList = new ArrayList<>();
                 PlaylistsCash.Instance.setSearchResultsList(newList);
                 handleSearchData(newList);
             }
         }).forceLoad();
     }
+
     private void handleSearchData(List<YouTubeVideo> data) {
         Log.d(TAG, "handleSearchData");
         FragmentManager fragmentManager = getChildFragmentManager();
-        if(fragmentManager.getBackStackEntryCount()!=0) {
+        if (fragmentManager.getBackStackEntryCount() != 0) {
             fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
-        Fragment fragment=fragmentManager.findFragmentByTag(tabLayoutFragmentTAG);
-        if(fragment instanceof TabLayoutFragment){
+        Fragment fragment = fragmentManager.findFragmentByTag(tabLayoutFragmentTAG);
+        if (fragment instanceof TabLayoutFragment) {
             ((TabLayoutFragment) fragment).handleSearch(data);
         }
 

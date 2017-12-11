@@ -17,13 +17,10 @@ package com.kkkkan.youtube.tubtub.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -47,10 +44,10 @@ public class TabLayoutFragment extends Fragment implements OnFavoritesSelected, 
     final private static String TAG = "TabLayoutFragment";
     private TabLayout tabLayout;
     private ViewPager viewPager;
-    private final int favoriteTabNum=0;
-    private final int recentlyTabNum=1;
-    private final int searchTabNum=2;
-    private final int playlistTabNum=3;
+    private final int favoriteTabNum = 0;
+    private final int recentlyTabNum = 1;
+    private final int searchTabNum = 2;
+    private final int playlistTabNum = 3;
     private int[] tabIcons = {
             R.drawable.ic_action_heart,
             R.drawable.ic_recently_wached,
@@ -70,7 +67,6 @@ public class TabLayoutFragment extends Fragment implements OnFavoritesSelected, 
     }
 
 
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -81,7 +77,7 @@ public class TabLayoutFragment extends Fragment implements OnFavoritesSelected, 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
-        Log.d(TAG,"savedInstanceState==null is : "+String.valueOf(savedInstanceState==null));
+        Log.d(TAG, "savedInstanceState==null is : " + String.valueOf(savedInstanceState == null));
         final View view = inflater.inflate(R.layout.fragment_tab, container, false);
 
         //Set the fragment held by viewPage to 3
@@ -103,19 +99,19 @@ public class TabLayoutFragment extends Fragment implements OnFavoritesSelected, 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        Log.d(TAG,"onDestroyView()");
+        Log.d(TAG, "onDestroyView()");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(TAG,"onDestroy()");
+        Log.d(TAG, "onDestroy()");
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        Log.d(TAG,"onDetach()");
+        Log.d(TAG, "onDetach()");
     }
 
     /**
@@ -135,25 +131,16 @@ public class TabLayoutFragment extends Fragment implements OnFavoritesSelected, 
      */
     private void setupViewPager(ViewPager viewPager) {
         Log.d(TAG, "setupViewPager");
-        /*PagerAdapter adapter=viewPager.getAdapter();
-        Log.d(TAG,"adapter instanceof ViewPagerAdapter is : "+String.valueOf(adapter instanceof ViewPagerAdapter));
-        if(adapter instanceof ViewPagerAdapter){
-            ((ViewPagerAdapter) adapter).destroyAllItem(viewPager);
-            adapter.notifyDataSetChanged();
-        }else {
-            adapter=new ViewPagerAdapter(this.getChildFragmentManager());
-        }*/
-        //TabLayoutFragment.ViewPagerAdapter adapter = new TabLayoutFragment.ViewPagerAdapter(this.getChildFragmentManager());
-        ViewPagerAdapter viewPagerAdapter=new ViewPagerAdapter(this.getChildFragmentManager());//(ViewPagerAdapter) adapter;
+        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getChildFragmentManager());
         SearchFragment searchFragment = SearchFragment.newInstance();
         RecentlyWatchedFragment recentlyPlayedFragment = RecentlyWatchedFragment.newInstance();
         FavoritesFragment favoritesFragment = FavoritesFragment.newInstance();
         PlaylistsFragment playlistsFragment = PlaylistsFragment.newInstance();
 
-        viewPagerAdapter.addFragment(favoriteTabNum,favoritesFragment, null);//0
-        viewPagerAdapter.addFragment(recentlyTabNum,recentlyPlayedFragment, null);//1
-        viewPagerAdapter.addFragment(searchTabNum,searchFragment, null);//2
-        viewPagerAdapter.addFragment(playlistTabNum,playlistsFragment, null);//3
+        viewPagerAdapter.addFragment(favoriteTabNum, favoritesFragment, null);//0
+        viewPagerAdapter.addFragment(recentlyTabNum, recentlyPlayedFragment, null);//1
+        viewPagerAdapter.addFragment(searchTabNum, searchFragment, null);//2
+        viewPagerAdapter.addFragment(playlistTabNum, playlistsFragment, null);//3
 
         viewPagerAdapter.notifyDataSetChanged();
         viewPager.setAdapter(viewPagerAdapter);
@@ -162,7 +149,7 @@ public class TabLayoutFragment extends Fragment implements OnFavoritesSelected, 
     public void handleSearch(List<YouTubeVideo> data) {
         //スムーズスクロールありでfragmenを2に変更
         viewPager.setCurrentItem(2, true); //switch to search fragment
-        Fragment searchFragment=getFragmentInVewPager(searchTabNum);
+        Fragment searchFragment = getFragmentInVewPager(searchTabNum);
         if (searchFragment instanceof SearchFragment) {
             Log.d(TAG, "searchFragment != null");
             ((SearchFragment) searchFragment).reflectSearchResult(data);
@@ -170,15 +157,15 @@ public class TabLayoutFragment extends Fragment implements OnFavoritesSelected, 
     }
 
     public void clearRecentlyPlayedList() {
-        Fragment recentlyWatchedFragment=getFragmentInVewPager(recentlyTabNum);
-        if(recentlyWatchedFragment instanceof RecentlyWatchedFragment){
+        Fragment recentlyWatchedFragment = getFragmentInVewPager(recentlyTabNum);
+        if (recentlyWatchedFragment instanceof RecentlyWatchedFragment) {
             ((RecentlyWatchedFragment) recentlyWatchedFragment).clearRecentlyPlayedList();
         }
     }
 
     public void removeFromFavorites(YouTubeVideo video) {
-        Fragment favoritesFragment=getFragmentInVewPager(favoriteTabNum);
-        if(favoritesFragment instanceof FavoritesFragment) {
+        Fragment favoritesFragment = getFragmentInVewPager(favoriteTabNum);
+        if (favoritesFragment instanceof FavoritesFragment) {
             ((FavoritesFragment) favoritesFragment).removeFromFavorites(video);
         }
     }
@@ -207,23 +194,23 @@ public class TabLayoutFragment extends Fragment implements OnFavoritesSelected, 
         }
     }
 
-    @Nullable
-    private Fragment getFragmentInVewPager(int index){
+    private Fragment getFragmentInVewPager(int index) {
         ViewPagerAdapter adapter = (ViewPagerAdapter) viewPager.getAdapter();
         //instantiateItem()で今viewpagerで表示しているfragmentセット上のfragment取得できる
         Fragment fragment = (Fragment) adapter.instantiateItem(viewPager, index);
         return fragment;
     }
+
     /**
      * Class which provides adapter for fragment pager
      */
     class ViewPagerAdapter extends FragmentStatePagerAdapter {
         private final List<android.support.v4.app.Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
+
         private ViewPagerAdapter(FragmentManager manager) {
             super(manager);
         }
-
 
 
         @Override
@@ -236,9 +223,9 @@ public class TabLayoutFragment extends Fragment implements OnFavoritesSelected, 
             return mFragmentList.size();
         }
 
-        private void addFragment(int index,android.support.v4.app.Fragment fragment, String title) {
-            mFragmentList.add(index,fragment);
-            mFragmentTitleList.add(index,title);
+        private void addFragment(int index, android.support.v4.app.Fragment fragment, String title) {
+            mFragmentList.add(index, fragment);
+            mFragmentTitleList.add(index, title);
         }
 
 
@@ -247,16 +234,6 @@ public class TabLayoutFragment extends Fragment implements OnFavoritesSelected, 
             return mFragmentTitleList.get(position);
         }
 
-        public void destroyAllItem(ViewPager pager) {
-            for (int i = 0; i < getCount() - 1; i++) {
-                try {
-                    Object obj = this.instantiateItem(pager, i);
-                    if (obj != null)
-                        destroyItem(pager, i, obj);
-                } catch (Exception e) {
-                }
-            }
-        }
 
     }
 
