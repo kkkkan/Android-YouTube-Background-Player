@@ -26,6 +26,7 @@ import java.util.List;
 
 public class PlaylistsCash {
     private final String TAG = "PlaylistsCash";
+    public static int tag=0;
     static public PlaylistsCash Instance = new PlaylistsCash();
 
     private PlaylistsCash() {
@@ -36,11 +37,11 @@ public class PlaylistsCash {
     private List<YouTubeVideo> searchResultsList;
 
     public void setSearchResultsList(List<YouTubeVideo> searchResultsList) {
-        this.searchResultsList = searchResultsList;
+        this.searchResultsList = new ArrayList<>(searchResultsList);
     }
 
     public List<YouTubeVideo> getSearchResultsList() {
-        return searchResultsList;
+        return searchResultsList!=null?new ArrayList<>(searchResultsList):null;
     }
 
     //NowPlayingListFragment用の、今再生しているplaylistとpositionを入れとくためのList
@@ -61,6 +62,6 @@ public class PlaylistsCash {
     }
 
     public List<YouTubeVideo> getNowPlaylist() {
-        return nowPlaylist;
+        return nowPlaylist!=null?new ArrayList<>(nowPlaylist):null;
     }
 }

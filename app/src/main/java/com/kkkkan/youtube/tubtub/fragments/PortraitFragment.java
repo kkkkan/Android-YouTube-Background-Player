@@ -75,9 +75,11 @@ import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
+import com.kkkkan.youtube.tubtub.utils.PlaylistsCash;
 import com.kkkkan.youtube.tubtub.utils.Settings;
 import com.kkkkan.youtube.tubtub.utils.VideoQualitys;
 import com.kkkkan.youtube.tubtub.youtube.SuggestionsLoader;
+import com.kkkkan.youtube.tubtub.youtube.YouTubeVideosLoader;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -144,6 +146,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
+        super.onCreateView(inflater,container,savedInstanceState);
         final View view = inflater.inflate(R.layout.fragment_portrait, container, false);
         if (savedInstanceState == null) {
             FragmentTransaction ft = getChildFragmentManager().beginTransaction();
@@ -255,10 +258,6 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             public boolean onSuggestionClick(int position) {
                 Log.d(TAG, "onSuggestionClick");
                 startSearch(searchView, suggestions.get(position));
-                //searchView.clearFocus();
-                //searchView.setQueryHint(suggestions.get(position));
-                searchView.onActionViewCollapsed();
-                toolbar.setSubtitle(suggestions.get(position));
                 return false;
             }
         });
@@ -269,10 +268,6 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             public boolean onQueryTextSubmit(String s) {
                 Log.d(TAG, "onQueryTextSubmit");
                 startSearch(searchView, s);
-                //searchView.clearFocus();
-                //searchView.setQueryHint(s);
-                searchView.onActionViewCollapsed();
-                toolbar.setSubtitle(s);
                 return false; //if true, no new intent is started
             }
 
@@ -356,15 +351,6 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     public void onDetach() {
         super.onDetach();
         Log.d(TAG, "onDetach");
-    }
-
-    private void startSearch(SearchView searchView, String s) {
-        searchView.setQuery(s, false);
-        searchView.clearFocus();
-
-        Intent suggestionIntent = new Intent(Intent.ACTION_SEARCH);
-        suggestionIntent.putExtra(SearchManager.QUERY, s);
-        handleIntent(suggestionIntent);
     }
 
     /**
@@ -655,29 +641,68 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         return super.onOptionsItemSelected(item);
     }
 
-    private void handleIntent(Intent intent) {
-        Log.d(TAG, "handleIntent(");
-        String action = intent.getAction();
-        String type = intent.getType();
-        if (Intent.ACTION_SEARCH.equals(action)) {
-            Log.d(TAG, "Intent.ACTION_SEARCH.equals(action)");
-            //検索の時
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            FragmentManager fragmentManager = getChildFragmentManager();
 
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.tab_and_viewpager, TabLayoutFragment.newInstance(), tabLayoutFragmentTAG);
-            fragmentTransaction.addToBackStack(tabLayoutFragmentBackstackTAG);
-            fragmentTransaction.commit();
+    private void startSearch(SearchView searchView, String s) {
+       // searchView.setQuery(s, false);
+        searchView.clearFocus();
 
-            Fragment fragment = fragmentManager.findFragmentByTag(tabLayoutFragmentTAG);
+        searchView.onActionViewCollapsed();
+        toolbar.setSubtitle(s);
+        searchQuery(s);
+    }
 
-            if (fragment instanceof TabLayoutFragment) {
-                ((TabLayoutFragment) fragment).handleSearch(query);
-            } else {
-
-            }
+    /**
+     * Search for query on youTube by using YouTube Data API V3
+     *
+     * @param query
+     */
+    private  void searchQuery(final String query) {
+        Log.d(TAG, "searchQuery : " + query);
+        //check network connectivity
+        //When searching, if you are not connected to the network, issue an error.
+        //検索するにあたって、ネットワークにつながってなかったらerrorを出す。
+        NetworkConf networkConf=new NetworkConf(getActivity());
+        if (!networkConf.isNetworkAvailable()) {
+            networkConf.createNetErrorDialog();
+            return;
         }
+        //loadingProgressBar.setVisibility(View.VISIBLE);
+
+        getLoaderManager().restartLoader(Config.YouTubeVideosLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
+            @Override
+            public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
+                return new YouTubeVideosLoader(getActivity(), query);
+            }
+
+            @Override
+            public void onLoadFinished(Loader<List<YouTubeVideo>> loader, List<YouTubeVideo> data) {
+                Log.d(TAG, "onLoadFinished");
+                if (data == null)
+                    return;
+                Log.d(TAG, "onLoadFinished : data != null");
+                PlaylistsCash.Instance.setSearchResultsList(data);
+                handleSearchData(data);
+            }
+
+            @Override
+            public void onLoaderReset(Loader<List<YouTubeVideo>> loader) {
+                List<YouTubeVideo> newList=new ArrayList<>();
+                PlaylistsCash.Instance.setSearchResultsList(newList);
+                handleSearchData(newList);
+            }
+        }).forceLoad();
+    }
+    private void handleSearchData(List<YouTubeVideo> data) {
+        Log.d(TAG, "handleSearchData");
+        FragmentManager fragmentManager = getChildFragmentManager();
+        if(fragmentManager.getBackStackEntryCount()!=0) {
+            fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+        Fragment fragment=fragmentManager.findFragmentByTag(tabLayoutFragmentTAG);
+        if(fragment instanceof TabLayoutFragment){
+            ((TabLayoutFragment) fragment).handleSearch(data);
+        }
+
     }
 
 
