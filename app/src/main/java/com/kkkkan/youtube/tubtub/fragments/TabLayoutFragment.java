@@ -142,17 +142,23 @@ public class TabLayoutFragment extends Fragment implements OnFavoritesSelected, 
         viewPagerAdapter.addFragment(searchTabNum, searchFragment, null);//2
         viewPagerAdapter.addFragment(playlistTabNum, playlistsFragment, null);//3
 
-        viewPagerAdapter.notifyDataSetChanged();
         viewPager.setAdapter(viewPagerAdapter);
     }
 
-    public void handleSearch(List<YouTubeVideo> data) {
-        //スムーズスクロールありでfragmenを2に変更
-        viewPager.setCurrentItem(2, true); //switch to search fragment
+
+    public void startSearch(String query) {
+        //すぐにviewPagerのpositionを変えると、検索のためにpopBackStack()してきてたときに
+        //検索結果ページに動いてくれないので少し遅らす
+        viewPager.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                viewPager.setCurrentItem(searchTabNum, true);
+            }
+        }, 100);
         Fragment searchFragment = getFragmentInVewPager(searchTabNum);
         if (searchFragment instanceof SearchFragment) {
             Log.d(TAG, "searchFragment != null");
-            ((SearchFragment) searchFragment).reflectSearchResult(data);
+            ((SearchFragment) searchFragment).searchQuery(query);
         }
     }
 

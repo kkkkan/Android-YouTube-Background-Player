@@ -30,7 +30,6 @@ import android.provider.BaseColumns;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -74,11 +73,9 @@ import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
-import com.kkkkan.youtube.tubtub.utils.PlaylistsCash;
 import com.kkkkan.youtube.tubtub.utils.Settings;
 import com.kkkkan.youtube.tubtub.utils.VideoQualitys;
 import com.kkkkan.youtube.tubtub.youtube.SuggestionsLoader;
-import com.kkkkan.youtube.tubtub.youtube.YouTubeVideosLoader;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -322,6 +319,17 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             }
 
 
+        });
+        
+        //バックボタンで今再生中のリストを消した時にnowPlayingListBoxの表示を合わせる
+        getChildFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                Fragment fragment = getChildFragmentManager().findFragmentByTag(nowPlayingListFragmentTAG);
+                if (!(fragment instanceof NowPlayingListFragment)) {
+                    nowPlayingListBox.setChecked(false);
+                }
+            }
         });
         setHasOptionsMenu(true);
         return view;
@@ -647,64 +655,18 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
         searchView.onActionViewCollapsed();
         toolbar.setSubtitle(s);
-        searchQuery(s);
-    }
 
-    /**
-     * Search for query on youTube by using YouTube Data API V3
-     *
-     * @param query
-     */
-    private void searchQuery(final String query) {
-        Log.d(TAG, "searchQuery : " + query);
-        //check network connectivity
-        //When searching, if you are not connected to the network, issue an error.
-        //検索するにあたって、ネットワークにつながってなかったらerrorを出す。
-        NetworkConf networkConf = new NetworkConf(getActivity());
-        if (!networkConf.isNetworkAvailable()) {
-            networkConf.createNetErrorDialog();
-            return;
-        }
-        //loadingProgressBar.setVisibility(View.VISIBLE);
-
-        getLoaderManager().restartLoader(Config.YouTubeVideosLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
-            @Override
-            public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
-                return new YouTubeVideosLoader(getActivity(), query);
-            }
-
-            @Override
-            public void onLoadFinished(Loader<List<YouTubeVideo>> loader, List<YouTubeVideo> data) {
-                Log.d(TAG, "onLoadFinished");
-                if (data == null)
-                    return;
-                Log.d(TAG, "onLoadFinished : data != null");
-                PlaylistsCash.Instance.setSearchResultsList(data);
-                handleSearchData(data);
-            }
-
-            @Override
-            public void onLoaderReset(Loader<List<YouTubeVideo>> loader) {
-                List<YouTubeVideo> newList = new ArrayList<>();
-                PlaylistsCash.Instance.setSearchResultsList(newList);
-                handleSearchData(newList);
-            }
-        }).forceLoad();
-    }
-
-    private void handleSearchData(List<YouTubeVideo> data) {
-        Log.d(TAG, "handleSearchData");
         FragmentManager fragmentManager = getChildFragmentManager();
         if (fragmentManager.getBackStackEntryCount() != 0) {
             fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
+
         Fragment fragment = fragmentManager.findFragmentByTag(tabLayoutFragmentTAG);
         if (fragment instanceof TabLayoutFragment) {
-            ((TabLayoutFragment) fragment).handleSearch(data);
+            ((TabLayoutFragment) fragment).startSearch(s);
         }
-
+        //searchQuery(s);
     }
-
 
     @Override
     public void surfaceCreated(SurfaceHolder paramSurfaceHolder) {
@@ -820,24 +782,6 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             NowPlayingListFragment nowPlayingListFragment = new NowPlayingListFragment();
             FragmentTransaction ft = fragmentManager.beginTransaction();
             ft.replace(R.id.tab_and_viewpager, nowPlayingListFragment, nowPlayingListFragmentTAG);
-            //このままだと下のviewpageが見えていて且つタッチできてしまうので対策
-            //playlistdetailのdestroyで、可視化＆タッチ有効化
-            //viewPager.setVisibility(View.INVISIBLE);
-            /*viewPager.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    return false;
-                }
-            });*/
-            //tabも見えるし触れちゃうのでoffにする。
-            // playlistTitleFragmentのdestroyで可視化＆タッチ有効化
-            //tabLayout.setVisibility(View.INVISIBLE);
-            /*tabLayout.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    return false;
-                }
-            });*/
             ft.addToBackStack(nowplayingFragmentBackstackTAG);
             ft.commit();
 
@@ -845,46 +789,9 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             Fragment fragment = fragmentManager.findFragmentByTag(nowPlayingListFragmentTAG);
             Log.d(TAG, "nowPlayingListFragmentTAG : " + String.valueOf(fragment != null));
             if (fragment != null) {
-                //FragmentTransaction ft = fragmentManager.beginTransaction();
-                //ft.remove(fragment);
                 fragmentManager.popBackStack();
-                //ft.commit();
             }
         }
     }
-
-    /**
-     * Class which provides adapter for fragment pager
-     */
-    class ViewPagerAdapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragmentList = new ArrayList<>();
-        private final List<String> mFragmentTitleList = new ArrayList<>();
-
-        private ViewPagerAdapter(FragmentManager manager) {
-            super(manager);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            return mFragmentList.get(position);
-        }
-
-        @Override
-        public int getCount() {
-            return mFragmentList.size();
-        }
-
-        private void addFragment(Fragment fragment, String title) {
-            mFragmentList.add(fragment);
-            mFragmentTitleList.add(title);
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return mFragmentTitleList.get(position);
-        }
-
-    }
-
 
 }

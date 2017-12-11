@@ -52,15 +52,10 @@ class NowPlayingListFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         Log.d(TAG, "onDestroyView")
-        /*val fragment: android.support.v4.app.Fragment? = parentFragment
-        if (fragment is ViewPagerListener) {
-            val viewPager: ViewPager = fragment.viewPager
-            viewPager.setOnTouchListener { v, event -> true }
-            viewPager.visibility = View.VISIBLE
-            val tabLayout: TabLayout = fragment.tabLayout
-            tabLayout.setOnTouchListener { v, event -> true }
-            tabLayout.visibility = View.VISIBLE
-        }*/
+        val fragment: android.support.v4.app.Fragment? = parentFragment
+        if (fragment is FavoritesFragment) {
+
+        }
     }
 
     override fun onDestroy() {
