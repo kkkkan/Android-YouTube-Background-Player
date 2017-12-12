@@ -9,8 +9,7 @@
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:background="@drawable/now_playing_list_item_background"
-    tools:background="@color/colorPrimary"
-    >
+    tools:background="@color/colorPrimary">
 
     <LinearLayout
         android:id="@+id/row_item"
@@ -32,7 +31,7 @@
                 android:id="@+id/video_thumbnail"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:background="@color/grey"/>
+                tools:background="@color/grey" />
 
             <TextView
                 android:id="@+id/video_duration"
@@ -45,8 +44,7 @@
                 android:textColor="@android:color/white"
                 android:textSize="13sp"
                 android:textStyle="bold"
-                tools:text="13:12"
-                />
+                tools:text="13:12" />
         </FrameLayout>
 
         <RelativeLayout
@@ -62,7 +60,7 @@
                 android:maxLines="3"
                 android:textSize="16sp"
                 android:textColor="@android:color/white"
-                tools:text="【合唱】 君が代"/>
+                tools:text="【合唱】 君が代" />
 
             <TextView
                 android:id="@+id/views_number"
@@ -72,7 +70,7 @@
                 android:maxLines="1"
                 android:textSize="14sp"
                 android:textColor="@android:color/white"
-                tools:text="2333 views"/>
+                tools:text="2333 views" />
 
             <ImageView
                 android:id="@+id/delete_button"
@@ -80,8 +78,7 @@
                 android:layout_height="23dp"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentRight="true"
-                android:background="@drawable/ic_delete_forever_white_24dp"
-                />
+                android:background="@drawable/ic_delete_forever_white_24dp" />
 
         </RelativeLayout>
     </LinearLayout>

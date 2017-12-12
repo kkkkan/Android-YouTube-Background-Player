@@ -4,38 +4,38 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-<TextView
-    android:id="@+id/title_view"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp"
-    android:background="@color/playlistDetailTitlebarColor"
-    android:textColor="@android:color/black"
-    android:gravity="center" />
-
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="1">
-
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_to_refresh"
+    <TextView
+        android:id="@+id/title_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/fragment_list_items"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </android.support.v4.widget.SwipeRefreshLayout>
-
-    <ProgressBar
-        android:id="@+id/fragment_progress_bar"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" />
-</FrameLayout>
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:background="@color/playlistDetailTitlebarColor"
+        android:textColor="@android:color/black"
+        android:gravity="center" />
+
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_to_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/fragment_list_items"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </android.support.v4.widget.SwipeRefreshLayout>
+
+        <ProgressBar
+            android:id="@+id/fragment_progress_bar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+    </FrameLayout>
 </LinearLayout>
