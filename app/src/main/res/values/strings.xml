@@ -49,5 +49,5 @@
     <string name="video_quality_setting_fail">画質設定に失敗しました。</string>
     <string name="video_read_fail">ビデオが読み込めませんでした。次のビデオを再生します。\nヒント:何度も失敗するようなら、画質の設定を変更すると読み込めるかもしれません。</string>
 
-    <string name="no_playinglist">今再生中のリストはありません。\nビデオを再生するとこの画面で再生中のリストについて確認できます。</string>
+    <string name="no_playinglist">これから再生予定のビデオのリストはありません。\nビデオの再生を始めると、この画面で再生予定のビデオのリストを確認できます。</string>
 </resources>
