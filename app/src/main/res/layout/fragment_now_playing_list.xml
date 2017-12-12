@@ -8,8 +8,8 @@
     android:clickable="true"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    android:background="@drawable/item_background"
-    tools:background="@android:color/black"
+    android:background="@drawable/now_playing_list_item_background"
+    tools:background="@color/colorPrimary"
     >
 
     <LinearLayout

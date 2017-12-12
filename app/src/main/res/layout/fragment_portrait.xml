@@ -30,11 +30,15 @@
                 android:layout_height="190dp"
                 android:visibility="visible" />
 
+        </android.support.design.widget.AppBarLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:background="@color/cardview_shadow_start_color">
+                android:layout_below="@+id/app_bar_layout"
+                android:id="@+id/title_bar"
+                android:background="@color/colorPrimaryDark">
 
                 <CheckBox
                     android:layout_width="wrap_content"
@@ -83,13 +87,14 @@
                     android:id="@+id/repeat_one_box" />
 
             </LinearLayout>
-        </android.support.design.widget.AppBarLayout>
+
 
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/app_bar_layout"
-            android:id="@+id/tab_and_viewpager">
+            android:layout_below="@id/title_bar"
+            android:id="@+id/tab_and_viewpager"
+            >
 
         </FrameLayout>
     </RelativeLayout>

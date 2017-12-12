@@ -15,6 +15,8 @@
  */
 package com.kkkkan.youtube.tubtub.utils;
 
+import android.arch.lifecycle.MutableLiveData;
+
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 
 import java.util.ArrayList;
@@ -47,9 +49,12 @@ public class PlaylistsCash {
     //NowPlayingListFragment用の、今再生しているplaylistとpositionを入れとくためのList
     private List<YouTubeVideo> nowPlaylist;
     private int currentVideoIndex;
+    //NowPlayingListFragmentで今再生中のビデオのみ色を変えるためのMutableLiveData
+    private MutableLiveData<Integer> mutableCurrentVideoIndex = new MutableLiveData<>();
 
     public void setCurrentVideoIndex(int currentVideoIndex) {
         this.currentVideoIndex = currentVideoIndex;
+        mutableCurrentVideoIndex.postValue(currentVideoIndex);
     }
 
     public void setNowPlaylist(List<YouTubeVideo> nowPlaylist) {
@@ -63,5 +68,9 @@ public class PlaylistsCash {
 
     public List<YouTubeVideo> getNowPlaylist() {
         return nowPlaylist != null ? new ArrayList<>(nowPlaylist) : null;
+    }
+
+    public MutableLiveData<Integer> getMutableCurrentVideoIndex() {
+        return mutableCurrentVideoIndex;
     }
 }

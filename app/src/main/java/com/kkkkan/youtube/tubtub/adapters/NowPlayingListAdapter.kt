@@ -15,6 +15,8 @@
  */
 package com.kkkkan.youtube.tubtub.adapters
 
+import android.arch.lifecycle.LifecycleOwner
+import android.arch.lifecycle.Observer
 import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -27,6 +29,7 @@ import android.widget.TextView
 import com.kkkkan.youtube.R
 import com.kkkkan.youtube.tubtub.interfaces.ItemEventsListener
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo
+import com.kkkkan.youtube.tubtub.utils.PlaylistsCash
 import com.squareup.picasso.Picasso
 
 /**
@@ -68,6 +71,15 @@ class NowPlayingListAdapter(c: Context, list: List<YouTubeVideo>?, listener: Ite
         })
 
         holder.itemView.setTag(position)
+        PlaylistsCash.Instance.mutableCurrentVideoIndex.observe(context as LifecycleOwner, Observer<Int> { t ->
+            if (t != null) {
+                if (t == position) {
+                    holder.background.alpha = 1f
+                } else {
+                    holder.background.alpha = 0.5f
+                }
+            }
+        })
     }
 
     override fun getItemCount(): Int {
@@ -81,18 +93,8 @@ class NowPlayingListAdapter(c: Context, list: List<YouTubeVideo>?, listener: Ite
         val duration: TextView = itemView.findViewById(R.id.video_duration) as TextView
         val viewCount: TextView = itemView.findViewById(R.id.views_number) as TextView
         val deleteButton: ImageView = itemView.findViewById(R.id.delete_button) as ImageView
+        val background: RelativeLayout = itemView.findViewById(R.id.item_background) as RelativeLayout
 
-        fun changeItemViewLookWhenStartPlay() {
-            val background: RelativeLayout = itemView.findViewById(R.id.item_background) as RelativeLayout
-            background.alpha = 1f
-            return
-        }
-
-        fun changeItemViewLookWhenfinishPlay() {
-            val background: RelativeLayout = itemView.findViewById(R.id.item_background) as RelativeLayout
-            background.alpha = 0.5f
-            return
-        }
     }
 
 }

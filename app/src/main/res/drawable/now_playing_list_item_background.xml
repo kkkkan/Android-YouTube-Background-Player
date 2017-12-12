@@ -5,5 +5,8 @@
     <item android:state_enabled="true" android:state_pressed="true">
         <color android:color="@color/grey" />
     </item>
-
+    <!-- 通常状態 -->
+    <item>
+        <color android:color="@color/colorPrimaryDark" />
+    </item>
 </selector>
