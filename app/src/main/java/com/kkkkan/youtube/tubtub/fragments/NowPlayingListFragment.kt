@@ -28,6 +28,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import com.kkkkan.youtube.R
 import com.kkkkan.youtube.tubtub.adapters.NowPlayingListAdapter
 import com.kkkkan.youtube.tubtub.interfaces.ItemEventsListener
@@ -50,6 +51,7 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
     private var c: Context? = null
     private var list: ArrayList<YouTubeVideo>
     private var adapter: NowPlayingListAdapter? = null
+    private var noListTextView: TextView? = null
 
     init {
         list = ArrayList<YouTubeVideo>()
@@ -65,6 +67,7 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
         Log.d(TAG, "onCreateView")
         val view: View = inflater!!.inflate(R.layout.fragment_list, container, false)
         view.findViewById(R.id.frame_layout).setBackgroundColor(ContextCompat.getColor(c, R.color.colorPrimaryDark))
+        noListTextView = view.findViewById(R.id.no_playiniglist_text) as TextView
         recyclerView = view.findViewById(R.id.fragment_list_items) as RecyclerView
         swipeToRefresh = view.findViewById(R.id.swipe_to_refresh) as SwipeRefreshLayout
         val linearLayoutManager: LinearLayoutManager = LinearLayoutManager(c)
@@ -111,8 +114,13 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
         var nowList: List<YouTubeVideo>?
         nowList = PlaylistsCash.Instance.nowPlaylist
         if (nowList == null) {
-            nowList = ArrayList<YouTubeVideo>()
+            noListTextView?.visibility = View.VISIBLE
+            if (swipeToRefresh!!.isRefreshing) {
+                swipeToRefresh!!.setRefreshing(false)
+            }
+            return
         }
+        noListTextView?.visibility = View.INVISIBLE
         Log.d(TAG, "nowList.size.toString() : " + nowList.size.toString())
         list.clear()
         list.addAll(nowList)
