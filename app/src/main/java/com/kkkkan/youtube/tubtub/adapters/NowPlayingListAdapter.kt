@@ -71,6 +71,8 @@ class NowPlayingListAdapter(c: Context, list: List<YouTubeVideo>?, listener: Ite
         })
 
         holder.itemView.setTag(position)
+        //今再生中のビデオのみはっきり表示
+        //それ以外は暗めに表示
         PlaylistsCash.Instance.mutableCurrentVideoIndex.observe(context as LifecycleOwner, Observer<Int> { t ->
             if (t != null) {
                 if (t == position) {

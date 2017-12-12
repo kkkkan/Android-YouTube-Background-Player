@@ -22,6 +22,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.LinearSmoothScroller
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
@@ -86,6 +87,12 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
         Log.d(TAG, "onResume")
         //ここでrecyclerviewの整え等する
         updataRecyclerView()
+        //スタート位置を今再生中のビデオがリストのトップになるようにする
+        //表示完了後すぐやろうとするとうまくいかないので少し遅らす
+        recyclerView?.postDelayed(Runnable {
+            prepareScrollPosition()
+        }, 500)
+
     }
 
     override fun onDestroyView() {
@@ -110,9 +117,26 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
         list.clear()
         list.addAll(nowList)
         adapter!!.notifyDataSetChanged()
+        //スクロール位置直す
+        prepareScrollPosition()
         if (swipeToRefresh!!.isRefreshing) {
             swipeToRefresh!!.setRefreshing(false)
         }
+    }
+
+    /**
+     * 今再生中のビデオがリストのトップになるようにスクロールするメゾッド
+     */
+    private fun prepareScrollPosition() {
+        class mySmoothScroller : LinearSmoothScroller(recyclerView!!.context) {
+            override fun getVerticalSnapPreference(): Int {
+                return LinearSmoothScroller.SNAP_TO_START
+            }
+        }
+
+        val smoothScroller: LinearSmoothScroller = mySmoothScroller()
+        smoothScroller.setTargetPosition(PlaylistsCash.Instance.currentVideoIndex);
+        (recyclerView as RecyclerView).getLayoutManager().startSmoothScroll(smoothScroller);
     }
 
     override fun onShareClicked(itemId: String?) {

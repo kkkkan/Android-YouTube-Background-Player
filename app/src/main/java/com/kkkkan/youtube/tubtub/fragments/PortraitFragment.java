@@ -781,7 +781,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             //今再生中のビデオ一覧のためのフラグメントを作成
             NowPlayingListFragment nowPlayingListFragment = new NowPlayingListFragment();
             FragmentTransaction ft = fragmentManager.beginTransaction();
-            ft.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+            ft.setCustomAnimations(R.anim.drop_down_in, R.anim.drop_down_out, R.anim.drop_up_in, R.anim.drop_up_out);
             ft.replace(R.id.tab_and_viewpager, nowPlayingListFragment, nowPlayingListFragmentTAG);
             ft.addToBackStack(nowplayingFragmentBackstackTAG);
             ft.commit();
