@@ -58,6 +58,12 @@ import java.util.List;
 
 
 /**
+ * 想定されている使い方
+ * MainActivityにAttachされる
+ * AttachされるactivityがOnItemSelectedのinstanceである
+ * parentFragmetntがOnFavoritesSelectedのinstanceである
+ * <p>
+ * <p>
  * Have a Recycleview
  * adapter:PlaylistDetailAdapter
  * data type: YoutubeVideo
@@ -101,9 +107,9 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        if (context instanceof MainActivity) {
-            this.context = context;
-            itemSelected = (MainActivity) context;
+        this.context = context;
+        if (context instanceof OnItemSelected) {
+            itemSelected = (OnItemSelected) context;
         }
         Fragment fragment = getParentFragment();
         if (fragment instanceof OnFavoritesSelected) {

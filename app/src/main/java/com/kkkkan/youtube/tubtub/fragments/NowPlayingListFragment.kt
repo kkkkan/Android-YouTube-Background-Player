@@ -15,8 +15,10 @@
  */
 package com.kkkkan.youtube.tubtub.fragments
 
+
 import android.content.Context
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
@@ -26,17 +28,31 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.kkkkan.youtube.R
+import com.kkkkan.youtube.tubtub.adapters.NowPlayingListAdapter
+import com.kkkkan.youtube.tubtub.interfaces.ItemEventsListener
+import com.kkkkan.youtube.tubtub.interfaces.OnItemSelected
+import com.kkkkan.youtube.tubtub.model.YouTubePlaylist
+import com.kkkkan.youtube.tubtub.model.YouTubeVideo
+import com.kkkkan.youtube.tubtub.utils.PlaylistsCash
 
 /**
+ * AttachするactivitはOnItemSelectedのインスタンスであること
+ *
+ *
  * Created by admin on 2017/12/08.
  */
 
-class NowPlayingListFragment : BaseFragment() {
+class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> {
     private val TAG: String = "NowPlayingListFragment"
     private var recyclerView: RecyclerView? = null
     private var swipeToRefresh: SwipeRefreshLayout? = null
     private var c: Context? = null
+    private var list: ArrayList<YouTubeVideo>
+    private var adapter: NowPlayingListAdapter? = null
 
+    init {
+        list = ArrayList<YouTubeVideo>()
+    }
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -47,21 +63,29 @@ class NowPlayingListFragment : BaseFragment() {
         super.onCreateView(inflater, container, savedInstanceState)
         Log.d(TAG, "onCreateView")
         val view: View = inflater!!.inflate(R.layout.fragment_list, container, false)
+        view.findViewById(R.id.frame_layout).setBackgroundColor(ContextCompat.getColor(c, R.color.colorPrimaryDark))
         recyclerView = view.findViewById(R.id.fragment_list_items) as RecyclerView
         swipeToRefresh = view.findViewById(R.id.swipe_to_refresh) as SwipeRefreshLayout
         val linearLayoutManager: LinearLayoutManager = LinearLayoutManager(c)
+        (recyclerView as RecyclerView).layoutManager = linearLayoutManager
         val dividerItemDecoration: DividerItemDecoration = DividerItemDecoration((recyclerView as RecyclerView).context, linearLayoutManager.orientation)
         (recyclerView as RecyclerView).addItemDecoration(dividerItemDecoration)
-        //(recyclerView as RecyclerView).setBackgroundColor(getColor("#ffffff"))
+        adapter = NowPlayingListAdapter(c!!, list, this as ItemEventsListener<YouTubeVideo>)
+
+        (recyclerView as RecyclerView).adapter = adapter
+
         (swipeToRefresh as SwipeRefreshLayout).setOnRefreshListener(SwipeRefreshLayout.OnRefreshListener {
             //くるくるの時することをここに書く
+            updataRecyclerView()
         })
         return view
     }
 
     override fun onResume() {
         super.onResume()
+        Log.d(TAG, "onResume")
         //ここでrecyclerviewの整え等する
+        updataRecyclerView()
     }
 
     override fun onDestroyView() {
@@ -71,8 +95,59 @@ class NowPlayingListFragment : BaseFragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        Log.d(TAG, "onDestroy")
 
     }
 
+    fun updataRecyclerView() {
+        Log.d(TAG, "updataRecyclerView")
+        var nowList: List<YouTubeVideo>?
+        nowList = PlaylistsCash.Instance.nowPlaylist
+        if (nowList == null) {
+            nowList = ArrayList<YouTubeVideo>()
+        }
+        Log.d(TAG, "nowList.size.toString() : " + nowList.size.toString())
+        list.clear()
+        list.addAll(nowList)
+        adapter!!.notifyDataSetChanged()
+        if (swipeToRefresh!!.isRefreshing) {
+            swipeToRefresh!!.setRefreshing(false)
+        }
+    }
+
+    override fun onShareClicked(itemId: String?) {
+
+    }
+
+    override fun onFavoriteClicked(video: YouTubeVideo?, isChecked: Boolean) {
+
+    }
+
+    override fun onAddClicked(video: YouTubeVideo?) {
+
+    }
+
+    override fun onItemClick(model: YouTubeVideo?) {
+        if (context is OnItemSelected) {
+            (context as OnItemSelected).onPlaylistSelected(list, list.indexOf(model))
+        }
+    }
+
+    override fun onDeleteClicked(video: YouTubeVideo?) {
+        val newList: ArrayList<YouTubeVideo>
+        val nowIndex: Int = PlaylistsCash.Instance.currentVideoIndex
+        val deleteIndex: Int = list.indexOf(video)
+        newList = ArrayList(list)
+        newList.remove(video)
+        PlaylistsCash.Instance.nowPlaylist = newList
+        if (nowIndex > deleteIndex) {
+            PlaylistsCash.Instance.currentVideoIndex = nowIndex - 1
+        }
+        updataRecyclerView()
+    }
+
+    override fun onDeleteClicked(playlist: YouTubePlaylist?) {
+
+    }
 
 }
