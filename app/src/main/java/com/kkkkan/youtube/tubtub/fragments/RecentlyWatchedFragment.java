@@ -145,9 +145,7 @@ public class RecentlyWatchedFragment extends BaseFragment implements
             @Override
             public void onRefresh() {
                 Log.d(TAG, "onRefresh");
-                recentlyPlayedVideos.clear();
-                recentlyPlayedVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).readAll());
-                videoListAdapter.notifyDataSetChanged();
+                refreshVideoList();
                 swipeToRefresh.setRefreshing(false);
             }
         });
@@ -160,9 +158,7 @@ public class RecentlyWatchedFragment extends BaseFragment implements
     public void onResume() {
         Log.d(TAG, "onResume");
         super.onResume();
-        recentlyPlayedVideos.clear();
-        recentlyPlayedVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).readAll());
-        videoListAdapter.notifyDataSetChanged();
+        refreshVideoList();
     }
 
     @Override
@@ -191,6 +187,15 @@ public class RecentlyWatchedFragment extends BaseFragment implements
      */
     public void clearRecentlyPlayedList() {
         recentlyPlayedVideos.clear();
+        videoListAdapter.notifyDataSetChanged();
+    }
+
+    /**
+     * 改めて履歴をDBからとってきてUIに反映
+     */
+    private void refreshVideoList() {
+        recentlyPlayedVideos.clear();
+        recentlyPlayedVideos.addAll(YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).readAll());
         videoListAdapter.notifyDataSetChanged();
     }
 
@@ -233,6 +238,8 @@ public class RecentlyWatchedFragment extends BaseFragment implements
                                         @Override
                                         public void run() {
                                             Toast.makeText(getContext(), "削除に成功しました。", Toast.LENGTH_LONG).show();
+                                            recentlyPlayedVideos.remove(video);
+                                            videoListAdapter.notifyDataSetChanged();
                                         }
                                     });
                                 } else {
@@ -263,6 +270,7 @@ public class RecentlyWatchedFragment extends BaseFragment implements
                                         @Override
                                         public void run() {
                                             Toast.makeText(getContext(), "削除に成功しました。", Toast.LENGTH_LONG).show();
+                                            refreshVideoList();
                                         }
                                     });
                                 } else {
