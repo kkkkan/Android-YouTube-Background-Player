@@ -79,6 +79,7 @@ import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
+import com.kkkkan.youtube.tubtub.utils.PlaylistsCash;
 import com.kkkkan.youtube.tubtub.utils.Settings;
 import com.kkkkan.youtube.tubtub.youtube.YouTubeShareVideoGetLoader;
 
@@ -701,12 +702,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public int getDuration() {
-        return service.getDuration();
+        //まだ何も再生するビデオがセットされて無かったら0
+        return PlaylistsCash.Instance.getNowPlaylist() != null ? service.getDuration() : 0;
     }
 
     @Override
     public int getCurrentPosition() {
-        return service.getCurrentPosition();
+        //まだ何も再生するビデオがセットされて無かったら0
+        return PlaylistsCash.Instance.getNowPlaylist() != null ? service.getCurrentPosition() : 0;
     }
 
     @Override

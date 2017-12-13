@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/frame_layout">
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -12,7 +13,7 @@
         android:id="@+id/no_playiniglist_text"
         android:layout_gravity="center"
         android:gravity="center"
-        android:visibility="invisible"/>
+        android:visibility="invisible" />
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_to_refresh"

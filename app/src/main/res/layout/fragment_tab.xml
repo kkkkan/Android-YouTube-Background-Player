@@ -15,7 +15,7 @@
             android:layout_height="wrap_content"
             app:tabGravity="fill"
             app:tabBackground="@color/colorPrimary"
-            app:tabIndicatorColor="@drawable/tab_selector" />
+            app:tabIndicatorColor="@color/navigationBarColor" />
     </FrameLayout>
 
 
