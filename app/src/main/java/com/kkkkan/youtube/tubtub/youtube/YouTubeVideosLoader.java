@@ -64,7 +64,7 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<List<YouTubeVideo>> {
             searchList.setFields("items(id/videoId,snippet/title,snippet/thumbnails/default/url)");
 
             videosList.setKey(Config.YOUTUBE_API_KEY);
-            videosList.setFields("items(contentDetails/duration,statistics/viewCount)");
+            videosList.setFields("items(id,contentDetails/duration,statistics/viewCount)");
 
             //search
             searchList.setQ(keywords);
@@ -76,30 +76,49 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<List<YouTubeVideo>> {
             VideoListResponse resp = videosList.execute();
             List<Video> videoResults = resp.getItems();
             //make items for displaying in listView
-            for (int i = 0; i < searchResults.size(); i++) {
-                YouTubeVideo item = new YouTubeVideo();
-                //searchList list info
-                item.setTitle(searchResults.get(i).getSnippet().getTitle());
-                item.setThumbnailURL(searchResults.get(i).getSnippet().getThumbnails().getDefault().getUrl());
-                item.setId(searchResults.get(i).getId().getVideoId());
-                //video info
-                if (videoResults.get(i) != null) {
-                    if (videoResults.get(i).getStatistics() != null) {
-                        BigInteger viewsNumber = videoResults.get(i).getStatistics().getViewCount();
+
+            Log.d(TAG, "YouTube.Search.List execute result size is : " + searchResults.size());
+            Log.d(TAG, "YouTube.Videos.List execute result size is : " + videoResults.size());
+
+            //どうやらYouTube.Search.Listは削除されたビデオもとってきて、
+            // YouTube.Videos.Listはとってきた50個のうち削除されたビデオはスルーして、userにデータは返してくれないようだ
+            //（つまり50個中1個削除されたビデオがあったら、searchResults.size()は50,videoResults.size()は49）
+
+            int count = 0;
+            for (int i = 0, j = 0; i < searchResults.size(); i++) {
+                YouTubeVideo youTubeVideo = new YouTubeVideo();
+
+                SearchResult searchResult = searchResults.get(i);
+                Video videoResult = videoResults.get(j);
+
+                youTubeVideo.setTitle(searchResult.getSnippet().getTitle());
+                youTubeVideo.setId(searchResult.getId().getVideoId());
+                if (searchResult.getId().getVideoId().equals(videoResult.getId())) {
+                    Log.d(TAG, String.valueOf(++count) + " : " + searchResult.getSnippet().getTitle() + " : not Deleted");
+                    //削除されたビデオではないとき
+                    //jをインクリメント
+                    j++;
+                    //thumbnailDetailsのurlをセット
+                    youTubeVideo.setThumbnailURL(searchResult.getSnippet().getThumbnails().getDefault().getUrl());
+                    //video由来の情報もyouTubeVideoに追加
+                    if (videoResult.getStatistics() != null) {
+                        BigInteger viewsNumber = videoResult.getStatistics().getViewCount();
                         String viewsFormatted = NumberFormat.getIntegerInstance().format(viewsNumber) + " views";
-                        item.setViewCount(viewsFormatted);
+                        youTubeVideo.setViewCount(viewsFormatted);
                     }
-                    if (videoResults.get(i).getContentDetails() != null) {
-                        String isoTime = videoResults.get(i).getContentDetails().getDuration();
+                    if (videoResult.getContentDetails() != null) {
+                        String isoTime = videoResult.getContentDetails().getDuration();
                         String time = Utils.convertISO8601DurationToNormalTime(isoTime);
-                        item.setDuration(time);
+                        youTubeVideo.setDuration(time);
                     }
                 } else {
-                    item.setDuration("");
+                    //削除されたビデオの時
+                    Log.d(TAG, String.valueOf(++count) + " : " + searchResult.getSnippet().getTitle() + " : Deleted");
+                    //削除されたビデオの場合はthumnailURLにnull、durationに"00:00"を入れる
+                    youTubeVideo.setThumbnailURL(null);
+                    youTubeVideo.setDuration("00:00");
                 }
-
-                //add to the list
-                items.add(item);
+                items.add(youTubeVideo);
             }
 
         } catch (IOException e) {
