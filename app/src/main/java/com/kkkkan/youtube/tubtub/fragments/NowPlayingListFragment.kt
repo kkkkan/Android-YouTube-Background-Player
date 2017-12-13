@@ -16,6 +16,7 @@
 package com.kkkkan.youtube.tubtub.fragments
 
 
+import android.arch.lifecycle.Observer
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
@@ -36,6 +37,7 @@ import com.kkkkan.youtube.tubtub.interfaces.OnItemSelected
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo
 import com.kkkkan.youtube.tubtub.utils.PlaylistsCash
+import com.kkkkan.youtube.tubtub.utils.Settings
 
 /**
  * AttachするactivitはOnItemSelectedのインスタンスであること
@@ -82,6 +84,10 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
             //くるくるの時することをここに書く
             updataRecyclerView()
         })
+
+        Settings.getInstance().shuffleMutableLiveData.observe(this, Observer {
+            updataRecyclerView()
+        })
         return view
     }
 
@@ -111,8 +117,20 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
 
     fun updataRecyclerView() {
         Log.d(TAG, "updataRecyclerView")
-        var nowList: List<YouTubeVideo>?
-        nowList = PlaylistsCash.Instance.nowPlaylist
+        val nowList: List<YouTubeVideo>?
+        when (Settings.getInstance().shuffle) {
+            Settings.Shuffle.ON -> {
+                nowList = PlaylistsCash.Instance.shufflePlayList
+            }
+            Settings.Shuffle.OFF -> {
+                nowList = PlaylistsCash.Instance.nowPlaylist
+            }
+            null -> {
+                //Settingsのコンストラクタで初期値を与えているので
+                // 本来ならnullのことはありえ無いが、warningが出るのでかく
+                nowList = null
+            }
+        }
         if (nowList == null) {
             noListTextView?.visibility = View.VISIBLE
             if (swipeToRefresh!!.isRefreshing) {

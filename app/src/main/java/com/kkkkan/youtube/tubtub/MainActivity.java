@@ -175,6 +175,17 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         startService(new Intent(this, MediaPlayerService.class));
         bindService(new Intent(this, MediaPlayerService.class), connection, BIND_AUTO_CREATE);
 
+        Settings.getInstance().getShuffleMutableLiveData().observe(this, new Observer<Settings.Shuffle>() {
+            @Override
+            public void onChanged(@Nullable Settings.Shuffle shuffle) {
+                if (shuffle == null) {
+                    //Settingsのコンストラクタ内でShuffleに初期値を与えているので
+                    // 通常ならありえない
+                    return;
+                }
+                handleShuffleSettingChange(shuffle);
+            }
+        });
 
         //Turn off screen saver
         //スクリーンセーバをオフにする
@@ -571,6 +582,35 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     /**
+     * 設定のshuffleのON/OFFの変更を受けて
+     * PlaylistCashのフィールドに手を加えるメゾッド
+     */
+    private void handleShuffleSettingChange(@NonNull Settings.Shuffle shuffle) {
+        PlaylistsCash playlistsCash = PlaylistsCash.Instance;
+        YouTubeVideo nowPlayingVideo;
+        int currentIndex = playlistsCash.getCurrentVideoIndex();
+        List<YouTubeVideo> normalList = playlistsCash.getNowPlaylist();
+        List<YouTubeVideo> shuffleList = playlistsCash.getShufflePlayList();
+        if (normalList == null || shuffleList == null) {
+            return;
+        }
+        switch (shuffle) {
+            case ON:
+                nowPlayingVideo = normalList.get(currentIndex);
+                int nowPlayingVideoInShuffleList = shuffleList.indexOf(nowPlayingVideo);
+                playlistsCash.setCurrentVideoIndex(nowPlayingVideoInShuffleList);
+                break;
+            case OFF:
+                nowPlayingVideo = shuffleList.get(currentIndex);
+                int nowPlayingVideoindexInNormalList = normalList.indexOf(nowPlayingVideo);
+                playlistsCash.setCurrentVideoIndex(nowPlayingVideoindexInNormalList);
+                //最後にシャッフルしなおす
+                playlistsCash.reShuffle();
+                break;
+        }
+    }
+
+    /**
      * 縦画面のときプレイリスト詳細を表示しているときは
      * バックボタンでプレイリスト詳細を出す前の状態にする
      */
@@ -595,9 +635,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Settings.Shuffle shuffle = settings.getShuffle();
         switch (shuffle) {
             case ON:
+                Log.d(TAG, "settings.setShuffle(Settings.Shuffle.OFF);");
                 settings.setShuffle(Settings.Shuffle.OFF);
                 break;
             case OFF:
+                Log.d(TAG, "settings.setShuffle(Settings.Shuffle.ON);");
                 settings.setShuffle(Settings.Shuffle.ON);
                 break;
         }

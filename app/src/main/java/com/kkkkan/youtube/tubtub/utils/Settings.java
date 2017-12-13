@@ -16,6 +16,8 @@
 package com.kkkkan.youtube.tubtub.utils;
 
 
+import android.arch.lifecycle.MutableLiveData;
+
 /**
  * Horizontal screen lock · One song repeat · Playlist repeat setting is put in singleton class
  * <p>
@@ -28,20 +30,30 @@ public class Settings {
     final private static String TAG = "Settings";
     static private Settings settings = new Settings();
     private ScreenLock screenLock = ScreenLock.OFF;
-    private Shuffle shuffle = Shuffle.OFF;
     private RepeatOne repeatOne = RepeatOne.OFF;
     private RepeatPlaylist repeatPlaylist = RepeatPlaylist.OFF;
 
-    private Settings() {
+    private MutableLiveData<Shuffle> shuffleMutableLiveData = new MutableLiveData<>();
 
+    private Settings() {
+        shuffleMutableLiveData.setValue(Shuffle.OFF);
     }
 
     static public Settings getInstance() {
         return settings;
     }
 
+    /**
+     * 設定しているshuffleの値だけ取り出す
+     *
+     * @return
+     */
     public Shuffle getShuffle() {
-        return shuffle;
+        return shuffleMutableLiveData.getValue();
+    }
+
+    public MutableLiveData<Shuffle> getShuffleMutableLiveData() {
+        return shuffleMutableLiveData;
     }
 
     public ScreenLock getScreenLock() {
@@ -61,7 +73,9 @@ public class Settings {
     }
 
     public void setShuffle(Shuffle shuffle) {
-        this.shuffle = shuffle;
+        //どこから呼ばれてもいいようにpostにする
+        //->postにしたら遅すぎてUI表示との齟齬が生まれてしまったのでsetに変更
+        shuffleMutableLiveData.setValue(shuffle);
     }
 
     public void setRepeatOne(RepeatOne repeatOne) {

@@ -363,7 +363,16 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
         PlaylistsCash.Instance.setCurrentVideoIndex(position);
         Log.d(TAG, "position is " + String.valueOf(position));
-        final YouTubeVideo video = PlaylistsCash.Instance.getNowPlaylist().get(position);
+        YouTubeVideo v = null;
+        switch (Settings.getInstance().getShuffle()) {
+            case ON:
+                v = PlaylistsCash.Instance.getShufflePlayList().get(position);
+                break;
+            case OFF:
+                v = PlaylistsCash.Instance.getNowPlaylist().get(position);
+                break;
+        }
+        final YouTubeVideo video = v;
 
         //読み込み中ダイアログ表示
         viewModel.setStateStartLoading();
@@ -438,11 +447,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             Log.d(TAG, "videoCreate()-videoUrl==null");
             return;
         }
-         /*ネット環境にちゃんとつながってるかチェック*/
-        /*if (!networkConf.isNetworkAvailable()) {
-            networkConf.createNetErrorDialog();
-            return;
-        }*/
+
         // mediaplayer関係
         // URLの先にある動画を再生する
 
@@ -453,60 +458,29 @@ public class MediaPlayerService extends Service implements MediaController.Media
             Log.d(TAG, "videoCreate");
             mediaPlayer.setDataSource(this, mediaPath);
             mediaPlayer.setDisplay(mHolder);
-            //videoTitleをセット
-            if (videoTitle != null) {
-                viewModel.setVideoTitle(videoTitle);
-            }
 
             //prepareに時間かかることを想定し直接startせずにLister使う
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     Log.d(TAG, "onPrepared");
-                    /*if (mHolder != null) {
-                        int videoWidth = mp.getVideoWidth();
-                        int videoHeight = mp.getVideoHeight();
-                        try {
-                            int nowWidth = mHolder.getSurfaceFrame().width();
-                            int nowHeight = mHolder.getSurfaceFrame().height();
-                            //動画の縦横比を変えないようにするため画面サイズを変更する
-                            if (videoHeight * nowWidth >= nowHeight * videoWidth) {
-                                //縦幅は今と同じに固定して横幅を縦横比変わらないように合わせる
-                                mHolder.setFixedSize(videoWidth * nowHeight / videoHeight, nowHeight);
-                            } else {
-                                //縦幅を固定して縦横比を固定すると横幅が今より大きくなってしまう場合は
-                                // 横幅固定で縦を合わせる
-                                mHolder.setFixedSize(nowWidth, nowWidth * videoHeight / videoWidth);
-                            }
-                            mp.setDisplay(mHolder);
-                        } catch (Exception e) {
-                            Log.d(TAG, "Exception e:" + e.getMessage());
-                        }
-                    }*/
-                    mp.start();
                     //読み込み中ダイアログ消す
                     viewModel.setStateStopLoading();
-                    //今再生中のビデオへ自動スクロール
-                    /*if (recyclerView != null) {
-                        //共有から開かれたときrecyclerView=null
-                        RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(recyclerView.getContext()) {
-                            @Override
-                            protected int getVerticalSnapPreference() {
-                                return LinearSmoothScroller.SNAP_TO_START;
-                            }
-                        };
-                        smoothScroller.setTargetPosition(position);
-                        recyclerView.getLayoutManager().startSmoothScroll(smoothScroller);*/
-                        /*View view = recyclerView.getLayoutManager().findViewByPosition(position);
-                        View backgroundView = view.findViewById(R.id.item_background);
-                        backgroundView.requestFocus();
-                        Log.d(TAG, "isFocusable() : " + String.valueOf(backgroundView.isFocusable()) + " isFocusableInTouchMode() : " + String.valueOf(view.findViewById(R.id.item_background).isFocusableInTouchMode()));
-                        *//*if (Build.VERSION.SDK_INT >= 23) {
-                            view.findViewById(R.id.row_item).setBackgroundColor(getColor(R.color.red));
-                        } else {
-                            view.findViewById(R.id.row_item).setBackgroundColor(recyclerView.getResources().getColor(R.color.red));
-                        }*/
-                    //}
+                    //videoTitleをセット
+                    if (videoTitle != null) {
+                        viewModel.setVideoTitle(videoTitle);
+                    }
+
+                    if (playlistSelectedCancelFlag) {
+                        //もしユーザーがビデオ読み込みやめるよう操作していたら
+                        //Flagをfalseにする
+                        playlistSelectedCancelFlag = false;
+                        //スタートせずにreturn
+                        return;
+                    }
+
+                    mp.start();
+
                 }
             });
             mediaPlayer.prepareAsync();
@@ -537,20 +511,31 @@ public class MediaPlayerService extends Service implements MediaController.Media
             // one song repeat
             //1曲リピート時
             playlistHandle(currentVideoIndex);
-        } else if (settings.getRepeatPlaylist() == ON) {
+            return;
+        }
+        if (settings.getShuffle() == Settings.Shuffle.ON || playlist.size() <= currentVideoIndex + 1) {
+            //シャッフルモードでかつシャッフルリストの最後まで来てしまっていた時
+            //リピートモードだった時のためにシャッフルし直す
+            PlaylistsCash.Instance.reShuffle();
+        }
+        if (settings.getRepeatPlaylist() == ON) {
             // It is not a repeat of one song, and at play list repeat
             //1曲リピートではなく、かつプレイリストリピート時
             playlistHandle((currentVideoIndex + 1) % playlist.size());
-        } else {
-            // When it is neither a single song repeat nor a play list repeat
-            //一曲リピートでもプレイリストリピートでもないとき
-            if (currentVideoIndex + 1 < playlist.size()) {
-                playlistHandle(currentVideoIndex + 1);
-            } else {
-                //最後の曲のときはprogressbarが出ていたらそれを消すだけ。
-                viewModel.setStateStopLoading();
-            }
+            return;
         }
+
+
+        // When it is neither a single song repeat nor a play list repeat
+        //一曲リピートでもプレイリストリピートでもないとき
+        if (currentVideoIndex + 1 < playlist.size()) {
+            playlistHandle(currentVideoIndex + 1);
+        } else {
+            //最後の曲のときはprogressbarが出ていたらそれを消すだけ。
+            viewModel.setStateStopLoading();
+        }
+
+
     }
 
     public void nextPlay() {

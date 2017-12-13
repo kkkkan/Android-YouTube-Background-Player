@@ -713,10 +713,13 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         boolean shuffle = false;
         switch (settings.getShuffle()) {
             case ON:
+                Log.d(TAG, "shuffle = true;");
                 shuffle = true;
                 break;
             case OFF:
+                Log.d(TAG, "shuffle = false;");
                 shuffle = false;
+                break;
         }
         shuffleBox.setChecked(shuffle);
         //一曲リピートか否かに合わせてチェックボックス画面変更

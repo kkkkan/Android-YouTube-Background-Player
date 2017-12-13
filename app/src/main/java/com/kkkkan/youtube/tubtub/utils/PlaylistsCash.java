@@ -20,6 +20,7 @@ import android.arch.lifecycle.MutableLiveData;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -48,18 +49,23 @@ public class PlaylistsCash {
 
     //NowPlayingListFragment用の、今再生しているplaylistとpositionを入れとくためのList
     private List<YouTubeVideo> nowPlaylist;
+    //shuffle再生用のランダムに並んでいるリスト
+    private List<YouTubeVideo> shufflePlayList;
     //private int currentVideoIndex;
     //NowPlayingListFragmentで今再生中のビデオのみ色を変えるためのMutableLiveData
     private MutableLiveData<Integer> mutableCurrentVideoIndex = new MutableLiveData<>();
 
+
     public void setCurrentVideoIndex(int currentVideoIndex) {
-        //this.currentVideoIndex = currentVideoIndex;
-        mutableCurrentVideoIndex.postValue(currentVideoIndex);
+        mutableCurrentVideoIndex.setValue(currentVideoIndex);
     }
 
     public void setNowPlaylist(List<YouTubeVideo> nowPlaylist) {
         //nowPlaylistと参照先を変えないと履歴の再読み込みとかでthis.nowPlaylistまで変わっちゃう
         this.nowPlaylist = new ArrayList<>(nowPlaylist);
+        //playlist変わるたびにshuffle用の新しいランダムなプレイリストも作成する
+        shufflePlayList = new ArrayList<>(nowPlaylist);
+        Collections.shuffle(shufflePlayList);
     }
 
     public int getCurrentVideoIndex() {
@@ -72,5 +78,17 @@ public class PlaylistsCash {
 
     public MutableLiveData<Integer> getMutableCurrentVideoIndex() {
         return mutableCurrentVideoIndex;
+    }
+
+    public List<YouTubeVideo> getShufflePlayList() {
+        return shufflePlayList != null ? new ArrayList<>(shufflePlayList) : null;
+    }
+
+    /**
+     * shuffleし直す
+     */
+    public void reShuffle() {
+        shufflePlayList = new ArrayList<>(nowPlaylist);
+        Collections.shuffle(shufflePlayList);
     }
 }
