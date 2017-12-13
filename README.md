@@ -7,10 +7,13 @@ This is an application that allows you to continue playing videos on youtube eve
 - You can have one local favorite list without linking to google account.
 - By choosing this application from the sharing function in the YouTube official application, you can play videos with this application.
 
-<img src="https://user-images.githubusercontent.com/22609306/32922866-bd747b94-cb77-11e7-80ad-ea56a1560349.png" width="180" height="320"> <img src="https://user-images.githubusercontent.com/22609306/32922901-edd17c10-cb77-11e7-936d-6dd08d606cb0.png" width="180" height="320">
-<img src="https://user-images.githubusercontent.com/22609306/32922904-f09bc7ca-cb77-11e7-86a0-642cda23f819.png" width="180" height="320"> 
-<img src="https://user-images.githubusercontent.com/22609306/32922887-dd95f998-cb77-11e7-8237-c3b54332e139.png" width="180" height="320"> 
- <img src="https://user-images.githubusercontent.com/22609306/32923300-2a9af85e-cb7a-11e7-9bfb-e1635c99749d.png" width="180" height="320"> <img src="https://user-images.githubusercontent.com/22609306/32922906-f26939c0-cb77-11e7-88f9-90f2d4f02b42.png" width="320" height="180">  <img src="https://user-images.githubusercontent.com/22609306/33523674-f26463e8-d84f-11e7-86f0-fbd433f79645.png" width="180" height="320">
+<img src="https://user-images.githubusercontent.com/22609306/33920218-1e259d82-e000-11e7-8a8b-350aeb911957.png" width="180" height="320"> <img src="https://user-images.githubusercontent.com/22609306/33920413-260d1240-e001-11e7-926a-0e875adb4c15.png" width="180" height="320">
+<img src="https://user-images.githubusercontent.com/22609306/33920273-617565f4-e000-11e7-8b01-14a868807d70.png" width="180" height="320"> 
+<img src="https://user-images.githubusercontent.com/22609306/33920247-422b6b08-e000-11e7-9be7-4456c787022b.png" width="180" height="320"> 
+<img src="https://user-images.githubusercontent.com/22609306/33920274-634c15da-e000-11e7-9456-348c4ec8c7a0.png" width="180" height="320"> 
+<img src="https://user-images.githubusercontent.com/22609306/33920299-90264558-e000-11e7-9245-8a1e3f6b1ceb.png" width="180" height="320"> 
+<img src="https://user-images.githubusercontent.com/22609306/33920221-224789d4-e000-11e7-8602-b6a19f64b317.png" width="180" height="320"> 
+<img src="https://user-images.githubusercontent.com/22609306/33920242-3e14002a-e000-11e7-8f65-e5728e5051a9.png" width="320" height="180"> <img src="https://user-images.githubusercontent.com/22609306/33920240-3c0491aa-e000-11e7-8061-0e102ecba9e4.png" width="320" height="180"> <img src="https://user-images.githubusercontent.com/22609306/33920224-25817d12-e000-11e7-8771-4e69f4b4b871.png" width="180" height="320">
 
 ##  Copyright holder
 
