@@ -513,7 +513,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             playlistHandle(currentVideoIndex);
             return;
         }
-        if (settings.getShuffle() == Settings.Shuffle.ON || playlist.size() <= currentVideoIndex + 1) {
+        if (settings.getShuffle() == Settings.Shuffle.ON && playlist.size() <= currentVideoIndex + 1) {
             //シャッフルモードでかつシャッフルリストの最後まで来てしまっていた時
             //リピートモードだった時のためにシャッフルし直す
             PlaylistsCash.Instance.reShuffle();

@@ -189,7 +189,18 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
         val deleteIndex: Int = list.indexOf(video)
         newList = ArrayList(list)
         newList.remove(video)
-        PlaylistsCash.Instance.nowPlaylist = newList
+        when (Settings.getInstance().shuffle) {
+            Settings.Shuffle.ON -> {
+                PlaylistsCash.Instance.shufflePlayList = newList
+            }
+            Settings.Shuffle.OFF -> {
+                PlaylistsCash.Instance.setNowPlayinglist2(newList)
+            }
+            null -> {
+                //ありえないがwarning避けのため設定
+            }
+        }
+        //PlaylistsCash.Instance.nowPlaylist = newList
         if (nowIndex > deleteIndex) {
             PlaylistsCash.Instance.currentVideoIndex = nowIndex - 1
         }

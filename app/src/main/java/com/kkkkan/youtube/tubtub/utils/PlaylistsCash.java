@@ -68,6 +68,14 @@ public class PlaylistsCash {
         Collections.shuffle(shufflePlayList);
     }
 
+    public void setNowPlayinglist2(List<YouTubeVideo> nowPlaylist) {
+        this.nowPlaylist = new ArrayList<>(nowPlaylist);
+    }
+
+    public void setShufflePlayList(List<YouTubeVideo> shufflePlayList) {
+        this.shufflePlayList = new ArrayList<>(shufflePlayList);
+    }
+
     public int getCurrentVideoIndex() {
         return mutableCurrentVideoIndex.getValue() != null ? mutableCurrentVideoIndex.getValue() : 0;
     }
