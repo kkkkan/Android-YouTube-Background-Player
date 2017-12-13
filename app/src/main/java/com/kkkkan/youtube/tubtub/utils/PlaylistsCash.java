@@ -48,12 +48,12 @@ public class PlaylistsCash {
 
     //NowPlayingListFragment用の、今再生しているplaylistとpositionを入れとくためのList
     private List<YouTubeVideo> nowPlaylist;
-    private int currentVideoIndex;
+    //private int currentVideoIndex;
     //NowPlayingListFragmentで今再生中のビデオのみ色を変えるためのMutableLiveData
     private MutableLiveData<Integer> mutableCurrentVideoIndex = new MutableLiveData<>();
 
     public void setCurrentVideoIndex(int currentVideoIndex) {
-        this.currentVideoIndex = currentVideoIndex;
+        //this.currentVideoIndex = currentVideoIndex;
         mutableCurrentVideoIndex.postValue(currentVideoIndex);
     }
 
@@ -63,7 +63,7 @@ public class PlaylistsCash {
     }
 
     public int getCurrentVideoIndex() {
-        return currentVideoIndex;
+        return mutableCurrentVideoIndex.getValue() != null ? mutableCurrentVideoIndex.getValue() : 0;
     }
 
     public List<YouTubeVideo> getNowPlaylist() {
