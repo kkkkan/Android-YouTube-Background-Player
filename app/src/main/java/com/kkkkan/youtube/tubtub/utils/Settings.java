@@ -28,6 +28,7 @@ public class Settings {
     final private static String TAG = "Settings";
     static private Settings settings = new Settings();
     private ScreenLock screenLock = ScreenLock.OFF;
+    private Shuffle shuffle = Shuffle.OFF;
     private RepeatOne repeatOne = RepeatOne.OFF;
     private RepeatPlaylist repeatPlaylist = RepeatPlaylist.OFF;
 
@@ -37,6 +38,10 @@ public class Settings {
 
     static public Settings getInstance() {
         return settings;
+    }
+
+    public Shuffle getShuffle() {
+        return shuffle;
     }
 
     public ScreenLock getScreenLock() {
@@ -55,6 +60,10 @@ public class Settings {
         this.screenLock = screenLock;
     }
 
+    public void setShuffle(Shuffle shuffle) {
+        this.shuffle = shuffle;
+    }
+
     public void setRepeatOne(RepeatOne repeatOne) {
         this.repeatOne = repeatOne;
     }
@@ -71,6 +80,15 @@ public class Settings {
      * enum
      */
     public enum ScreenLock {
+        ON,
+        OFF
+    }
+
+    /**
+     * Enum for whether shuffle or not
+     * shuffleか否かのためのenum
+     */
+    public enum Shuffle {
         ON,
         OFF
     }
@@ -96,5 +114,6 @@ public class Settings {
         ON,
         OFF
     }
+
 
 }

@@ -42,6 +42,17 @@
         <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:background="@drawable/shuffle_selector"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:button="@null"
+            android:id="@+id/shuffle_box" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:background="@drawable/playlist_repeat_selector"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"

@@ -101,6 +101,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
     private Toolbar toolbar;
     private TitlebarListener titlebarListener;
+    private CheckBox shuffleBox;
     private CheckBox repeatOneBox;
     private CheckBox repeatPlaylistBox;
     private CheckBox nowPlayingListBox;
@@ -170,6 +171,16 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                     svlp.height = width / 16 * 9;
                     surfaceView.setLayoutParams(svlp);
                 }
+            }
+        });
+        //Setting for shuffle check box on the title bar
+        //タイトルバーのシャッフルチェックボックスについての設定
+        shuffleBox = (CheckBox) view.findViewById(R.id.shuffle_box);
+        shuffleBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                titlebarListener.shuffleCheckListener();
+                checkBoxUpdata();
             }
         });
         //Setting for one repeat check box on the title bar
@@ -698,6 +709,16 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
      */
     private void checkBoxUpdata() {
         Settings settings = Settings.getInstance();
+        //シャッフルモードか否かに合わせてチェックボックス画面変更
+        boolean shuffle = false;
+        switch (settings.getShuffle()) {
+            case ON:
+                shuffle = true;
+                break;
+            case OFF:
+                shuffle = false;
+        }
+        shuffleBox.setChecked(shuffle);
         //一曲リピートか否かに合わせてチェックボックス画面変更
         boolean repeatOne = false;
         switch (settings.getRepeatOne()) {

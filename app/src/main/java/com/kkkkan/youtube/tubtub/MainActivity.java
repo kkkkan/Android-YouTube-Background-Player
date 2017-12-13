@@ -590,6 +590,20 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     @Override
+    public void shuffleCheckListener() {
+        Settings settings = Settings.getInstance();
+        Settings.Shuffle shuffle = settings.getShuffle();
+        switch (shuffle) {
+            case ON:
+                settings.setShuffle(Settings.Shuffle.OFF);
+                break;
+            case OFF:
+                settings.setShuffle(Settings.Shuffle.ON);
+                break;
+        }
+    }
+
+    @Override
     public void repeatOneCheckListener() {
         Log.d(TAG, "repeatOneCheckListener()");
         Settings settings = Settings.getInstance();

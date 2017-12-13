@@ -46,6 +46,7 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
     private SurfaceView surfaceView;
     private SurfaceHolder holder;
     private TextView titleView;
+    private CheckBox shuffleBox;
     private CheckBox repeatOneBox;
     private CheckBox lockBox;
     private CheckBox repeatPlaylistBox;
@@ -94,11 +95,20 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
             }
         });
         lockBox = (CheckBox) view.findViewById(R.id.lock_box);
+        shuffleBox = (CheckBox) view.findViewById(R.id.shuffle_box);
         repeatOneBox = (CheckBox) view.findViewById(R.id.repeat_one_box);
         repeatPlaylistBox = (CheckBox) view.findViewById(R.id.repeat_playlist_box);
 
         //Click listener installed in check box
         //チェックボックスにクリックリスナー設置
+        shuffleBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                titlebarListener.shuffleCheckListener();
+                checkBoxUpdata();
+            }
+        });
+
         repeatOneBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -172,6 +182,17 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
      */
     private void checkBoxUpdata() {
         Settings settings = Settings.getInstance();
+        //Change checkbox screen according to whether shuffle or not
+        //シャッフルモードか否かに合わせてチェックボックス画面変更
+        boolean shuffle = false;
+        switch (settings.getShuffle()) {
+            case ON:
+                shuffle = true;
+                break;
+            case OFF:
+                shuffle = false;
+        }
+        shuffleBox.setChecked(shuffle);
         //Change checkbox screen according to whether song repeat or not
         //一曲リピートか否かに合わせてチェックボックス画面変更
         boolean repeatOne = false;

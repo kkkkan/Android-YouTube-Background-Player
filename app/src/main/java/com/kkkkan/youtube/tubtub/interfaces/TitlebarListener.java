@@ -17,6 +17,8 @@
 package com.kkkkan.youtube.tubtub.interfaces;
 
 public interface TitlebarListener {
+    void shuffleCheckListener();
+
     void repeatOneCheckListener();
 
     void repeatPlaylistCheckListener();
