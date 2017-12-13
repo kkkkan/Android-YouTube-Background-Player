@@ -8,11 +8,13 @@ This is an application that allows you to continue playing videos on youtube eve
 - By choosing this application from the sharing function in the YouTube official application, you can play videos with this application.
 
 <img src="https://user-images.githubusercontent.com/22609306/33920218-1e259d82-e000-11e7-8a8b-350aeb911957.png" width="180" height="320"> <img src="https://user-images.githubusercontent.com/22609306/33920413-260d1240-e001-11e7-926a-0e875adb4c15.png" width="180" height="320">
+<img src="https://user-images.githubusercontent.com/22609306/33920741-e9529706-e002-11e7-9160-7666419a5a42.png" width="180" height="320">
 <img src="https://user-images.githubusercontent.com/22609306/33920273-617565f4-e000-11e7-8b01-14a868807d70.png" width="180" height="320"> 
 <img src="https://user-images.githubusercontent.com/22609306/33920247-422b6b08-e000-11e7-9be7-4456c787022b.png" width="180" height="320"> 
 <img src="https://user-images.githubusercontent.com/22609306/33920274-634c15da-e000-11e7-9456-348c4ec8c7a0.png" width="180" height="320"> 
 <img src="https://user-images.githubusercontent.com/22609306/33920299-90264558-e000-11e7-9245-8a1e3f6b1ceb.png" width="180" height="320"> 
 <img src="https://user-images.githubusercontent.com/22609306/33920221-224789d4-e000-11e7-8602-b6a19f64b317.png" width="180" height="320"> 
+<img src="https://user-images.githubusercontent.com/22609306/33920297-8e0138c8-e000-11e7-8538-30c9cc2bf724.png" width="180" height="320">
 <img src="https://user-images.githubusercontent.com/22609306/33920242-3e14002a-e000-11e7-8f65-e5728e5051a9.png" width="320" height="180"> <img src="https://user-images.githubusercontent.com/22609306/33920240-3c0491aa-e000-11e7-8061-0e102ecba9e4.png" width="320" height="180"> <img src="https://user-images.githubusercontent.com/22609306/33920224-25817d12-e000-11e7-8771-4e69f4b4b871.png" width="180" height="320">
 
 ##  Copyright holder
