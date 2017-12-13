@@ -94,7 +94,7 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<List<YouTubeVideo>> {
                 youTubeVideo.setTitle(searchResult.getSnippet().getTitle());
                 youTubeVideo.setId(searchResult.getId().getVideoId());
                 if (searchResult.getId().getVideoId().equals(videoResult.getId())) {
-                    Log.d(TAG, String.valueOf(++count) + " : " + searchResult.getSnippet().getTitle() + " : not Deleted");
+                    //Log.d(TAG, String.valueOf(++count) + " : " + searchResult.getSnippet().getTitle() + " : not Deleted");
                     //削除されたビデオではないとき
                     //jをインクリメント
                     j++;
@@ -113,7 +113,7 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<List<YouTubeVideo>> {
                     }
                 } else {
                     //削除されたビデオの時
-                    Log.d(TAG, String.valueOf(++count) + " : " + searchResult.getSnippet().getTitle() + " : Deleted");
+                    //Log.d(TAG, String.valueOf(++count) + " : " + searchResult.getSnippet().getTitle() + " : Deleted");
                     //削除されたビデオの場合はthumnailURLにnull、durationに"00:00"を入れる
                     youTubeVideo.setThumbnailURL(null);
                     youTubeVideo.setDuration("00:00");
