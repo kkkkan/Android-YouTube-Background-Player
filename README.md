@@ -6,6 +6,7 @@ This is an application that allows you to continue playing videos on youtube eve
 - You can play and edit the playlist you have created on youtube by linking to the google account linked to your smartphone.
 - You can have one local favorite list without linking to google account.
 - By choosing this application from the sharing function in the YouTube official application, you can play videos with this application.
+- Shuffle play, repeat play, one repeat play can be done.
 
 <img src="https://user-images.githubusercontent.com/22609306/33920218-1e259d82-e000-11e7-8a8b-350aeb911957.png" width="180" height="320"> <img src="https://user-images.githubusercontent.com/22609306/33920413-260d1240-e001-11e7-926a-0e875adb4c15.png" width="180" height="320">
 <img src="https://user-images.githubusercontent.com/22609306/33920741-e9529706-e002-11e7-9160-7666419a5a42.png" width="180" height="320">
@@ -56,7 +57,7 @@ Change to the API key you registered earlier.
   
 ## Functions considering expansion in the future
 
-- Shuffle playback function
+
 
 
 # README(日本語ver)
@@ -69,6 +70,7 @@ Change to the API key you registered earlier.
 - スマートフォンに紐づけられているgoogle accountに連携する事でyoutube上に作成しているプレイリストの再生・編集ができます。
 - google accountに連携しなくてもローカルでお気に入りリストを1つ持てます。
 - YouTube公式アプリなどで、共有機能からこのアプリを選ぶことで、このアプリで動画再生できます。
+- シャッフル再生、リピート再生、1曲リピート再生が出来ます。
 
 
 
@@ -124,5 +126,5 @@ Change to the API key you registered earlier.
   
 ## 今後拡張を考えている機能
 
-- シャッフル再生機能
+
 
