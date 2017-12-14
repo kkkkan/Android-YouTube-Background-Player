@@ -32,15 +32,15 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.kkkkan.youtube.R
 import com.kkkkan.youtube.tubtub.adapters.NowPlayingListAdapter
+import com.kkkkan.youtube.tubtub.interfaces.CurrentPositionChanger
 import com.kkkkan.youtube.tubtub.interfaces.ItemEventsListener
-import com.kkkkan.youtube.tubtub.interfaces.OnItemSelected
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo
 import com.kkkkan.youtube.tubtub.utils.PlaylistsCash
 import com.kkkkan.youtube.tubtub.utils.Settings
 
 /**
- * AttachするactivitはOnItemSelectedのインスタンスであること
+ * AttachするactivitはCurrentPointChangerのインスタンスであること
  *
  *
  * Created by admin on 2017/12/08.
@@ -178,8 +178,8 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
     }
 
     override fun onItemClick(model: YouTubeVideo?) {
-        if (context is OnItemSelected) {
-            (context as OnItemSelected).onPlaylistSelected(list, list.indexOf(model))
+        if (context is CurrentPositionChanger) {
+            (context as CurrentPositionChanger).changeCurrentPosition(list.indexOf(model))
         }
     }
 

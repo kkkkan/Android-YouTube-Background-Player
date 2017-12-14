@@ -16,6 +16,7 @@
 package com.kkkkan.youtube.tubtub.utils;
 
 import android.arch.lifecycle.MutableLiveData;
+import android.util.Log;
 
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 
@@ -115,6 +116,7 @@ public class PlaylistsCash {
      * shuffleし直す
      */
     public void reShuffle() {
+        Log.d(TAG, "reShuffle()");
         shuffleList = new ArrayList<>(normalList);
         Collections.shuffle(shuffleList);
     }

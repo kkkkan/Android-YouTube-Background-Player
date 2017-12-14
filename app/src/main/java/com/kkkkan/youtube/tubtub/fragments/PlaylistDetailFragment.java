@@ -298,7 +298,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
                     swipeToRefresh.setRefreshing(false);
                 }
                 for (YouTubeVideo video : playlistDetailList) {
-                    Log.d(TAG, "onLoadFinished: >>> " + video.getTitle());
+                    //Log.d(TAG, "onLoadFinished: >>> " + video.getTitle());
                 }
             }
 

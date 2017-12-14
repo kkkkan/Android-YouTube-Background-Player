@@ -229,6 +229,10 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
                     Log.d(TAG, "setOnErrorListener : system error");
                     viewModel.setStateError();
+                } else if (what == -38 && extra == 0) {
+                    //preparedじゃないときにstart()が呼ばれたとき
+                    Log.d(TAG, "call start() before prepared !!");
+                    viewModel.setStateError();
                 }
                 //Calling start () etc. in the idel state
                 //Usually it does not happen
@@ -360,7 +364,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
      *
      * @param position
      */
-    private void playlistHandle(final int position) {
+    public void playlistHandle(final int position) {
         Log.d(TAG, "playlistHandle");
         if (playlistSelectedCancelFlag) {
             //もしユーザーがビデオ読み込みやめるよう操作していたら
@@ -520,7 +524,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
     private void handleNextVideo() {
         Log.d(TAG, "handleNextVideo");
         Settings settings = Settings.getInstance();
-        List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNormalList();
+        int playlistSize = PlaylistsCash.Instance.getPlayingListSize();
         int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
         if (settings.getRepeatOne() == Settings.RepeatOne.ON) {
             // one song repeat
@@ -528,22 +532,23 @@ public class MediaPlayerService extends Service implements MediaController.Media
             playlistHandle(currentVideoIndex);
             return;
         }
-        if (settings.getShuffle() == Settings.Shuffle.ON && playlist.size() <= currentVideoIndex + 1) {
+        /*if (settings.getShuffle() == Settings.Shuffle.ON && playlistSize <= currentVideoIndex + 1) {
+            Log.d(TAG,"settings.getShuffle() == Settings.Shuffle.ON && playlistSize <= currentVideoIndex + 1");
             //シャッフルモードでかつシャッフルリストの最後まで来てしまっていた時
             //リピートモードだった時のためにシャッフルし直す
             PlaylistsCash.Instance.reShuffle();
-        }
+        }*/
         if (settings.getRepeatPlaylist() == ON) {
             // It is not a repeat of one song, and at play list repeat
             //1曲リピートではなく、かつプレイリストリピート時
-            playlistHandle((currentVideoIndex + 1) % playlist.size());
+            playlistHandle((currentVideoIndex + 1) % playlistSize);
             return;
         }
 
 
         // When it is neither a single song repeat nor a play list repeat
         //一曲リピートでもプレイリストリピートでもないとき
-        if (currentVideoIndex + 1 < playlist.size()) {
+        if (currentVideoIndex + 1 < playlistSize) {
             playlistHandle(currentVideoIndex + 1);
         } else {
             //最後の曲のときはprogressbarが出ていたらそれを消すだけ。

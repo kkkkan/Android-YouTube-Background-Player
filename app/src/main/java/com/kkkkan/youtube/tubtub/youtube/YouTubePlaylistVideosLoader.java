@@ -82,7 +82,7 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
             PlaylistItemListResponse playlistItemResult = playlistItemRequest.execute();
 
             for (PlaylistItem p : playlistItemResult.getItems()) {
-                Log.d(TAG_NAME, "title:" + p.getSnippet().getTitle());
+                // Log.d(TAG_NAME, "title:" + p.getSnippet().getTitle());
             }
 
             playlistItemList.addAll(playlistItemResult.getItems());
@@ -166,7 +166,7 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
         int count = 0;
         while (vit.hasNext()) {
             PlaylistItem playlistItem = pit.next();
-            Log.d(TAG_NAME, playlistItem.getSnippet().getTitle());
+            // Log.d(TAG_NAME, playlistItem.getSnippet().getTitle());
             YouTubeVideo youTubeVideo = new YouTubeVideo();
             youTubeVideo.setId(playlistItem.getContentDetails().getVideoId());
             youTubeVideo.setTitle(playlistItem.getSnippet().getTitle());
@@ -182,16 +182,16 @@ public class YouTubePlaylistVideosLoader extends AsyncTaskLoader<List<YouTubeVid
                 String isoTime = videoItem.getContentDetails().getDuration();
                 String time = Utils.convertISO8601DurationToNormalTime(isoTime);
                 youTubeVideo.setDuration(time);
-                Log.d(TAG_NAME, String.valueOf(++count) + "-" + playlistItem.getSnippet().getTitle());
+                //Log.d(TAG_NAME, String.valueOf(++count) + "-" + playlistItem.getSnippet().getTitle());
             } else {
                 youTubeVideo.setThumbnailURL(null);
                 youTubeVideo.setDuration("00:00");
-                Log.d(TAG_NAME, String.valueOf(++count) + "-" + playlistItem.getSnippet().getTitle());
+                //Log.d(TAG_NAME, String.valueOf(++count) + "-" + playlistItem.getSnippet().getTitle());
             }
 
             playlistItems.add(youTubeVideo);
         }
-        Log.d(TAG_NAME, "YTPVL-loadInBackground-25");
+        //Log.d(TAG_NAME, "YTPVL-loadInBackground-25");
         return playlistItems;
     }
 

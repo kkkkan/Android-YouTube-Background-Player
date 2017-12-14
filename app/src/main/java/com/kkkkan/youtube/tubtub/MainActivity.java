@@ -72,6 +72,7 @@ import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.kkkkan.youtube.R;
 import com.kkkkan.youtube.tubtub.fragments.LandscapeFragment;
 import com.kkkkan.youtube.tubtub.fragments.PortraitFragment;
+import com.kkkkan.youtube.tubtub.interfaces.CurrentPositionChanger;
 import com.kkkkan.youtube.tubtub.interfaces.LoginHandler;
 import com.kkkkan.youtube.tubtub.interfaces.OnItemSelected;
 import com.kkkkan.youtube.tubtub.interfaces.SurfaceHolderListener;
@@ -96,7 +97,7 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getCredential;
  * Activity that manages fragments and action bar
  */
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
-        OnItemSelected, TitlebarListener, MediaController.MediaPlayerControl, SurfaceHolderListener, LoginHandler {
+        OnItemSelected, TitlebarListener, MediaController.MediaPlayerControl, SurfaceHolderListener, LoginHandler, CurrentPositionChanger {
     public static Handler mainHandler = new Handler();
     static private MediaPlayerService service;
 
@@ -194,6 +195,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 //next button clicked
                 //I made it possible to go around
                 //一周できるようにした
+                //Intent inttent=new Intent(service, NextReceiver.class);
+                //sendBroadcast(inttent);
                 service.nextPlay();
                 Log.d(TAG, " mMediaController.setPrevNextListeners");
 
@@ -205,6 +208,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 //previous button clicked
                 //I made it possible to go around
                 //一周できるようにした
+                //Intent inttent=new Intent(service, PrevReceiver.class);
+                //sendBroadcast(inttent);
                 service.prevPlay();
                 Log.d(TAG, " mMediaController.setPrevNextListeners");
             }
@@ -694,6 +699,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
             }
         }
+    }
+
+    @Override
+    public void changeCurrentPosition(int newPosition) {
+        service.playlistHandle(newPosition);
     }
 
     public MainActivityViewModel getViewModel() {
