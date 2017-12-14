@@ -63,9 +63,6 @@ class NowPlayingListAdapter(c: Context, list: List<YouTubeVideo>?, listener: Ite
         holder.title.setText(video.title)
         holder.duration.setText(video.duration)
         holder.viewCount.setText(video.viewCount)
-        holder.deleteButton.setOnClickListener(View.OnClickListener {
-            itemEventsListener.onDeleteClicked(video)
-        })
         holder.thumbnail.setOnClickListener(View.OnClickListener {
             itemEventsListener.onItemClick(video)
         })
@@ -77,8 +74,14 @@ class NowPlayingListAdapter(c: Context, list: List<YouTubeVideo>?, listener: Ite
             if (t != null) {
                 if (t == position) {
                     holder.background.alpha = 1f
+                    holder.deleteButton.visibility = View.INVISIBLE
+                    holder.deleteButton.setOnClickListener(null)
                 } else {
                     holder.background.alpha = 0.5f
+                    holder.deleteButton.visibility = View.VISIBLE
+                    holder.deleteButton.setOnClickListener(View.OnClickListener {
+                        itemEventsListener.onDeleteClicked(video)
+                    })
                 }
             }
         })
