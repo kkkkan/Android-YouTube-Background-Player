@@ -186,7 +186,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             @Override
             public void onCompletion(MediaPlayer mp) {
                 Log.d(TAG, " mMediaController.setOnCompletionListener");
-                if (PlaylistsCash.Instance.getNowPlaylist() == null) {
+                if (PlaylistsCash.Instance.isPlayingListNull()) {
                     //Originally it should not be playlist == null,
                     // but because there was something that was fallen by null reference with playlist.size ()
                     //本来ならplaylist==nullとなることは無いはずだが、
@@ -308,9 +308,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "prevBroadcastReceiver");
-            List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNowPlaylist();
             int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
-            playlistHandle((currentVideoIndex - 1 + playlist.size()) % playlist.size());
+            playlistHandle((currentVideoIndex - 1 + PlaylistsCash.Instance.getPlayingListSize()) % PlaylistsCash.Instance.getPlayingListSize());
         }
 
     };
@@ -319,9 +318,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "nextStartBroadcastReceiver");
-            List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNowPlaylist();
             int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
-            playlistHandle((currentVideoIndex + 1) % playlist.size());
+            playlistHandle((currentVideoIndex + 1) % PlaylistsCash.Instance.getPlayingListSize());
         }
     };
 
@@ -340,7 +338,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             viewModel.setStateStopLoading();
             return;
         }
-        PlaylistsCash.Instance.setNowPlaylist(playlist);
+        PlaylistsCash.Instance.setNewList(playlist);
         playlistHandle(position);
     }
 
@@ -366,10 +364,10 @@ public class MediaPlayerService extends Service implements MediaController.Media
         YouTubeVideo v = null;
         switch (Settings.getInstance().getShuffle()) {
             case ON:
-                v = PlaylistsCash.Instance.getShufflePlayList().get(position);
+                v = PlaylistsCash.Instance.getShuffleList().get(position);
                 break;
             case OFF:
-                v = PlaylistsCash.Instance.getNowPlaylist().get(position);
+                v = PlaylistsCash.Instance.getNormalList().get(position);
                 break;
         }
         final YouTubeVideo video = v;
@@ -505,7 +503,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
     private void handleNextVideo() {
         Log.d(TAG, "handleNextVideo");
         Settings settings = Settings.getInstance();
-        List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNowPlaylist();
+        List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNormalList();
         int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
         if (settings.getRepeatOne() == Settings.RepeatOne.ON) {
             // one song repeat
@@ -539,23 +537,26 @@ public class MediaPlayerService extends Service implements MediaController.Media
     }
 
     public void nextPlay() {
-        List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNowPlaylist();
-        int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
-        if (playlist != null) {
+        if (PlaylistsCash.Instance.isPlayingListNull()) {
             //When playlist is not set, you can also press it so that it will not fall at that time
             //playlistセットされてないときも押せてしまうからその時落ちないように
-            playlistHandle((currentVideoIndex + 1) % playlist.size());
+            return;
         }
+        int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
+        playlistHandle((currentVideoIndex + 1) % PlaylistsCash.Instance.getPlayingListSize());
+
     }
 
     public void prevPlay() {
-        List<YouTubeVideo> playlist = PlaylistsCash.Instance.getNowPlaylist();
-        int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
-        //When playlist is not set, you can also press it so that it will not fall at that time
-        //playlistセットされてないときも押せてしまうからその時落ちないように
-        if (playlist != null) {
-            playlistHandle((currentVideoIndex - 1 + playlist.size()) % playlist.size());
+        if (PlaylistsCash.Instance.isPlayingListNull()) {
+            //When playlist is not set, you can also press it so that it will not fall at that time
+            //playlistセットされてないときも押せてしまうからその時落ちないように
+            return;
         }
+        int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
+        int playlistSize = PlaylistsCash.Instance.getPlayingListSize();
+        playlistHandle((currentVideoIndex - 1 + playlistSize) % playlistSize);
+
     }
 
     @Override

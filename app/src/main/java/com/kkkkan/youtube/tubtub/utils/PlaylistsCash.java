@@ -48,10 +48,12 @@ public class PlaylistsCash {
     }
 
     //NowPlayingListFragment用の、今再生しているplaylistとpositionを入れとくためのList
-    private List<YouTubeVideo> nowPlaylist;
+    //private List<YouTubeVideo> nowPlaylist;
+
+    //通常の並びに並んでいるリスト
+    private List<YouTubeVideo> normalList;
     //shuffle再生用のランダムに並んでいるリスト
-    private List<YouTubeVideo> shufflePlayList;
-    //private int currentVideoIndex;
+    private List<YouTubeVideo> shuffleList;
     //NowPlayingListFragmentで今再生中のビデオのみ色を変えるためのMutableLiveData
     private MutableLiveData<Integer> mutableCurrentVideoIndex = new MutableLiveData<>();
 
@@ -60,43 +62,60 @@ public class PlaylistsCash {
         mutableCurrentVideoIndex.setValue(currentVideoIndex);
     }
 
-    public void setNowPlaylist(List<YouTubeVideo> nowPlaylist) {
-        //nowPlaylistと参照先を変えないと履歴の再読み込みとかでthis.nowPlaylistまで変わっちゃう
-        this.nowPlaylist = new ArrayList<>(nowPlaylist);
-        //playlist変わるたびにshuffle用の新しいランダムなプレイリストも作成する
-        shufflePlayList = new ArrayList<>(nowPlaylist);
-        Collections.shuffle(shufflePlayList);
+    public void setNewList(List<YouTubeVideo> newNormalList) {
+        normalList = new ArrayList<>(newNormalList);
+        shuffleList = new ArrayList<>(newNormalList);
+        Collections.shuffle(shuffleList);
     }
 
-    public void setNowPlayinglist2(List<YouTubeVideo> nowPlaylist) {
-        this.nowPlaylist = new ArrayList<>(nowPlaylist);
+    public void deleteVideoInList(YouTubeVideo video, Settings.Shuffle shuffle) {
+        int deleteVideoIndex = 0;
+        switch (shuffle) {
+            case ON:
+                deleteVideoIndex = shuffleList.indexOf(video);
+                break;
+            case OFF:
+                deleteVideoIndex = normalList.indexOf(video);
+                break;
+        }
+        if (getCurrentVideoIndex() > deleteVideoIndex) {
+            setCurrentVideoIndex(getCurrentVideoIndex() - 1);
+        }
+        shuffleList.remove(video);
+        normalList.remove(video);
     }
 
-    public void setShufflePlayList(List<YouTubeVideo> shufflePlayList) {
-        this.shufflePlayList = new ArrayList<>(shufflePlayList);
+    public List<YouTubeVideo> getNormalList() {
+        return normalList != null ? new ArrayList<>(normalList) : null;
+    }
+
+    public List<YouTubeVideo> getShuffleList() {
+        return shuffleList != null ? new ArrayList<>(shuffleList) : null;
     }
 
     public int getCurrentVideoIndex() {
         return mutableCurrentVideoIndex.getValue() != null ? mutableCurrentVideoIndex.getValue() : 0;
     }
 
-    public List<YouTubeVideo> getNowPlaylist() {
-        return nowPlaylist != null ? new ArrayList<>(nowPlaylist) : null;
-    }
 
     public MutableLiveData<Integer> getMutableCurrentVideoIndex() {
         return mutableCurrentVideoIndex;
     }
 
-    public List<YouTubeVideo> getShufflePlayList() {
-        return shufflePlayList != null ? new ArrayList<>(shufflePlayList) : null;
+    public int getPlayingListSize() {
+        //normalListとshffleListのサイズは常に同じはず
+        return isPlayingListNull() ? 0 : normalList.size();
+    }
+
+    public boolean isPlayingListNull() {
+        return normalList == null || shuffleList == null;
     }
 
     /**
      * shuffleし直す
      */
     public void reShuffle() {
-        shufflePlayList = new ArrayList<>(nowPlaylist);
-        Collections.shuffle(shufflePlayList);
+        shuffleList = new ArrayList<>(normalList);
+        Collections.shuffle(shuffleList);
     }
 }

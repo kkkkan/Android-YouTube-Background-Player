@@ -175,18 +175,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         startService(new Intent(this, MediaPlayerService.class));
         bindService(new Intent(this, MediaPlayerService.class), connection, BIND_AUTO_CREATE);
 
-        Settings.getInstance().getShuffleMutableLiveData().observe(this, new Observer<Settings.Shuffle>() {
-            @Override
-            public void onChanged(@Nullable Settings.Shuffle shuffle) {
-                if (shuffle == null) {
-                    //Settingsのコンストラクタ内でShuffleに初期値を与えているので
-                    // 通常ならありえない
-                    return;
-                }
-                handleShuffleSettingChange(shuffle);
-            }
-        });
-
         //Turn off screen saver
         //スクリーンセーバをオフにする
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -581,34 +569,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         transaction.commitAllowingStateLoss();
     }
 
-    /**
-     * 設定のshuffleのON/OFFの変更を受けて
-     * PlaylistCashのフィールドに手を加えるメゾッド
-     */
-    private void handleShuffleSettingChange(@NonNull Settings.Shuffle shuffle) {
-        PlaylistsCash playlistsCash = PlaylistsCash.Instance;
-        YouTubeVideo nowPlayingVideo;
-        int currentIndex = playlistsCash.getCurrentVideoIndex();
-        List<YouTubeVideo> normalList = playlistsCash.getNowPlaylist();
-        List<YouTubeVideo> shuffleList = playlistsCash.getShufflePlayList();
-        if (normalList == null || shuffleList == null) {
-            return;
-        }
-        switch (shuffle) {
-            case ON:
-                nowPlayingVideo = normalList.get(currentIndex);
-                int nowPlayingVideoInShuffleList = shuffleList.indexOf(nowPlayingVideo);
-                playlistsCash.setCurrentVideoIndex(nowPlayingVideoInShuffleList);
-                break;
-            case OFF:
-                nowPlayingVideo = shuffleList.get(currentIndex);
-                int nowPlayingVideoindexInNormalList = normalList.indexOf(nowPlayingVideo);
-                playlistsCash.setCurrentVideoIndex(nowPlayingVideoindexInNormalList);
-                //最後にシャッフルしなおす
-                playlistsCash.reShuffle();
-                break;
-        }
-    }
 
     /**
      * 縦画面のときプレイリスト詳細を表示しているときは
@@ -759,13 +719,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public int getDuration() {
         //まだ何も再生するビデオがセットされて無かったら0
-        return PlaylistsCash.Instance.getNowPlaylist() != null ? service.getDuration() : 0;
+        return PlaylistsCash.Instance.isPlayingListNull() ? 0 : service.getDuration();
     }
 
     @Override
     public int getCurrentPosition() {
         //まだ何も再生するビデオがセットされて無かったら0
-        return PlaylistsCash.Instance.getNowPlaylist() != null ? service.getCurrentPosition() : 0;
+        return PlaylistsCash.Instance.isPlayingListNull() ? 0 : service.getCurrentPosition();
     }
 
     @Override

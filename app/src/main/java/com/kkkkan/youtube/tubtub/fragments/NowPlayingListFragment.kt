@@ -120,10 +120,10 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
         val nowList: List<YouTubeVideo>?
         when (Settings.getInstance().shuffle) {
             Settings.Shuffle.ON -> {
-                nowList = PlaylistsCash.Instance.shufflePlayList
+                nowList = PlaylistsCash.Instance.shuffleList
             }
             Settings.Shuffle.OFF -> {
-                nowList = PlaylistsCash.Instance.nowPlaylist
+                nowList = PlaylistsCash.Instance.normalList
             }
             null -> {
                 //Settingsのコンストラクタで初期値を与えているので
@@ -184,26 +184,7 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
     }
 
     override fun onDeleteClicked(video: YouTubeVideo?) {
-        val newList: ArrayList<YouTubeVideo>
-        val nowIndex: Int = PlaylistsCash.Instance.currentVideoIndex
-        val deleteIndex: Int = list.indexOf(video)
-        newList = ArrayList(list)
-        newList.remove(video)
-        when (Settings.getInstance().shuffle) {
-            Settings.Shuffle.ON -> {
-                PlaylistsCash.Instance.shufflePlayList = newList
-            }
-            Settings.Shuffle.OFF -> {
-                PlaylistsCash.Instance.setNowPlayinglist2(newList)
-            }
-            null -> {
-                //ありえないがwarning避けのため設定
-            }
-        }
-        //PlaylistsCash.Instance.nowPlaylist = newList
-        if (nowIndex > deleteIndex) {
-            PlaylistsCash.Instance.currentVideoIndex = nowIndex - 1
-        }
+        PlaylistsCash.Instance.deleteVideoInList(video, Settings.getInstance().shuffle)
         updataRecyclerView()
     }
 
