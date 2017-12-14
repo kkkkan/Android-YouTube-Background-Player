@@ -223,6 +223,12 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
                     //Solved by split streaming setting with videoCreate ()?
                     //videoCreate()で分割ストリーミング設定することにより解決？
+                } else if (what == MEDIA_INFO_UNKNOWN && extra == -2147483648) {
+                    //-2147483648= MediaPlayer.MEDIA_ERROR_SYSTEM
+                    //何故か認識してもらえなかったのでマジックナンバーで
+
+                    Log.d(TAG, "setOnErrorListener : system error");
+                    viewModel.setStateError();
                 }
                 //Calling start () etc. in the idel state
                 //Usually it does not happen
@@ -328,7 +334,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
      * 検索画面や、プレイリスト詳細表示画面や履歴などでビデオを選んで再生始めた時に呼ばれるメゾッド。
      * その時点でのリストが渡る。（履歴などは動的に変わるため、再生を始めた時の状態を別に保持しておきたいため）
      */
-    public void newPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
+    public void newPlaylistSelected(List<YouTubeVideo> playlist, int position) {
         Log.d(TAG, "newPlaylistSelected");
         if (playlistSelectedCancelFlag) {
             //もしユーザーがビデオ読み込みやめるよう操作していたら
@@ -339,6 +345,12 @@ public class MediaPlayerService extends Service implements MediaController.Media
             return;
         }
         PlaylistsCash.Instance.setNewList(playlist);
+        if (Settings.getInstance().getShuffle() == Settings.Shuffle.ON) {
+            //shuffleモードの時は渡ってきたpositionはnormalListにおける選択したvideoのpositionなので
+            // shuffleListでのそのvideoのpositionをplaylistHandle()に渡すpositonに代入する。
+            List<YouTubeVideo> list = PlaylistsCash.Instance.getShuffleList();
+            position = list.indexOf(playlist.get(position));
+        }
         playlistHandle(position);
     }
 
@@ -381,6 +393,11 @@ public class MediaPlayerService extends Service implements MediaController.Media
             protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
                 Log.d(TAG, "onExtractionComplete");
                 if (ytFiles == null) {
+                    if (videoMeta == null) {
+                        Log.d(TAG, "ytFiles == null : videoMeta == null : " + video.getTitle());
+                    } else {
+                        Log.d(TAG, "ytFiles == null : videoMeta title is : " + videoMeta.getTitle() + "\nvideo title is : " + video.getTitle());
+                    }
                     viewModel.setStateError();
                     handleNextVideo();
                     return;
@@ -429,7 +446,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     //Progressダイアログ消すのはvideoCreate()のなかでやってる。
                     videoCreate(position);
                 } else {
-                    Log.d(TAG, "ytFile-null-next:" + video.getId());
+                    Log.d(TAG, "tag is 0 : " + video.getTitle());
                     viewModel.setStateError();
                     handleNextVideo();
                 }
