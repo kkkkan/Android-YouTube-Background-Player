@@ -391,9 +391,9 @@ public class MediaPlayerService extends Service implements MediaController.Media
         viewModel.setStateStartLoading();
 
         String youtubeLink = Config.YOUTUBE_BASE_URL + video.getId();
-        new YouTubeExtractor(this) {
+        YouTubeExtractorTask.YouTubeExtractorTaskCallback youTubeExtractorTaskCallback = new YouTubeExtractorTask.YouTubeExtractorTaskCallback() {
             @Override
-            protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
+            public void onExtractionCompleteListener(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
                 Log.d(TAG, "onExtractionComplete");
                 if (ytFiles == null) {
                     if (videoMeta == null) {
@@ -456,16 +456,15 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     }
                     Log.d(TAG, "ytFile's itags is : " + tags);
                     //FabricにLog飛ばす
-                    Crashlytics.logException(new Exception("tag is 0 : " + video.getTitle()+"\n"+"ytFile's itags is : " + tags));
+                    Crashlytics.logException(new Exception("tag is 0 : " + video.getTitle() + "\n" + "ytFile's itags is : " + tags));
                     //viewModel.setStateError();
                     //handleNextVideo(false);
                     //youtue上に動画はあるのにytFilesをうまく取ってこれていないときがあるようなので再度やり直し
                     playlistHandle(position);
                 }
             }
-        }.execute(youtubeLink);
-
-
+        };
+        new YouTubeExtractorTask(this, youTubeExtractorTaskCallback).execute(youtubeLink);
     }
 
     private void videoCreate(final int position) {
@@ -657,6 +656,25 @@ public class MediaPlayerService extends Service implements MediaController.Media
     @Override
     public int getAudioSessionId() {
         return 0;
+    }
+
+
+    static private class YouTubeExtractorTask extends YouTubeExtractor {
+        private YouTubeExtractorTaskCallback callback;
+
+        interface YouTubeExtractorTaskCallback {
+            void onExtractionCompleteListener(SparseArray<YtFile> ytFiles, VideoMeta videoMeta);
+        }
+
+        public YouTubeExtractorTask(Context context, YouTubeExtractorTaskCallback callback) {
+            super(context);
+            this.callback = callback;
+        }
+
+        @Override
+        protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
+            callback.onExtractionCompleteListener(ytFiles, videoMeta);
+        }
     }
 
 }
