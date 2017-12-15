@@ -658,7 +658,10 @@ public class MediaPlayerService extends Service implements MediaController.Media
         return 0;
     }
 
-
+    /**
+     * YouTubeExtractor()を使うためのstatic innerクラス
+     * そのままYouTubeExtractor()をnew して使うとメモリーリークのwarningが出るためインナークラスにする。
+     */
     static private class YouTubeExtractorTask extends YouTubeExtractor {
         private YouTubeExtractorTaskCallback callback;
 

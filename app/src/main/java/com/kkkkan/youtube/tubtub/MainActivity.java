@@ -351,10 +351,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     editor.apply();
                     getCredential().setSelectedAccountName(accountName);
 
-                    //ログインする
-                    AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
+                    //LoginTaskのためのコールバック関数作成
+                    LoginTask.LoginTaskListener loginTaskListener = new LoginTask.LoginTaskListener() {
                         @Override
-                        protected String doInBackground(Void... params) {
+                        public String loginListener() {
                             String token = null;
                             try {
                                 /*youtube:YouTube アカウントの管理
@@ -387,15 +387,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                             }
                             return token;
                         }
-
-                        @Override
-                        protected void onPostExecute(String token) {
-                            /*tokenの文字列の表示*/
-                            Log.i(TAG, "Access token retrieved:" + token);
-                        }
-
                     };
-                    task.execute();
+                    //LoginTask作成
+                    LoginTask loginTask = new LoginTask(loginTaskListener);
+                    //ログインする
+                    loginTask.execute();
                 }
             }
         } else if (requestCode == REQUEST_CODE_TOKEN_AUTH) {
@@ -773,5 +769,31 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         return service.getAudioSessionId();
     }
 
+    /**
+     * ログインする時用のAsyncTask
+     * そのまま使うときにnew AsyncTask()して使うとメモリーリークのwarningが出るのでそれを避けるために
+     * static inner クラス化
+     */
+    static private class LoginTask extends AsyncTask<Void, Void, String> {
+        private LoginTaskListener loginTaskListener;
 
+        interface LoginTaskListener {
+            String loginListener();
+        }
+
+        LoginTask(LoginTaskListener loginTaskListener) {
+            this.loginTaskListener = loginTaskListener;
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            return loginTaskListener.loginListener();
+        }
+
+        @Override
+        protected void onPostExecute(String token) {
+            //tokenの文字列の表示
+            Log.i(TAG, "Access token retrieved:" + token);
+        }
+    }
 }
