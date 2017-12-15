@@ -153,7 +153,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
             @Override
             public void onRefresh() {
                 Log.d(TAG, "onRefresh");
-                acquirePlaylistVideos(playlist.getId());
+                acquirePlaylistVideos(playlist);
             }
         });
 
@@ -202,7 +202,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         progressDialog.show();
         //Stuff data into playlistDetailList.
         //playlistDetailListにデータ詰める。
-        acquirePlaylistVideos(playlist.getId());
+        acquirePlaylistVideos(playlist);
     }
 
 
@@ -247,7 +247,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         //何もしない
     }
 
-    private void acquirePlaylistVideos(final String playlistId) {
+    private void acquirePlaylistVideos(final YouTubePlaylist playlist) {
         Log.d(TAG, "acquirePlaylistVideos");
         getLoaderManager().restartLoader(Config.YouTubePlaylistDetailLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
             //このフラグがないとこのfragmentに戻ったときなぜか onLoadFinishedが呼ばれてしまうことがある
@@ -255,9 +255,9 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
 
             @Override
             public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
-                Log.d(TAG, "PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:" + playlistId);
+                Log.d(TAG, "PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:" + playlist.getTitle());
                 loaderRunning = true;
-                return new YouTubePlaylistVideosLoader(context, playlistId);
+                return new YouTubePlaylistVideosLoader(context, playlist);
             }
 
             @Override

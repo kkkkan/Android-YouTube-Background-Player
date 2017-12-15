@@ -714,7 +714,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public void start() {
-        service.start();
+        if (!PlaylistsCash.Instance.isPlayingListNull() && PlaylistsCash.Instance.getPlayingListSize() != 0) {
+            service.start();
+        }
     }
 
     @Override
