@@ -44,7 +44,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 25
         versionCode 11
-        versionName "1.1.0"
+        versionName "1.2.0"
     }
     buildTypes {
         debug {
@@ -99,7 +99,6 @@ dependencies {
     compile files('libs/picasso-2.5.2.jar')
     compile 'com.google.android.exoplayer:exoplayer:r2.5.4'
     //this lib include jsr501
-    
     compile files('libs/YouTubeAndroidPlayerApi.jar')
     compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
         transitive = true;
