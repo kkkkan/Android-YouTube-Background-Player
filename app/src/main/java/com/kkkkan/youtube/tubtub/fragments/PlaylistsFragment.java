@@ -196,7 +196,7 @@ public class PlaylistsFragment extends BaseFragment implements
                 swipeToRefresh.setRefreshing(false);
 
                 for (YouTubePlaylist playlist : playlists) {
-                    Log.d(TAG, "onLoadFinished: >>> " + playlist.getTitle());
+                    //Log.d(TAG, "onLoadFinished: >>> " + playlist.getTitle());
                 }
 
             }

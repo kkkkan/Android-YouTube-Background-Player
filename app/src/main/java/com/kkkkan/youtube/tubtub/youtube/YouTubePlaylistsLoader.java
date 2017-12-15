@@ -17,6 +17,7 @@
 package com.kkkkan.youtube.tubtub.youtube;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
 import android.widget.Toast;
@@ -24,6 +25,7 @@ import android.widget.Toast;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.Channel;
+import com.google.api.services.youtube.model.ChannelContentDetails;
 import com.google.api.services.youtube.model.ChannelListResponse;
 import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.PlaylistListResponse;
@@ -48,9 +50,7 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTubeWithC
 
 public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist>> {
 
-
-    private static final String TAG = "SMEDIC";
-    private static final String TAG_NAME = "ouTubePlaylistsLoader";
+    private static final String TAG = "ouTubePlaylistsLoader";
     private YouTube youtube = getYouTubeWithCredentials();
     private Context context;
 
@@ -63,27 +63,35 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
     @Override
     public List<YouTubePlaylist> loadInBackground() {
 
-        Log.d(TAG_NAME, "playlistLoading");
+        Log.d(TAG, "playlistLoading");
         //If the count is not set or it is not connected to the net
         //カウントが設定されてないorネットにつながっていなかったら
         if (getCredential().getSelectedAccountName() == null || !NetworkConf.isNetworkAvailable(getContext())) {
             Log.d(TAG, "loadInBackground: account not picked!");
             return Collections.emptyList();
         }
-        Log.d(TAG_NAME, "playlistLoading");
+        Log.d(TAG, "playlistLoading");
         try {
             //setMine → Return only channels registered in account
             //setMine→アカウントに登録されたチャンネルだけ返す。
-            ChannelListResponse channelListResponse = youtube.channels().list("snippet").setMine(true).execute();
+            ChannelListResponse channelListResponse = youtube.channels().list("snippet,contentDetails").setMine(true).execute();
 
             List<Channel> channelList = channelListResponse.getItems();
             if (channelList.isEmpty()) {
                 Log.d(TAG, "Can't find user channel");
+                return Collections.emptyList();
             }
+            Log.d(TAG, "channelList number is : " + String.valueOf(channelList.size()));
             Channel channel = channelList.get(0);
+            ChannelContentDetails.RelatedPlaylists relatedPlaylists = channel.getContentDetails().getRelatedPlaylists();
 
+            //お気に入りリストなどのIDを取得
+            String likesId = relatedPlaylists.getLikes();
+            String favoritesId = relatedPlaylists.getFavorites();
+            String watchLaterId = relatedPlaylists.getWatchLater();
+
+            //自分で作った再生リストの詳細を取ってくる
             YouTube.Playlists.List searchList = youtube.playlists().list("id,snippet,contentDetails,status");//.setKey("AIzaSyApidIQCEBbqishTDtwuNky9uA-wyqZlR0");
-
             searchList.setChannelId(channel.getId());
             searchList.setFields("items(id,snippet/title,snippet/thumbnails/default/url,contentDetails/itemCount,status)");
             searchList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
@@ -92,33 +100,29 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
 
             List<Playlist> playlists = playListResponse.getItems();
 
+            ArrayList<YouTubePlaylist> youTubePlaylistList = new ArrayList<>();
+            if (playlists != null) {
+                //自分で作った再生リストを返り値用のArrayListに入れる
+                putPlaylistsToArrayList(youTubePlaylistList, playlists);
+            }
+            Log.d(TAG, "my list put success");
+            //お気に入りリストなどの詳細を取ってくる
+            searchList = youtube.playlists().list("id,snippet,contentDetails,status");//.setKey("AIzaSyApidIQCEBbqishTDtwuNky9uA-wyqZlR0");
+            searchList.setId(likesId + "," + favoritesId + "," + watchLaterId);
+            //searchList.setMine(true);
+            searchList.setFields("items(id,snippet/title,snippet/thumbnails/default/url,contentDetails/itemCount,status)");
+            searchList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
+
+            playListResponse = searchList.execute();
+            playlists = playListResponse.getItems();
 
             if (playlists != null) {
-
-                Iterator<Playlist> iteratorPlaylistResults = playlists.iterator();
-                if (!iteratorPlaylistResults.hasNext()) {
-                    Log.d(TAG, " There aren't any results for your query.");
-                }
-
-                ArrayList<YouTubePlaylist> youTubePlaylistList = new ArrayList<>();
-
-                while (iteratorPlaylistResults.hasNext()) {
-                    Playlist playlist = iteratorPlaylistResults.next();
-                    String id = playlist.getId();
-                    Log.d(TAG_NAME, "YouTubePlaylistLoader-" + id);
-
-                    YouTubePlaylist playlistItem = new YouTubePlaylist(playlist.getSnippet().getTitle(),
-                            playlist.getSnippet().getThumbnails().getDefault().getUrl(),
-                            playlist.getId(),
-                            playlist.getContentDetails().getItemCount(),
-                            playlist.getStatus().getPrivacyStatus());
-                    youTubePlaylistList.add(playlistItem);
-                }
-                Log.d(TAG_NAME, "YouTubePlaylistLoader-11");
-                return youTubePlaylistList;
+                //お気に入りリストなどを返り値用のArrayListに入れる
+                putPlaylistsToArrayList(youTubePlaylistList, playlists);
             }
+            return youTubePlaylistList;
         } catch (UserRecoverableAuthIOException e) {
-            Log.d(TAG_NAME, "YouTubePlaylistLoader-" + e.toString());
+            Log.d(TAG, "YouTubePlaylistLoader-" + e.toString());
             Log.d(TAG, "loadInBackground: exception REQUEST_AUTHORIZATION");
             mainHandler.post(new Runnable() {
                 @Override
@@ -128,7 +132,7 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
             });
             e.printStackTrace();
         } catch (IOException e) {
-            Log.d(TAG_NAME, "YouTubePlaylistLoadrer-error");
+            Log.d(TAG, "YouTubePlaylistLoadrer-error");
             Log.d(TAG, "loadInBackground: " + e.getMessage());
             e.printStackTrace();
         }
@@ -148,5 +152,24 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
     public void onCanceled(List<YouTubePlaylist> data) {
         super.onCanceled(data);
         Log.d(TAG, "onCanceled: ");
+    }
+
+    private void putPlaylistsToArrayList(@NonNull ArrayList<YouTubePlaylist> youTubePlaylistList, @NonNull List<Playlist> playlists) {
+        Iterator<Playlist> iteratorPlaylistResults = playlists.iterator();
+        if (!iteratorPlaylistResults.hasNext()) {
+            Log.d(TAG, " There aren't any results for your query. ");
+        }
+
+        while (iteratorPlaylistResults.hasNext()) {
+            Playlist playlist = iteratorPlaylistResults.next();
+            String id = playlist.getId();
+
+            YouTubePlaylist playlistItem = new YouTubePlaylist(playlist.getSnippet().getTitle(),
+                    playlist.getSnippet().getThumbnails().getDefault().getUrl(),
+                    playlist.getId(),
+                    playlist.getContentDetails().getItemCount(),
+                    playlist.getStatus().getPrivacyStatus());
+            youTubePlaylistList.add(playlistItem);
+        }
     }
 }

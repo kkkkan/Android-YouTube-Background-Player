@@ -400,6 +400,11 @@ public class MediaPlayerService extends Service implements MediaController.Media
                         Log.d(TAG, "ytFiles == null : videoMeta == null : " + video.getTitle());
                     } else {
                         Log.d(TAG, "ytFiles == null : videoMeta title is : " + videoMeta.getTitle() + "\nvideo title is : " + video.getTitle());
+                        if (videoMeta.getTitle() != null) {
+                            //videoMeta.getTitle()!=nullの時は削除されたビデオではなく、ytFilesを上手く取ってこれなかっただけっぽい
+                            playlistHandle(position);
+                            return;
+                        }
                     }
                     viewModel.setStateError();
                     handleNextVideo(false);
