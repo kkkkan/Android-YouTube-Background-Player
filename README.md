@@ -19,7 +19,7 @@ This is an application that allows you to continue playing videos on youtube eve
 <img src="https://user-images.githubusercontent.com/22609306/33920242-3e14002a-e000-11e7-8f65-e5728e5051a9.png" width="320" height="180"> <img src="https://user-images.githubusercontent.com/22609306/33920240-3c0491aa-e000-11e7-8061-0e102ecba9e4.png" width="320" height="180"> <img src="https://user-images.githubusercontent.com/22609306/33920224-25817d12-e000-11e7-8771-4e69f4b4b871.png" width="180" height="320">
 
 
-## release information
+## Release information
 
 - Latest release information (ver 1.2.0)
 
