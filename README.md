@@ -18,6 +18,19 @@ This is an application that allows you to continue playing videos on youtube eve
 <img src="https://user-images.githubusercontent.com/22609306/33920221-224789d4-e000-11e7-8602-b6a19f64b317.png" width="180" height="320">
 <img src="https://user-images.githubusercontent.com/22609306/33920242-3e14002a-e000-11e7-8f65-e5728e5051a9.png" width="320" height="180"> <img src="https://user-images.githubusercontent.com/22609306/33920240-3c0491aa-e000-11e7-8061-0e102ecba9e4.png" width="320" height="180"> <img src="https://user-images.githubusercontent.com/22609306/33920224-25817d12-e000-11e7-8771-4e69f4b4b871.png" width="180" height="320">
 
+
+## release information
+
+- Latest release information (ver 1.2.0)
+
+  - https://github.com/kkkkan/Android-YouTube-Background-Player/releases/tag/ver_1.2.0_%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9
+
+- APK download
+
+  - https://github.com/kkkkan/Android-YouTube-Background-Player/releases/download/ver_1.2.0_%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9/com.kkkkan.youtube-release.apk
+
+
+
 ##  Copyright holder
 
 - Name: kkkkan
