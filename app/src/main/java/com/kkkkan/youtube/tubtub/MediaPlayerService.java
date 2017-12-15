@@ -194,7 +194,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     Log.d(TAG, "\nplaylist is null!\n");
                     return;
                 }
-                handleNextVideo();
+                handleNextVideo(false);
             }
         });
 
@@ -223,26 +223,24 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
                     //Solved by split streaming setting with videoCreate ()?
                     //videoCreate()で分割ストリーミング設定することにより解決？
-                } else if (what == MEDIA_INFO_UNKNOWN && extra == -2147483648) {
+
+                    //call setOnComplateListener
+                    //setOnComplateListener呼ぶ
+                    return false;
+                }
+                if (what == MEDIA_INFO_UNKNOWN && extra == -2147483648) {
                     //-2147483648= MediaPlayer.MEDIA_ERROR_SYSTEM
                     //何故か認識してもらえなかったのでマジックナンバーで
-
                     Log.d(TAG, "setOnErrorListener : system error");
-                    viewModel.setStateError();
-                } else if (what == -38 && extra == 0) {
+                }
+                if (what == -38 && extra == 0) {
                     //preparedじゃないときにstart()が呼ばれたとき
                     Log.d(TAG, "call start() before prepared !!");
-                    viewModel.setStateError();
                 }
-                //Calling start () etc. in the idel state
-                //Usually it does not happen
-                //idel状態でstart()等を呼ぶと
-                //通常は起きない
-
-
-                //call setOnComplateListener
-                //setOnComplateListener呼ぶ
-                return false;
+                handleNextVideo(true);
+                //do not call setOnComplateListener
+                //setOnComplateListener呼ばない
+                return true;
             }
         });
 
@@ -403,7 +401,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                         Log.d(TAG, "ytFiles == null : videoMeta title is : " + videoMeta.getTitle() + "\nvideo title is : " + video.getTitle());
                     }
                     viewModel.setStateError();
-                    handleNextVideo();
+                    handleNextVideo(false);
                     return;
                 }
                 //設定によって画質変える
@@ -452,7 +450,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                 } else {
                     Log.d(TAG, "tag is 0 : " + video.getTitle());
                     viewModel.setStateError();
-                    handleNextVideo();
+                    handleNextVideo(false);
                 }
             }
         }.execute(youtubeLink);
@@ -515,20 +513,23 @@ public class MediaPlayerService extends Service implements MediaController.Media
         }
     }
 
-
     /**
      * 次のビデオを再生するとなったときに呼ぶメゾッド。
      * 設定によって同じビデオを再生するか、プレイリストの最後に達していた時に次のビデオに行くかなどを
      * ハンドリングする
+     *
+     * @param error : ErrorListenerから直接呼んだか否か。ErrorListenerから呼んだときは設定に関わらず同じビデオを再度再生しようとする。
      */
-    private void handleNextVideo() {
+    private void handleNextVideo(boolean error) {
         Log.d(TAG, "handleNextVideo");
         Settings settings = Settings.getInstance();
         int playlistSize = PlaylistsCash.Instance.getPlayingListSize();
         int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
-        if (settings.getRepeatOne() == Settings.RepeatOne.ON) {
+        if (error || settings.getRepeatOne() == Settings.RepeatOne.ON) {
             // one song repeat
             //1曲リピート時
+
+            //エラー時も再度同じビデオの再生を試みる
             playlistHandle(currentVideoIndex);
             return;
         }
