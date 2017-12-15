@@ -22,6 +22,7 @@ import android.view.SurfaceHolder;
 import android.widget.MediaController;
 import android.widget.RemoteViews;
 
+import com.crashlytics.android.Crashlytics;
 import com.kkkkan.youtube.R;
 import com.kkkkan.youtube.tubtub.BroadcastReceiver.NextReceiver;
 import com.kkkkan.youtube.tubtub.BroadcastReceiver.PauseStartReceiver;
@@ -404,6 +405,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     handleNextVideo(false);
                     return;
                 }
+
                 //設定によって画質変える
                 SharedPreferences sharedPreferences = getSharedPreferences(VideoQualitys.VideoQualityPreferenceFileName, Context.MODE_PRIVATE);
                 //デフォルトの画質はノーマル
@@ -418,7 +420,6 @@ public class MediaPlayerService extends Service implements MediaController.Media
                         break;
                     }
                 }
-
 
                 Log.d(TAG, "video name:" + video.getTitle() + "\ntagVideo" + String.valueOf(tagVideo));
                 if (tagVideo != 0) {
@@ -449,8 +450,17 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     videoCreate(position);
                 } else {
                     Log.d(TAG, "tag is 0 : " + video.getTitle());
-                    viewModel.setStateError();
-                    handleNextVideo(false);
+                    String tags = "";
+                    for (int i = 0; i < ytFiles.size(); i++) {
+                        tags += String.valueOf(ytFiles.get(ytFiles.keyAt(i)).getFormat().getItag()) + " ";
+                    }
+                    Log.d(TAG, "ytFile's itags is : " + tags);
+                    //FabricにLog飛ばす
+                    Crashlytics.logException(new Exception("tag is 0 : " + video.getTitle()+"\n"+"ytFile's itags is : " + tags));
+                    //viewModel.setStateError();
+                    //handleNextVideo(false);
+                    //youtue上に動画はあるのにytFilesをうまく取ってこれていないときがあるようなので再度やり直し
+                    playlistHandle(position);
                 }
             }
         }.execute(youtubeLink);

@@ -56,7 +56,7 @@ class NowPlayingListAdapter(c: Context, list: List<YouTubeVideo>?, listener: Ite
             Log.d(TAG, "playlist == null || holder == null")
             return
         }
-        Log.d(TAG, "onBindViewHolder : " + position.toString())
+        //Log.d(TAG, "onBindViewHolder : " + position.toString())
         val video: YouTubeVideo = playlist.get(position)
 
         Picasso.with(context).load(video.thumbnailURL).into(holder.thumbnail)
