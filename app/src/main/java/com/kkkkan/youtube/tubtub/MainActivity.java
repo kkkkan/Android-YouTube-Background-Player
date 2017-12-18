@@ -714,7 +714,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public void start() {
-        service.start();
+        if (PlaylistsCash.Instance.getPlayingListSize() != 0) {
+            service.start();
+        }
     }
 
     @Override
@@ -725,18 +727,20 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public int getDuration() {
         //まだ何も再生するビデオがセットされて無かったら0
-        return PlaylistsCash.Instance.isPlayingListNull() ? 0 : service.getDuration();
+        return PlaylistsCash.Instance.getPlayingListSize() == 0 ? 0 : service.getDuration();
     }
 
     @Override
     public int getCurrentPosition() {
         //まだ何も再生するビデオがセットされて無かったら0
-        return PlaylistsCash.Instance.isPlayingListNull() ? 0 : service.getCurrentPosition();
+        return PlaylistsCash.Instance.getPlayingListSize() == 0 ? 0 : service.getCurrentPosition();
     }
 
     @Override
     public void seekTo(int pos) {
-        service.seekTo(pos);
+        if (PlaylistsCash.Instance.getPlayingListSize() != 0) {
+            service.seekTo(pos);
+        }
     }
 
     @Override

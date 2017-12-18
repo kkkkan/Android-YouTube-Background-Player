@@ -81,7 +81,7 @@ public class Settings {
         //->postにしたら遅すぎてUI表示との齟齬が生まれてしまったのでsetに変更
         shuffleMutableLiveData.setValue(shuffle);
 
-        if (PlaylistsCash.Instance.isPlayingListNull()) {
+        if (PlaylistsCash.Instance.getPlayingListSize() == 0) {
             //何もビデオセットする前からシャッフルモードのON/OFFはいじれるのでその時に落ちないよう対策
             return;
         }

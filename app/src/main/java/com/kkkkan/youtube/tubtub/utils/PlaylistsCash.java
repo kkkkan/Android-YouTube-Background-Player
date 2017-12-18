@@ -52,9 +52,9 @@ public class PlaylistsCash {
     //private List<YouTubeVideo> nowPlaylist;
 
     //通常の並びに並んでいるリスト
-    private List<YouTubeVideo> normalList;
+    private List<YouTubeVideo> normalList = new ArrayList<>();
     //shuffle再生用のランダムに並んでいるリスト
-    private List<YouTubeVideo> shuffleList;
+    private List<YouTubeVideo> shuffleList = new ArrayList<>();
     //NowPlayingListFragmentで今再生中のビデオのみ色を変えるためのMutableLiveData
     private MutableLiveData<Integer> mutableCurrentVideoIndex = new MutableLiveData<>();
 
@@ -105,12 +105,13 @@ public class PlaylistsCash {
 
     public int getPlayingListSize() {
         //normalListとshffleListのサイズは常に同じはず
-        return isPlayingListNull() ? 0 : normalList.size();
+        return normalList.size();
     }
 
-    public boolean isPlayingListNull() {
+    /*public boolean isPlayingListNull() {
         return normalList == null || shuffleList == null;
     }
+*/
 
     /**
      * shuffleし直す

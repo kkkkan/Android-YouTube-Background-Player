@@ -187,7 +187,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             @Override
             public void onCompletion(MediaPlayer mp) {
                 Log.d(TAG, " mMediaController.setOnCompletionListener");
-                if (PlaylistsCash.Instance.isPlayingListNull()) {
+                if (PlaylistsCash.Instance.getPlayingListSize() == 0) {
                     //Originally it should not be playlist == null,
                     // but because there was something that was fallen by null reference with playlist.size ()
                     //本来ならplaylist==nullとなることは無いはずだが、
@@ -574,7 +574,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
     }
 
     public void nextPlay() {
-        if (PlaylistsCash.Instance.isPlayingListNull()) {
+        if (PlaylistsCash.Instance.getPlayingListSize() == 0) {
             //When playlist is not set, you can also press it so that it will not fall at that time
             //playlistセットされてないときも押せてしまうからその時落ちないように
             return;
@@ -585,7 +585,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
     }
 
     public void prevPlay() {
-        if (PlaylistsCash.Instance.isPlayingListNull()) {
+        if (PlaylistsCash.Instance.getPlayingListSize() == 0) {
             //When playlist is not set, you can also press it so that it will not fall at that time
             //playlistセットされてないときも押せてしまうからその時落ちないように
             return;
