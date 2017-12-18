@@ -23,12 +23,11 @@ This is an application that allows you to continue playing videos on youtube eve
 
 - Latest release information (ver 1.2.0)
 
-  - https://github.com/kkkkan/Android-YouTube-Background-Player/releases/tag/ver_1.2.0_%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9
+  - https://github.com/kkkkan/Android-YouTube-Background-Player/releases/tag/ver_1.2.1
 
 - APK download
 
-  - https://github.com/kkkkan/Android-YouTube-Background-Player/releases/download/ver_1.2.0_%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9/com.kkkkan.youtube-release.apk
-
+  - https://github.com/kkkkan/Android-YouTube-Background-Player/releases/download/ver_1.2.1/com.kkkkan.youtube-release.apk
 
 
 ##  Copyright holder
@@ -52,6 +51,7 @@ Change to the API key you registered earlier.
 
 - We are checking the build in the next development environment.
   - Android Studio 3.0.1
+  - arrows M03 (android 6.0.1)
 
 <img src="https://user-images.githubusercontent.com/22609306/32926054-656fb22c-cb88-11e7-8a8a-a05c47af6a41.png" width="420"  height="180"> <img src="https://user-images.githubusercontent.com/22609306/32926056-67344aa0-cb88-11e7-8f9b-204c632d5916.png" width="420"  height="180"> <img src="https://user-images.githubusercontent.com/22609306/32926062-6b66f992-cb88-11e7-9fc8-2e1fdddbae27.png" width="420"  height="180"> <img src="https://user-images.githubusercontent.com/22609306/32926058-6937df7e-cb88-11e7-884e-c766a607a23f.png" width="420"  height="180"> <img src="https://user-images.githubusercontent.com/22609306/32997295-48585ca2-cdd1-11e7-80cf-5a6b1e3563bf.png" width="420"  height="180"> <img src="https://user-images.githubusercontent.com/22609306/33010535-2a354364-ce1e-11e7-834f-b9ce11deba4e.png" width="420"  height="180"> <img src="https://user-images.githubusercontent.com/22609306/32926067-7597db16-cb88-11e7-9f7a-857c8a7be05b.png" width="420"  height="180">
 
@@ -101,11 +101,11 @@ Change to the API key you registered earlier.
 
 - 最新版リリース情報 (ver 1.2.0)
 
-  - https://github.com/kkkkan/Android-YouTube-Background-Player/releases/tag/ver_1.2.0_%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9
+  - https://github.com/kkkkan/Android-YouTube-Background-Player/releases/tag/ver_1.2.1
 
 - APK download
 
-  - https://github.com/kkkkan/Android-YouTube-Background-Player/releases/download/ver_1.2.0_%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9/com.kkkkan.youtube-release.apk
+  - https://github.com/kkkkan/Android-YouTube-Background-Player/releases/download/ver_1.2.1/com.kkkkan.youtube-release.apk
 
 
 
@@ -130,6 +130,7 @@ Change to the API key you registered earlier.
 
 - 次の開発環境でのビルドを確認しています。
   - Android Studio 3.0.1
+  - arrows M03 (android 6.0.1)
 
 
 <img src="https://user-images.githubusercontent.com/22609306/32926054-656fb22c-cb88-11e7-8a8a-a05c47af6a41.png" width="420"  height="180"> <img src="https://user-images.githubusercontent.com/22609306/32926056-67344aa0-cb88-11e7-8f9b-204c632d5916.png" width="420"  height="180"> <img src="https://user-images.githubusercontent.com/22609306/32926062-6b66f992-cb88-11e7-9fc8-2e1fdddbae27.png" width="420"  height="180"> <img src="https://user-images.githubusercontent.com/22609306/32926058-6937df7e-cb88-11e7-884e-c766a607a23f.png" width="420"  height="180"> <img src="https://user-images.githubusercontent.com/22609306/32997295-48585ca2-cdd1-11e7-80cf-5a6b1e3563bf.png" width="420"  height="180"> <img src="https://user-images.githubusercontent.com/22609306/33010535-2a354364-ce1e-11e7-834f-b9ce11deba4e.png" width="420"  height="180"> <img src="https://user-images.githubusercontent.com/22609306/32926067-7597db16-cb88-11e7-9f7a-857c8a7be05b.png" width="420"  height="180">
