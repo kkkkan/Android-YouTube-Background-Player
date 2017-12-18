@@ -59,7 +59,7 @@ Change to the API key you registered earlier.
 
 - ~~Depending on the model, long-term videos may be played for 9 to 25 minutes and playback may end in the middle and playback of the next video may begin.~~
 
-  - ~~Machines with this phenomenon seen: FUJITSU arrows M02 (OS: andrid 6.0.1)~~
+  - ~~Machines with this phenomenon seen: FUJITSU arrows M03 (OS: andrid 6.0.1)~~
   
   - ~~Machine that did not see this phenomenon: SONY SO - 01G (OS: android 5.0.2)~~
   
@@ -140,7 +140,7 @@ Change to the API key you registered earlier.
 
 -  ~~機種によっては、長時間のビデオは、9～25分再生したところで途中で再生が終わってしまい次のビデオを再生し始めてしまうことがあります。~~
   
-  - ~~この現象の見られた機種:FUJITSU arrows M02(OS:andrid 6.0.1)~~
+  - ~~この現象の見られた機種:FUJITSU arrows M03(OS:andrid 6.0.1)~~
   
   - ~~この現象の見られなかった機種:SONY SO-01G(OS:android 5.0.2)~~
   
