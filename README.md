@@ -21,7 +21,7 @@ This is an application that allows you to continue playing videos on youtube eve
 
 ## Release information
 
-- Latest release information (ver 1.2.0)
+- Latest release information (ver 1.2.1)
 
   - https://github.com/kkkkan/Android-YouTube-Background-Player/releases/tag/ver_1.2.1
 
@@ -99,7 +99,7 @@ Change to the API key you registered earlier.
 
 ## リリース情報
 
-- 最新版リリース情報 (ver 1.2.0)
+- 最新版リリース情報 (ver 1.2.1)
 
   - https://github.com/kkkkan/Android-YouTube-Background-Player/releases/tag/ver_1.2.1
 
