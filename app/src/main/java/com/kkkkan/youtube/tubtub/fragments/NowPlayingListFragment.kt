@@ -131,7 +131,7 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
                 nowList = null
             }
         }
-        if (nowList == null) {
+        if (nowList == null || nowList.size == 0) {
             noListTextView?.visibility = View.VISIBLE
             if (swipeToRefresh!!.isRefreshing) {
                 swipeToRefresh!!.setRefreshing(false)
