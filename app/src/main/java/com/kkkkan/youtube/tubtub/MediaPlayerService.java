@@ -358,7 +358,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
     }
 
     /**
-     * 選んだビデオをmediaplayerで再生するためのurlをvideoUrlにセットし、バックグラウンド再生かフォアグランド再生かによって
+     * 選んだビデオをmediaplayerで再生するためのurlをvideoUrlにセットし,
      * 次の制御をvideoCreate()に振る
      *
      * @param position
@@ -430,7 +430,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                 if (tagVideo != 0) {
 
                     //最近見たリストに追加
-                    YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).create(video);
+                    YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).createIfNotMatchWithTopVideo(video);
 
                     String videoDownloadUrl = ytFiles.get(tagVideo).getUrl();
                     Log.d(TAG, "VideoURL:" + videoDownloadUrl);

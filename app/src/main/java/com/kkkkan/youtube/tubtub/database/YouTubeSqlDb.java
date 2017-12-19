@@ -213,6 +213,40 @@ public class YouTubeSqlDb {
         }
 
         /**
+         * Mezzod to add only at the time of the video where the top video and the video you are trying to add are different video
+         * (assuming you use it when adding history)
+         * <p>
+         * 一番上のVideoと追加しようとしているvideoが違うvideoの時だけ追加するメゾッド
+         * （履歴追加の時に使用する事を想定している）
+         *
+         * @param video
+         * @return
+         */
+        public boolean createIfNotMatchWithTopVideo(YouTubeVideo video) {
+            // Gets the data repository in write mode
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+            Cursor c = null;
+            try {
+                //Return 1 new video
+                //1番新しいvideo１つを返す
+                c = db.query(tableName, null, null, null, null, null, YouTubeVideoEntry.COLUMN_ENTRY_ID + " DESC", "1");
+                while (c.moveToNext()) {
+                    String videoId = c.getString(c.getColumnIndexOrThrow(YouTubeVideoEntry.COLUMN_VIDEO_ID));
+                    if (video.getId().equals(videoId)) {
+                        return true;
+                    }
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "readAll error :" + e.getMessage());
+            } finally {
+                if (c != null) {
+                    c.close();
+                }
+            }
+            return create(video);
+        }
+
+        /**
          * Checks if entry is already present in database
          *
          * @param videoId
