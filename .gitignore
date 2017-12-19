@@ -10,3 +10,5 @@ keystore.properties
 .idea/misc.xml
 .idea/vcs.xml
 .idea/modules.xml
+app/release/com.kkkkan.youtube-release.apk
+app/release/output.json

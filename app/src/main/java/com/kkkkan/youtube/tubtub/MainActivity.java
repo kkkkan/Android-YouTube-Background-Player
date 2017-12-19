@@ -128,6 +128,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private MainActivityViewModel viewModel;
 
+    private Toast toast;
+
     private boolean isConnect = false;
     private ServiceConnection connection = new ServiceConnection() {
         @Override
@@ -167,7 +169,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         setProgressDialogDismiss();
                         break;
                     case Error:
-                        Toast.makeText(mainContext, getString(R.string.video_read_fail), Toast.LENGTH_SHORT).show();
+                        if (toast != null) {
+                            toast.cancel();
+                        }
+                        toast = Toast.makeText(mainContext, getString(R.string.video_read_fail), Toast.LENGTH_SHORT);
+                        toast.show();
                         break;
                 }
             }
@@ -368,7 +374,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 mainHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Toast.makeText(mainContext, "ログイン成功:\n" + getCredential().getSelectedAccountName(), Toast.LENGTH_LONG).show();
+                                        if (toast != null) {
+                                            toast.cancel();
+                                        }
+                                        toast = Toast.makeText(mainContext, "ログイン成功:\n" + getCredential().getSelectedAccountName(), Toast.LENGTH_LONG);
+                                        toast.show();
                                     }
                                 });
                             } catch (IOException transientEx) {
@@ -679,7 +689,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     @Override
                     public void onLoadFinished(Loader<YouTubeVideo> loader, YouTubeVideo data) {
                         if (data == null) {
-                            Toast.makeText(MainActivity.this, "このビデオは開けません", Toast.LENGTH_LONG).show();
+                            if (toast != null) {
+                                toast.cancel();
+                            }
+                            toast = Toast.makeText(MainActivity.this, "このビデオは開けません", Toast.LENGTH_LONG);
+                            toast.show();
                             return;
                         }
                         List<YouTubeVideo> video = new ArrayList<YouTubeVideo>();
