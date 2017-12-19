@@ -35,19 +35,12 @@ import com.squareup.picasso.Picasso
 /**
  * Created by admin on 2017/12/11.
  */
-class NowPlayingListAdapter(c: Context, list: List<YouTubeVideo>?, listener: ItemEventsListener<YouTubeVideo>) : RecyclerView.Adapter<NowPlayingListAdapter.ViewHolder>() {
+class NowPlayingListAdapter(val context: Context, val playlist: List<YouTubeVideo>?, val itemEventsListener: ItemEventsListener<YouTubeVideo>) : RecyclerView.Adapter<NowPlayingListAdapter.ViewHolder>() {
     private val TAG = "NowPlayingListAdapter"
-    private val context: Context = c
-    private val playlist: List<YouTubeVideo>? = list
-    private val itemEventsListener: ItemEventsListener<YouTubeVideo>
-
-    init {
-        itemEventsListener = listener
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ViewHolder {
         Log.d(TAG, "onCreateViewHolder")
-        val view: View = LayoutInflater.from(parent?.context).inflate(R.layout.fragment_now_playing_list, null)
+        val view: View = LayoutInflater.from(parent?.context).inflate(R.layout.fragment_now_playing_list, parent, false)
         return ViewHolder(view)
     }
 

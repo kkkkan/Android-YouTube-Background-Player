@@ -48,16 +48,12 @@ import com.kkkkan.youtube.tubtub.utils.Settings
 
 class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> {
     private val TAG: String = "NowPlayingListFragment"
-    private var recyclerView: RecyclerView? = null
-    private var swipeToRefresh: SwipeRefreshLayout? = null
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var swipeToRefresh: SwipeRefreshLayout
     private var c: Context? = null
-    private var list: ArrayList<YouTubeVideo>
-    private var adapter: NowPlayingListAdapter? = null
-    private var noListTextView: TextView? = null
-
-    init {
-        list = ArrayList<YouTubeVideo>()
-    }
+    private var list =  ArrayList<YouTubeVideo>()
+    private lateinit var adapter: NowPlayingListAdapter
+    private lateinit var noListTextView: TextView
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -73,20 +69,20 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
         recyclerView = view.findViewById(R.id.fragment_list_items) as RecyclerView
         swipeToRefresh = view.findViewById(R.id.swipe_to_refresh) as SwipeRefreshLayout
         val linearLayoutManager: LinearLayoutManager = LinearLayoutManager(c)
-        (recyclerView as RecyclerView).layoutManager = linearLayoutManager
+        recyclerView.layoutManager = linearLayoutManager
         val dividerItemDecoration: DividerItemDecoration = DividerItemDecoration((recyclerView as RecyclerView).context, linearLayoutManager.orientation)
-        (recyclerView as RecyclerView).addItemDecoration(dividerItemDecoration)
+        recyclerView.addItemDecoration(dividerItemDecoration)
         adapter = NowPlayingListAdapter(c!!, list, this as ItemEventsListener<YouTubeVideo>)
 
-        (recyclerView as RecyclerView).adapter = adapter
+        recyclerView.adapter = adapter
 
-        (swipeToRefresh as SwipeRefreshLayout).setOnRefreshListener(SwipeRefreshLayout.OnRefreshListener {
+        swipeToRefresh.setOnRefreshListener(SwipeRefreshLayout.OnRefreshListener {
             //くるくるの時することをここに書く
-            updataRecyclerView()
+            updateRecyclerView()
         })
 
         Settings.getInstance().shuffleMutableLiveData.observe(this, Observer {
-            updataRecyclerView()
+            updateRecyclerView()
         })
         return view
     }
@@ -95,10 +91,10 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
         super.onResume()
         Log.d(TAG, "onResume")
         //ここでrecyclerviewの整え等する
-        updataRecyclerView()
+        updateRecyclerView()
         //スタート位置を今再生中のビデオがリストのトップになるようにする
         //表示完了後すぐやろうとするとうまくいかないので少し遅らす
-        recyclerView?.postDelayed(Runnable {
+        recyclerView.postDelayed(Runnable {
             prepareScrollPosition()
         }, 500)
 
@@ -115,7 +111,7 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
 
     }
 
-    fun updataRecyclerView() {
+    fun updateRecyclerView() {
         Log.d(TAG, "updataRecyclerView")
         val nowList: List<YouTubeVideo>?
         when (Settings.getInstance().shuffle) {
@@ -132,21 +128,21 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
             }
         }
         if (nowList == null || nowList.size == 0) {
-            noListTextView?.visibility = View.VISIBLE
-            if (swipeToRefresh!!.isRefreshing) {
-                swipeToRefresh!!.setRefreshing(false)
+            noListTextView.visibility = View.VISIBLE
+            if (swipeToRefresh.isRefreshing) {
+                swipeToRefresh.setRefreshing(false)
             }
             return
         }
-        noListTextView?.visibility = View.INVISIBLE
+        noListTextView.visibility = View.INVISIBLE
         Log.d(TAG, "nowList.size.toString() : " + nowList.size.toString())
         list.clear()
         list.addAll(nowList)
-        adapter!!.notifyDataSetChanged()
+        adapter.notifyDataSetChanged()
         //スクロール位置直す
         prepareScrollPosition()
-        if (swipeToRefresh!!.isRefreshing) {
-            swipeToRefresh!!.setRefreshing(false)
+        if (swipeToRefresh.isRefreshing) {
+            swipeToRefresh.setRefreshing(false)
         }
     }
 
@@ -154,7 +150,7 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
      * 今再生中のビデオがリストのトップになるようにスクロールするメゾッド
      */
     private fun prepareScrollPosition() {
-        class mySmoothScroller : LinearSmoothScroller(recyclerView!!.context) {
+        class mySmoothScroller : LinearSmoothScroller(recyclerView.context) {
             override fun getVerticalSnapPreference(): Int {
                 return LinearSmoothScroller.SNAP_TO_START
             }
@@ -162,7 +158,7 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
 
         val smoothScroller: LinearSmoothScroller = mySmoothScroller()
         smoothScroller.setTargetPosition(PlaylistsCash.Instance.currentVideoIndex);
-        (recyclerView as RecyclerView).getLayoutManager().startSmoothScroll(smoothScroller);
+        recyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
     }
 
     override fun onShareClicked(itemId: String?) {
@@ -185,7 +181,7 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
 
     override fun onDeleteClicked(video: YouTubeVideo?) {
         PlaylistsCash.Instance.deleteVideoInList(video, Settings.getInstance().shuffle)
-        updataRecyclerView()
+        updateRecyclerView()
     }
 
     override fun onDeleteClicked(playlist: YouTubePlaylist?) {
