@@ -43,7 +43,7 @@ import com.kkkkan.youtube.tubtub.utils.Settings
  * AttachするactivitはCurrentPointChangerのインスタンスであること
  *
  *
- * Created by admin on 2017/12/08.
+ * Created by kkkkan on 2017/12/08.
  */
 
 class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> {

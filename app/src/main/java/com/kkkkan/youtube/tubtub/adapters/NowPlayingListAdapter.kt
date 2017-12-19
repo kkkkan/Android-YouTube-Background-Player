@@ -33,7 +33,7 @@ import com.kkkkan.youtube.tubtub.utils.PlaylistsCash
 import com.squareup.picasso.Picasso
 
 /**
- * Created by admin on 2017/12/11.
+ * Created by kkkkan on 2017/12/11.
  */
 class NowPlayingListAdapter(val context: Context, val playlist: List<YouTubeVideo>?, val itemEventsListener: ItemEventsListener<YouTubeVideo>) : RecyclerView.Adapter<NowPlayingListAdapter.ViewHolder>() {
     private val TAG = "NowPlayingListAdapter"

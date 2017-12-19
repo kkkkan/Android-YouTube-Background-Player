@@ -213,7 +213,7 @@ public class YouTubeSqlDb {
         }
 
         /**
-         * Mezzod to add only at the time of the video where the top video and the video you are trying to add are different video
+         * Method to add only at the time of the video where the top video and the video you are trying to add are different video
          * (assuming you use it when adding history)
          * <p>
          * 一番上のVideoと追加しようとしているvideoが違うvideoの時だけ追加するメゾッド
