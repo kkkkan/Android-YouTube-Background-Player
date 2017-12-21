@@ -722,69 +722,73 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     /**
      * 以下、mediacontroller用のinterface
-     * mediacontrollerにserviceを直接セットするとなぜか落ちるので
+     * mediacontrollerにserviceを直接セットすると落ちるので
      * いちどactivityにバインドさせてからserviceに渡す
+     * <p>
+     * バインドが確立するまではservice=nullであることに注意。
      */
 
     @Override
     public void start() {
-        if (PlaylistsCash.Instance.getPlayingListSize() != 0) {
+        if (service != null && PlaylistsCash.Instance.getPlayingListSize() != 0) {
             service.start();
         }
     }
 
     @Override
     public void pause() {
-        service.pause();
+        if (service != null) {
+            service.pause();
+        }
     }
 
     @Override
     public int getDuration() {
         //まだ何も再生するビデオがセットされて無かったら0
-        return PlaylistsCash.Instance.getPlayingListSize() == 0 ? 0 : service.getDuration();
+        return service == null || PlaylistsCash.Instance.getPlayingListSize() == 0 ? 0 : service.getDuration();
     }
 
     @Override
     public int getCurrentPosition() {
         //まだ何も再生するビデオがセットされて無かったら0
-        return PlaylistsCash.Instance.getPlayingListSize() == 0 ? 0 : service.getCurrentPosition();
+        return service == null || PlaylistsCash.Instance.getPlayingListSize() == 0 ? 0 : service.getCurrentPosition();
     }
 
     @Override
     public void seekTo(int pos) {
-        if (PlaylistsCash.Instance.getPlayingListSize() != 0) {
+        if (service != null && PlaylistsCash.Instance.getPlayingListSize() != 0) {
             service.seekTo(pos);
         }
     }
 
     @Override
     public boolean isPlaying() {
-        return service.isPlaying();
+        return service != null && service.isPlaying();
     }
 
     @Override
     public int getBufferPercentage() {
-        return service.getAudioSessionId();
+        return service != null ? service.getAudioSessionId() : 0;
     }
 
     @Override
     public boolean canPause() {
-        return service.canPause();
+        return service != null && service.canPause();
     }
 
     @Override
     public boolean canSeekBackward() {
-        return service.canSeekBackward();
+        return service != null && service.canSeekBackward();
     }
 
     @Override
     public boolean canSeekForward() {
-        return service.canSeekBackward();
+        return service != null && service.canSeekBackward();
     }
 
     @Override
     public int getAudioSessionId() {
-        return service.getAudioSessionId();
+        return service != null ? service.getAudioSessionId() : 0;
     }
 
     /**

@@ -51,7 +51,7 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
     private lateinit var recyclerView: RecyclerView
     private lateinit var swipeToRefresh: SwipeRefreshLayout
     private var c: Context? = null
-    private var list =  ArrayList<YouTubeVideo>()
+    private var list = ArrayList<YouTubeVideo>()
     private lateinit var adapter: NowPlayingListAdapter
     private lateinit var noListTextView: TextView
 
