@@ -3,6 +3,7 @@ package com.kkkkan.youtube.tubtub;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.arch.lifecycle.MutableLiveData;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -60,15 +61,45 @@ public class MediaPlayerService extends Service implements MediaController.Media
     static private int notificationId = 1;
     private boolean playlistSelectedCancelFlag = false;
     private SurfaceHolder mHolder;
-    private MainActivityViewModel viewModel;
+
+    public enum LoadingState {
+        StartLoading,
+        StopLoading,
+        Error
+    }
+
+    static private final MutableLiveData<LoadingState> loadingState = new MutableLiveData<>();
+    static private final MutableLiveData<String> videoTitle = new MutableLiveData<>();
+
+    static public MutableLiveData<LoadingState> getLoadingState() {
+        return loadingState;
+    }
+
+    static public MutableLiveData<String> getVideoTitle() {
+        return videoTitle;
+    }
+
+    static public void setStateStartLoading() {
+        loadingState.setValue(LoadingState.StartLoading);
+    }
+
+    static public void setStateStopLoading() {
+        loadingState.setValue(LoadingState.StopLoading);
+    }
+
+    static public void setStateError() {
+        loadingState.setValue(LoadingState.Error);
+    }
+
+    static public void setVideoTitle(String videoTitle) {
+        MediaPlayerService.videoTitle.setValue(videoTitle);
+    }
 
     private String videoUrl;
-    private String videoTitle;
 
 
     public class MediaPlayerBinder extends Binder {
-        public MediaPlayerService getService(MainActivityViewModel viewModel) {
-            MediaPlayerService.this.viewModel = viewModel;
+        public MediaPlayerService getService() {
             return MediaPlayerService.this;
         }
     }
@@ -113,10 +144,6 @@ public class MediaPlayerService extends Service implements MediaController.Media
             mHolder = null;
             mediaPlayer.setDisplay(null);
         }
-    }
-
-    public String getVideoTitle() {
-        return videoTitle;
     }
 
     @Override
@@ -344,7 +371,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             //Flagをfalseにする
             playlistSelectedCancelFlag = false;
             //一応Loading…出てたら消す
-            viewModel.setStateStopLoading();
+            setStateStopLoading();
             return;
         }
         PlaylistsCash.Instance.setNewList(playlist);
@@ -370,7 +397,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             //Flagをfalseにする
             playlistSelectedCancelFlag = false;
             //一応Loading…出てたら消す
-            viewModel.setStateStopLoading();
+            setStateStopLoading();
             return;
         }
 
@@ -388,7 +415,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         final YouTubeVideo video = v;
 
         //読み込み中ダイアログ表示
-        viewModel.setStateStartLoading();
+        setStateStartLoading();
 
         String youtubeLink = Config.YOUTUBE_BASE_URL + video.getId();
         YouTubeExtractorTask.YouTubeExtractorTaskCallback youTubeExtractorTaskCallback = new YouTubeExtractorTask.YouTubeExtractorTaskCallback() {
@@ -406,7 +433,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                             return;
                         }
                     }
-                    viewModel.setStateError();
+                    setStateError();
                     handleNextVideo(false);
                     return;
                 }
@@ -437,13 +464,13 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
                     //ポーズから戻ったときのためMovieUrlも変えとく
                     videoUrl = videoDownloadUrl;
-                    videoTitle = video.getTitle();
+                    videoTitle.setValue(video.getTitle());
 
                     //サムネイルの設定
                     Notification notification = mNotificationCompatBuilder.build();
                     Picasso.with(MediaPlayerService.this).load(video.getThumbnailURL()).into(mRemoteViews, R.id.video_thumbnail, notificationId, notification);
 
-                    mRemoteViews.setTextViewText(R.id.title_view, videoTitle);
+                    mRemoteViews.setTextViewText(R.id.title_view, video.getTitle());
                     mRemoteViews.setTextViewText(R.id.video_duration, video.getDuration());
                     mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
                     // mNotificationManagerCompat.notify(notificationId, notification);
@@ -496,11 +523,11 @@ public class MediaPlayerService extends Service implements MediaController.Media
                 public void onPrepared(MediaPlayer mp) {
                     Log.d(TAG, "onPrepared");
                     //読み込み中ダイアログ消す
-                    viewModel.setStateStopLoading();
+                    setStateStopLoading();
                     //videoTitleをセット
-                    if (videoTitle != null) {
-                        viewModel.setVideoTitle(videoTitle);
-                    }
+                    /*if (videoTitle != null) {
+                        setVideoTitle(videoTitle);
+                    }*/
 
                     if (playlistSelectedCancelFlag) {
                         //もしユーザーがビデオ読み込みやめるよう操作していたら
@@ -567,7 +594,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             playlistHandle(currentVideoIndex + 1);
         } else {
             //最後の曲のときはprogressbarが出ていたらそれを消すだけ。
-            viewModel.setStateStopLoading();
+            setStateStopLoading();
         }
 
 

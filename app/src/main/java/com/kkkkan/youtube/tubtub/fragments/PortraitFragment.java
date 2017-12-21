@@ -62,7 +62,7 @@ import com.google.api.services.youtube.model.PlaylistStatus;
 import com.google.api.services.youtube.model.ResourceId;
 import com.kkkkan.youtube.BuildConfig;
 import com.kkkkan.youtube.R;
-import com.kkkkan.youtube.tubtub.MainActivityViewModel;
+import com.kkkkan.youtube.tubtub.MediaPlayerService;
 import com.kkkkan.youtube.tubtub.adapters.PlaylistsAdapter;
 import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
 import com.kkkkan.youtube.tubtub.interfaces.LoginHandler;
@@ -111,7 +111,6 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     //For movie title
     //動画タイトル用
     private TextView titleView;
-    private MainActivityViewModel viewModel;
 
     /**
      * When making a new instance of PortraitFragment make sure to make with this mezzo
@@ -122,10 +121,9 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
      * 再生成時も必ずこのメゾッドを呼んで新しいインスタンス作るようにしているのでviewModelなども入れてしまう。
      * <p>
      */
-    static public PortraitFragment getNewPortraitFragment(TitlebarListener titlebarListener, MainActivityViewModel viewModel) {
+    static public PortraitFragment getNewPortraitFragment(TitlebarListener titlebarListener) {
         PortraitFragment fragment = new PortraitFragment();
         fragment.titlebarListener = titlebarListener;
-        fragment.viewModel = viewModel;
         return fragment;
     }
 
@@ -152,7 +150,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             ft.commit();
         }
         titleView = (TextView) view.findViewById(R.id.title_view);
-        viewModel.getVideoTitle().observe(this, new Observer<String>() {
+        MediaPlayerService.getVideoTitle().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 titleView.setText(s);

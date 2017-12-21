@@ -36,7 +36,6 @@ import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -120,13 +119,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private MediaController mMediaController;
     private ProgressDialog mProgressDialog;
-    //For movie title
-    //動画タイトル用
 
     private NetworkConf networkConf;
-
-
-    private MainActivityViewModel viewModel;
 
     private Toast toast;
 
@@ -134,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            MainActivity.service = ((MediaPlayerService.MediaPlayerBinder) service).getService(viewModel);
+            MainActivity.service = ((MediaPlayerService.MediaPlayerBinder) service).getService();
             isConnect = true;
         }
 
@@ -153,11 +147,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         //serviceにbindする際に渡すコネクション
-        viewModel.getLoadingState().observe(this, new Observer<MainActivityViewModel.LoadingState>() {
+        MediaPlayerService.getLoadingState().observe(MainActivity.this, new Observer<MediaPlayerService.LoadingState>() {
             @Override
-            public void onChanged(@Nullable MainActivityViewModel.LoadingState loadingState) {
+            public void onChanged(@Nullable MediaPlayerService.LoadingState loadingState) {
                 if (loadingState == null) {
                     return;
                 }
@@ -178,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 }
             }
         });
+
 
         startService(new Intent(this, MediaPlayerService.class));
         bindService(new Intent(this, MediaPlayerService.class), connection, BIND_AUTO_CREATE);
@@ -563,7 +557,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         FragmentTransaction transaction = getSupportFragmentManager()
                 .beginTransaction();
         //フラグメント追加
-        Fragment fragment = LandscapeFragment.getNewLandscapeFragment(this, viewModel);
+        Fragment fragment = LandscapeFragment.getNewLandscapeFragment(this);
         transaction.replace(R.id.parent_layout, fragment, LandscapeFragmentTAG);
         //transaction.addToBackStack(null);
         transaction.commitAllowingStateLoss();
@@ -577,7 +571,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Log.d(TAG, "viewChangeWhenPortrait()");
         FragmentTransaction transaction = getSupportFragmentManager()
                 .beginTransaction();
-        Fragment fragment = PortraitFragment.getNewPortraitFragment(this, viewModel);
+        Fragment fragment = PortraitFragment.getNewPortraitFragment(this);
         transaction.replace(R.id.parent_layout, fragment, PortraitFragmentTAG);
         transaction.commitAllowingStateLoss();
     }
@@ -720,9 +714,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
-    public MainActivityViewModel getViewModel() {
-        return viewModel;
-    }
 
     /**
      * 以下、mediacontroller用のinterface

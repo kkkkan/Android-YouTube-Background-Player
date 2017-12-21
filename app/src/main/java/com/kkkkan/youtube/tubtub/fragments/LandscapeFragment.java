@@ -33,7 +33,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.kkkkan.youtube.R;
-import com.kkkkan.youtube.tubtub.MainActivityViewModel;
+import com.kkkkan.youtube.tubtub.MediaPlayerService;
 import com.kkkkan.youtube.tubtub.interfaces.SurfaceHolderListener;
 import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
 import com.kkkkan.youtube.tubtub.utils.Settings;
@@ -51,7 +51,6 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
     private CheckBox lockBox;
     private CheckBox repeatPlaylistBox;
     private TitlebarListener titlebarListener;
-    private MainActivityViewModel viewModel;
 
 
     /**
@@ -62,10 +61,9 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
      * <p>
      * MainActivity#onCreate()の中で必ず呼んでいるので再生成時もリスナーがnullになることはなし
      */
-    static public LandscapeFragment getNewLandscapeFragment(TitlebarListener titlebarListener, MainActivityViewModel viewModel) {
+    static public LandscapeFragment getNewLandscapeFragment(TitlebarListener titlebarListener) {
         LandscapeFragment fragment = new LandscapeFragment();
         fragment.titlebarListener = titlebarListener;
-        fragment.viewModel = viewModel;
         return fragment;
     }
 
@@ -134,7 +132,7 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
         });
 
         titleView = (TextView) view.findViewById(R.id.title_view);
-        viewModel.getVideoTitle().observe(this, new Observer<String>() {
+        MediaPlayerService.getVideoTitle().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 titleView.setText(s);
