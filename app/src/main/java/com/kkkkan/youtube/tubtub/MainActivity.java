@@ -466,7 +466,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      */
     @Override
     public void onPlaylistSelected(List<YouTubeVideo> playlist, final int position) {
-        service.newPlaylistSelected(playlist, position);
+        if (service != null) {
+            service.newPlaylistSelected(playlist, position);
+        }
     }
 
 
@@ -713,7 +715,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public void changeCurrentPosition(int newPosition) {
-        service.playlistHandle(newPosition);
+        if (service != null) {
+            service.playlistHandle(newPosition);
+        }
     }
 
     public MainActivityViewModel getViewModel() {
