@@ -86,9 +86,13 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
             ChannelContentDetails.RelatedPlaylists relatedPlaylists = channel.getContentDetails().getRelatedPlaylists();
 
             //お気に入りリストなどのIDを取得
+            //高く評価した動画リスト
             String likesId = relatedPlaylists.getLikes();
-            String favoritesId = relatedPlaylists.getFavorites();
+            //お気に入りリスト->お気に入りリストは普通に取ってこれているらしい？
+            //String favoritesId = relatedPlaylists.getFavorites();
+            //後で見るリスト
             String watchLaterId = relatedPlaylists.getWatchLater();
+
 
             //自分で作った再生リストの詳細を取ってくる
             YouTube.Playlists.List searchList = youtube.playlists().list("id,snippet,contentDetails,status");//.setKey("AIzaSyApidIQCEBbqishTDtwuNky9uA-wyqZlR0");
@@ -108,7 +112,7 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
             Log.d(TAG, "my list put success");
             //お気に入りリストなどの詳細を取ってくる
             searchList = youtube.playlists().list("id,snippet,contentDetails,status");//.setKey("AIzaSyApidIQCEBbqishTDtwuNky9uA-wyqZlR0");
-            searchList.setId(likesId + "," + favoritesId + "," + watchLaterId);
+            searchList.setId(likesId + "," /*+ favoritesId */ + "," + watchLaterId);
             //searchList.setMine(true);
             searchList.setFields("items(id,snippet/title,snippet/thumbnails/default/url,contentDetails/itemCount,status)");
             searchList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);

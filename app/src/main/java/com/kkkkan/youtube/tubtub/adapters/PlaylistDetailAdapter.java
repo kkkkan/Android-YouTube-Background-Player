@@ -34,6 +34,7 @@ import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.squareup.picasso.Picasso;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAdapter.ViewHolder> {
@@ -60,6 +61,11 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
     @Override
     public void onBindViewHolder(PlaylistDetailAdapter.ViewHolder holder, final int position) {
         final YouTubeVideo video = list.get(position);
+        //今取っているitemCheckedのサイズより表示するリストが大きかったら、itemCheckedのサイズを増やす
+        if (position >= itemChecked.length) {
+            List check = Arrays.asList(itemChecked);
+            itemChecked = new boolean[itemChecked.length + (int) Config.NUMBER_OF_VIDEOS_RETURNED];
+        }
         if (YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).checkIfExists(video.getId())) {
             itemChecked[position] = true;
         } else {
