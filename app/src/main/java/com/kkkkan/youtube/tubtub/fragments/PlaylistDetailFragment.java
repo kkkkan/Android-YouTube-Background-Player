@@ -160,15 +160,8 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         TextView textView = (TextView) v.findViewById(R.id.title_view);
         textView.setText(playlistTitle);
 
-        return v;
-    }
-
-
-    @Override
-    public void onResume() {
-        super.onResume();
         playlistDetailList.clear();
-        Log.d(TAG, "PlaylistDetailFragment-onResume");
+
         //I will show a dialog of Loading ....
         //Loading…のダイアログ出す。
         progressDialog.setIndeterminate(true);
@@ -188,7 +181,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         //Get the height of playlistDetailFragment
         //playlistDetailFragmentの高さを取得
         // FrameLayout frameLayout = (FrameLayout) getView().findViewById(R.id.frame_layout);
-        int framelayoutHeight = getView().getHeight();
+        int framelayoutHeight = v.getHeight();
 
         //Set in the middle of playlistDetailFragment
         //playlistDetailFragmentの真ん中にセット
@@ -203,6 +196,15 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         //Stuff data into playlistDetailList.
         //playlistDetailListにデータ詰める。
         acquirePlaylistVideos(playlist);
+
+        return v;
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "PlaylistDetailFragment-onResume");
     }
 
 
