@@ -37,13 +37,14 @@ public class PlaylistsCash {
 
     }
 
-    //回転しても検索内容覚えておくためのList
+    //回転しても検索内容覚えておくためのList XXX そういう目的なら、ViewModelが良い。Activityのライフサイクルに関係なく覚えておきたい情報ならsingletonのままでよい。
     private List<YouTubeVideo> searchResultsList;
 
     public void setSearchResultsList(List<YouTubeVideo> searchResultsList) {
         this.searchResultsList = new ArrayList<>(searchResultsList);
     }
 
+    // XXX どうせnewしているのだから、@NonNullにして、searchResultsListがnullのときには空のリストを返すほうが親切かもしれない。(そうすると、セットされていないのと検索結果が無いのとの区別が付かなくなるが)
     public List<YouTubeVideo> getSearchResultsList() {
         return searchResultsList != null ? new ArrayList<>(searchResultsList) : null;
     }

@@ -81,6 +81,10 @@ public class Settings {
         //->postにしたら遅すぎてUI表示との齟齬が生まれてしまったのでsetに変更
         shuffleMutableLiveData.setValue(shuffle);
 
+        // XXX settingsモジュールがcacheを直接触るのは変な気がする。以下のいずれかにすると良いのかも
+        // - cache側が設定をobserveする
+        // - 別の第三者がcacheの設定をする
+        // - 設定を変えた時に直ぐにcacheを触らなくても良いような構成にする
         if (PlaylistsCash.Instance.getPlayingListSize() == 0) {
             //何もビデオセットする前からシャッフルモードのON/OFFはいじれるのでその時に落ちないよう対策
             return;

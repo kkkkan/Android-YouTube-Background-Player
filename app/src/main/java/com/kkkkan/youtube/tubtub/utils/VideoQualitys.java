@@ -37,7 +37,7 @@ import java.util.HashMap;
  * https://developer.android.com/guide/topics/media/exoplayer.html
  */
 
-public class VideoQualitys {
+public class VideoQualitys { // XXX Qualities?
     final static public String VideoQualityPreferenceFileName = "VideoQualityPreferenceFileName";
     final static public String VideoQualityPreferenceKey = "VideoQualityPreferenceKey";
     final static private int videoQualitySuperLow = 0;

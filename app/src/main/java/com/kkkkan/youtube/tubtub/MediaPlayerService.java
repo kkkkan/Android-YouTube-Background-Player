@@ -71,6 +71,10 @@ public class MediaPlayerService extends Service implements MediaController.Media
     static private final MutableLiveData<LoadingState> loadingState = new MutableLiveData<>();
     static private final MutableLiveData<String> videoTitle = new MutableLiveData<>();
 
+    // XXX 基本的に、
+    // - staticにしない
+    // - bindが成功したら、getLoadingState()を呼ぶ
+    // としたほうが、行儀が良い。
     static public MutableLiveData<LoadingState> getLoadingState() {
         return loadingState;
     }
@@ -79,6 +83,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         return videoTitle;
     }
 
+    // XXX privateにできるものはprivateに
     static public void setStateStartLoading() {
         loadingState.setValue(LoadingState.StartLoading);
     }
@@ -124,8 +129,9 @@ public class MediaPlayerService extends Service implements MediaController.Media
             Log.d(TAG, "changeSurfaceHolderAndTitlebar#IllegalArgumentException\n" + e.getMessage());
             mHolder = null;
             mediaPlayer.setDisplay(null);
+            // XXX ここに来た時でも、holder!=nullのときにはtrueをかえしてしまうが、良い？ setDisplay()の呼び出し側ではsetDisplaySuccessという変数にいれているので、処理と合っていないけど…
         }
-        if (holder == null) {
+        if (holder == null) { // XXX こういうnullチェックは先にやったほうが良い。
             //基本的にあり得ない
             Log.d(TAG, "changeSurfaceHolderAndTitlebar#\nholder==null");
             return false;
@@ -139,7 +145,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
      *
      * @param holder
      */
-    public void releaseSurfaceHolder(SurfaceHolder holder) {
+    public void releaseSurfaceHolder(SurfaceHolder holder) { // XXX setDiaplayと逆の処理をやっているようだが、名前がマッチしていないのが若干気になるが、良い？
         if (holder == mHolder) {
             mHolder = null;
             mediaPlayer.setDisplay(null);
@@ -214,7 +220,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             @Override
             public void onCompletion(MediaPlayer mp) {
                 Log.d(TAG, " mMediaController.setOnCompletionListener");
-                if (PlaylistsCash.Instance.getPlayingListSize() == 0) {
+                if (PlaylistsCash.Instance.getPlayingListSize() == 0) { // XXX cash -> cache
                     //Originally it should not be playlist == null,
                     // but because there was something that was fallen by null reference with playlist.size ()
                     //本来ならplaylist==nullとなることは無いはずだが、
@@ -261,11 +267,11 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     //何故か認識してもらえなかったのでマジックナンバーで
                     Log.d(TAG, "setOnErrorListener : system error");
                 }
-                if (what == -38 && extra == 0) {
+                if (what == -38 && extra == 0) { // XXX -38とは？
                     //preparedじゃないときにstart()が呼ばれたとき
                     Log.d(TAG, "call start() before prepared !!");
                 }
-                handleNextVideo(true);
+                handleNextVideo(true); // XXX エラーの時に同じビデオの再生を試みたら、無限ループには入らない？  引数でtrue/falseで分けるよりも、playSameVideoAgain()のようにしたほうが意図がはっきりするかも
                 //do not call setOnComplateListener
                 //setOnComplateListener呼ばない
                 return true;
