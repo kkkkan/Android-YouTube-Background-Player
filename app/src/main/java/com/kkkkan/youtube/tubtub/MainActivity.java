@@ -98,7 +98,7 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getCredential;
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
         OnItemSelected, TitlebarListener, MediaController.MediaPlayerControl, SurfaceHolderListener, LoginHandler, CurrentPositionChanger {
     public static Handler mainHandler = new Handler();
-    static private MediaPlayerService service;
+    static private MediaPlayerService service; // XXX staticにする理由は？しなくてよいなら、しないほうがよい。
 
     /*public Context getMainContext() {
         return mainContext;
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         public void onServiceDisconnected(ComponentName name) {
             Log.d(TAG, "onServiceDisconnected(ComponentName name)");
             isConnect = false;
-            unbindService(this);
+            unbindService(this); // XXX bindとunbindの対応が取れていない。onServiceDisconnectedのコメントによると、サービスが再起動したときにもonServiceDisconnectedが呼ばれてくるが、unbindしてしまうと呼ばれてこない。
             MainActivity.service = null;
         }
     };
