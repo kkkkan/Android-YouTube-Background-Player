@@ -145,7 +145,6 @@ public class MediaPlayerService extends Service implements MediaController.Media
             mediaPlayer.setDisplay(null);
         }
     }
-
     @Override
     public void onCreate() {
         super.onCreate();

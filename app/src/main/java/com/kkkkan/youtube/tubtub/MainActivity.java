@@ -98,11 +98,7 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getCredential;
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
         OnItemSelected, TitlebarListener, MediaController.MediaPlayerControl, SurfaceHolderListener, LoginHandler, CurrentPositionChanger {
     public static Handler mainHandler = new Handler();
-    static private MediaPlayerService service;
-
-    /*public Context getMainContext() {
-        return mainContext;
-    }*/
+    private MediaPlayerService service;
 
     private final Context mainContext = this;
 
@@ -126,18 +122,31 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private boolean isConnect = false;
     private ServiceConnection connection = new ServiceConnection() {
+        /**
+         * bindがされたときに呼び出される。
+         * serviceが強制終了されたときは、
+         * 強制終了時のコールバック関数であるonServiceDisconnected内でunbind()を呼ばない限りactivityとserviceのbindは生きているので
+         * serviceが再起動したときにonServiceConnectedが呼ばれる。
+         * @param name
+         * @param service
+         */
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            MainActivity.service = ((MediaPlayerService.MediaPlayerBinder) service).getService();
+            MainActivity.this.service = ((MediaPlayerService.MediaPlayerBinder) service).getService();
             isConnect = true;
         }
 
+        /**
+         * serviceがクラッシュされたり強制終了されたりなど、サービスへの接続が予期せず切断されたときにandroidシステムにより呼び出される。
+         * unbind()をactivityにされた際には呼び出されない。
+         * @param name
+         */
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.d(TAG, "onServiceDisconnected(ComponentName name)");
             isConnect = false;
-            unbindService(this);
-            MainActivity.service = null;
+            //unbindService(this);
+            MainActivity.this.service = null;
         }
     };
 
