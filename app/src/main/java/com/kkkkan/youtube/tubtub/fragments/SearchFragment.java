@@ -58,10 +58,9 @@ import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
-import com.kkkkan.youtube.tubtub.utils.PlaylistsCash;
+import com.kkkkan.youtube.tubtub.utils.PlaylistsCache;
 import com.kkkkan.youtube.tubtub.youtube.YouTubeVideosLoader;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -89,11 +88,11 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     private OnItemSelected itemSelected;
     private OnFavoritesSelected onFavoritesSelected;
 
-    private final int tag = PlaylistsCash.tag;
+    private final int tag = PlaylistsCache.tag;
 
     public SearchFragment() {
         // Required empty public constructor
-        PlaylistsCash.tag++;
+        PlaylistsCache.tag++;
     }
 
     public static SearchFragment newInstance() {
@@ -123,10 +122,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
-        searchResultsList = PlaylistsCash.Instance.getSearchResultsList();
-        if (searchResultsList == null) {
-            searchResultsList = new ArrayList<>();
-        }
+        searchResultsList = PlaylistsCache.Instance.getSearchResultsList();
     }
 
     @Override
@@ -218,7 +214,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
                 if (data == null)
                     return;
                 Log.d(TAG, "onLoadFinished : data != null");
-                PlaylistsCash.Instance.setSearchResultsList(data);
+                PlaylistsCache.Instance.setSearchResultsList(data);
                 videosFoundListView.smoothScrollToPosition(0);
                 searchResultsList.clear();
                 searchResultsList.addAll(data);

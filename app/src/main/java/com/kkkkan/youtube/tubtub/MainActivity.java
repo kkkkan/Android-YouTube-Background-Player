@@ -79,7 +79,7 @@ import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
-import com.kkkkan.youtube.tubtub.utils.PlaylistsCash;
+import com.kkkkan.youtube.tubtub.utils.PlaylistsCache;
 import com.kkkkan.youtube.tubtub.utils.Settings;
 import com.kkkkan.youtube.tubtub.youtube.YouTubeShareVideoGetLoader;
 
@@ -524,8 +524,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             Log.d(TAG, "!setDisplaySuccess");
             return;
         }
-        //縦画面の時はsurfaceViewを取得しなおすたびにmMediaController.setAnchorView()しているのでここでセットする必要はないが
-        // 横画面の時はfragment内ではmMediaController.setAnchorView()が出来ないのでそれ用
+        //縦画面→横画面になったときなど用
+        //MediaControllerを付けなおし
         mMediaController.setAnchorView(surfaceView);
         //mMediaController表示のためのtouchlistener
         surfaceView.setOnTouchListener(new View.OnTouchListener() {
@@ -553,7 +553,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void releaseSurfaceHolder(SurfaceHolder holder) {
         //アプリ起動直後に画面向きを変えるとserver==nullでここにくる
         if (service != null) {
-            service.releaseSurfaceHolder(holder);
+            service.releaseDisplay(holder);
         }
     }
 
@@ -734,7 +734,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public void start() {
-        if (service != null && PlaylistsCash.Instance.getPlayingListSize() != 0) {
+        if (service != null && PlaylistsCache.Instance.getPlayingListSize() != 0) {
             service.start();
         }
     }
@@ -749,18 +749,18 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public int getDuration() {
         //まだ何も再生するビデオがセットされて無かったら0
-        return service == null || PlaylistsCash.Instance.getPlayingListSize() == 0 ? 0 : service.getDuration();
+        return service == null || PlaylistsCache.Instance.getPlayingListSize() == 0 ? 0 : service.getDuration();
     }
 
     @Override
     public int getCurrentPosition() {
         //まだ何も再生するビデオがセットされて無かったら0
-        return service == null || PlaylistsCash.Instance.getPlayingListSize() == 0 ? 0 : service.getCurrentPosition();
+        return service == null || PlaylistsCache.Instance.getPlayingListSize() == 0 ? 0 : service.getCurrentPosition();
     }
 
     @Override
     public void seekTo(int pos) {
-        if (service != null && PlaylistsCash.Instance.getPlayingListSize() != 0) {
+        if (service != null && PlaylistsCache.Instance.getPlayingListSize() != 0) {
             service.seekTo(pos);
         }
     }

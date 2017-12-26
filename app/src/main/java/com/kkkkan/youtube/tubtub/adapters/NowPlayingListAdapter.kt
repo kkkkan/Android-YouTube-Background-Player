@@ -29,7 +29,7 @@ import android.widget.TextView
 import com.kkkkan.youtube.R
 import com.kkkkan.youtube.tubtub.interfaces.ItemEventsListener
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo
-import com.kkkkan.youtube.tubtub.utils.PlaylistsCash
+import com.kkkkan.youtube.tubtub.utils.PlaylistsCache
 import com.squareup.picasso.Picasso
 
 /**
@@ -63,7 +63,7 @@ class NowPlayingListAdapter(val context: Context, val playlist: List<YouTubeVide
         holder.itemView.setTag(position)
         //今再生中のビデオのみはっきり表示
         //それ以外は暗めに表示
-        PlaylistsCash.Instance.mutableCurrentVideoIndex.observe(context as LifecycleOwner, Observer<Int> { t ->
+        PlaylistsCache.Instance.mutableCurrentVideoIndex.observe(context as LifecycleOwner, Observer<Int> { t ->
             if (t != null) {
                 if (t == position) {
                     holder.background.alpha = 1f

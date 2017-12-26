@@ -31,9 +31,9 @@ import com.kkkkan.youtube.tubtub.BroadcastReceiver.PrevReceiver;
 import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
-import com.kkkkan.youtube.tubtub.utils.PlaylistsCash;
+import com.kkkkan.youtube.tubtub.utils.PlaylistsCache;
 import com.kkkkan.youtube.tubtub.utils.Settings;
-import com.kkkkan.youtube.tubtub.utils.VideoQualitys;
+import com.kkkkan.youtube.tubtub.utils.VideoQualities;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -79,7 +79,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         return videoTitle;
     }
 
-    static public void setStateStartLoading() {
+    static private void setStateStartLoading() {
         loadingState.setValue(LoadingState.StartLoading);
     }
 
@@ -87,7 +87,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
         loadingState.setValue(LoadingState.StopLoading);
     }
 
-    static public void setStateError() {
+    static private void setStateError() {
         loadingState.setValue(LoadingState.Error);
     }
 
@@ -116,6 +116,11 @@ public class MediaPlayerService extends Service implements MediaController.Media
      */
     public boolean setDisplay(SurfaceHolder holder) {
         mHolder = holder;
+        if (holder == null) {
+            //基本的にあり得ない
+            Log.d(TAG, "changeSurfaceHolderAndTitlebar#\nholder==null");
+            return false;
+        }
         try {
             mediaPlayer.setDisplay(holder);
         } catch (IllegalArgumentException e) {
@@ -124,11 +129,6 @@ public class MediaPlayerService extends Service implements MediaController.Media
             Log.d(TAG, "changeSurfaceHolderAndTitlebar#IllegalArgumentException\n" + e.getMessage());
             mHolder = null;
             mediaPlayer.setDisplay(null);
-        }
-        if (holder == null) {
-            //基本的にあり得ない
-            Log.d(TAG, "changeSurfaceHolderAndTitlebar#\nholder==null");
-            return false;
         }
         return true;
     }
@@ -139,12 +139,13 @@ public class MediaPlayerService extends Service implements MediaController.Media
      *
      * @param holder
      */
-    public void releaseSurfaceHolder(SurfaceHolder holder) {
+    public void releaseDisplay(SurfaceHolder holder) {
         if (holder == mHolder) {
             mHolder = null;
             mediaPlayer.setDisplay(null);
         }
     }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -213,7 +214,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             @Override
             public void onCompletion(MediaPlayer mp) {
                 Log.d(TAG, " mMediaController.setOnCompletionListener");
-                if (PlaylistsCash.Instance.getPlayingListSize() == 0) {
+                if (PlaylistsCache.Instance.getPlayingListSize() == 0) {
                     //Originally it should not be playlist == null,
                     // but because there was something that was fallen by null reference with playlist.size ()
                     //本来ならplaylist==nullとなることは無いはずだが、
@@ -221,7 +222,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     Log.d(TAG, "\nplaylist is null!\n");
                     return;
                 }
-                handleNextVideo(false);
+                handleNextVideo();
             }
         });
 
@@ -261,10 +262,11 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     Log.d(TAG, "setOnErrorListener : system error");
                 }
                 if (what == -38 && extra == 0) {
-                    //preparedじゃないときにstart()が呼ばれたとき
-                    Log.d(TAG, "call start() before prepared !!");
+                    //連続で次のビデオを押されたときに起きやすい
+                    //具体的なwhatの内容などはなぞ（onErrorの仕様にはwhat=-38もextra=0もない）
+                    Log.d(TAG, "setOnErrorListener : error");
                 }
-                handleNextVideo(true);
+                playSameVideoAgain();
                 //do not call setOnComplateListener
                 //setOnComplateListener呼ばない
                 return true;
@@ -343,8 +345,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "prevBroadcastReceiver");
-            int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
-            playlistHandle((currentVideoIndex - 1 + PlaylistsCash.Instance.getPlayingListSize()) % PlaylistsCash.Instance.getPlayingListSize());
+            int currentVideoIndex = PlaylistsCache.Instance.getCurrentVideoIndex();
+            playlistHandle((currentVideoIndex - 1 + PlaylistsCache.Instance.getPlayingListSize()) % PlaylistsCache.Instance.getPlayingListSize());
         }
 
     };
@@ -353,8 +355,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "nextStartBroadcastReceiver");
-            int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
-            playlistHandle((currentVideoIndex + 1) % PlaylistsCash.Instance.getPlayingListSize());
+            int currentVideoIndex = PlaylistsCache.Instance.getCurrentVideoIndex();
+            playlistHandle((currentVideoIndex + 1) % PlaylistsCache.Instance.getPlayingListSize());
         }
     };
 
@@ -373,11 +375,11 @@ public class MediaPlayerService extends Service implements MediaController.Media
             setStateStopLoading();
             return;
         }
-        PlaylistsCash.Instance.setNewList(playlist);
+        PlaylistsCache.Instance.setNewList(playlist);
         if (Settings.getInstance().getShuffle() == Settings.Shuffle.ON) {
             //shuffleモードの時は渡ってきたpositionはnormalListにおける選択したvideoのpositionなので
             // shuffleListでのそのvideoのpositionをplaylistHandle()に渡すpositonに代入する。
-            List<YouTubeVideo> list = PlaylistsCash.Instance.getShuffleList();
+            List<YouTubeVideo> list = PlaylistsCache.Instance.getShuffleList();
             position = list.indexOf(playlist.get(position));
         }
         playlistHandle(position);
@@ -400,15 +402,15 @@ public class MediaPlayerService extends Service implements MediaController.Media
             return;
         }
 
-        PlaylistsCash.Instance.setCurrentVideoIndex(position);
+        PlaylistsCache.Instance.setCurrentVideoIndex(position);
         Log.d(TAG, "position is " + String.valueOf(position));
         YouTubeVideo v = null;
         switch (Settings.getInstance().getShuffle()) {
             case ON:
-                v = PlaylistsCash.Instance.getShuffleList().get(position);
+                v = PlaylistsCache.Instance.getShuffleList().get(position);
                 break;
             case OFF:
-                v = PlaylistsCash.Instance.getNormalList().get(position);
+                v = PlaylistsCache.Instance.getNormalList().get(position);
                 break;
         }
         final YouTubeVideo video = v;
@@ -433,15 +435,15 @@ public class MediaPlayerService extends Service implements MediaController.Media
                         }
                     }
                     setStateError();
-                    handleNextVideo(false);
+                    handleNextVideo();
                     return;
                 }
 
                 //設定によって画質変える
-                SharedPreferences sharedPreferences = getSharedPreferences(VideoQualitys.VideoQualityPreferenceFileName, Context.MODE_PRIVATE);
+                SharedPreferences sharedPreferences = getSharedPreferences(VideoQualities.VideoQualityPreferenceFileName, Context.MODE_PRIVATE);
                 //デフォルトの画質はノーマル
-                int videoQualitySetting = sharedPreferences.getInt(VideoQualitys.VideoQualityPreferenceKey, VideoQualitys.videoQualityNormal);
-                Integer[] itagVideo = VideoQualitys.getVideoQualityTagsMap().get(videoQualitySetting);
+                int videoQualitySetting = sharedPreferences.getInt(VideoQualities.VideoQualityPreferenceKey, VideoQualities.videoQualityNormal);
+                Integer[] itagVideo = VideoQualities.getVideoQualityTagsMap().get(videoQualitySetting);
 
                 int tagVideo = 0;
 
@@ -545,6 +547,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
             Log.d(TAG, "videoCreate-IllegalArgumentException" + e.getMessage());
             e.printStackTrace();
         } catch (IllegalStateException e) {
+            //Mediaplyerをstart()しちゃいけないstateのときにstart()してしまったときなど
             Log.d(TAG, "videoCreate-IllegalStateException" + e.getMessage());
             e.printStackTrace();
         } catch (IOException e) {
@@ -557,20 +560,18 @@ public class MediaPlayerService extends Service implements MediaController.Media
      * 次のビデオを再生するとなったときに呼ぶメゾッド。
      * 設定によって同じビデオを再生するか、プレイリストの最後に達していた時に次のビデオに行くかなどを
      * ハンドリングする
-     *
-     * @param error : ErrorListenerから直接呼んだか否か。ErrorListenerから呼んだときは設定に関わらず同じビデオを再度再生しようとする。
      */
-    private void handleNextVideo(boolean error) {
+    private void handleNextVideo() {
         Log.d(TAG, "handleNextVideo");
         Settings settings = Settings.getInstance();
-        int playlistSize = PlaylistsCash.Instance.getPlayingListSize();
-        int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
-        if (error || settings.getRepeatOne() == Settings.RepeatOne.ON) {
+        int playlistSize = PlaylistsCache.Instance.getPlayingListSize();
+        int currentVideoIndex = PlaylistsCache.Instance.getCurrentVideoIndex();
+        if (settings.getRepeatOne() == Settings.RepeatOne.ON) {
             // one song repeat
             //1曲リピート時
 
-            //エラー時も再度同じビデオの再生を試みる
-            playlistHandle(currentVideoIndex);
+            //再度同じビデオの再生を試みる
+            playSameVideoAgain();
             return;
         }
         /*if (settings.getShuffle() == Settings.Shuffle.ON && playlistSize <= currentVideoIndex + 1) {
@@ -595,29 +596,34 @@ public class MediaPlayerService extends Service implements MediaController.Media
             //最後の曲のときはprogressbarが出ていたらそれを消すだけ。
             setStateStopLoading();
         }
+    }
 
-
+    /**
+     * 今と同じビデオをもう一度再生する。
+     */
+    private void playSameVideoAgain() {
+        playlistHandle(PlaylistsCache.Instance.getCurrentVideoIndex());
     }
 
     public void nextPlay() {
-        if (PlaylistsCash.Instance.getPlayingListSize() == 0) {
+        if (PlaylistsCache.Instance.getPlayingListSize() == 0) {
             //When playlist is not set, you can also press it so that it will not fall at that time
             //playlistセットされてないときも押せてしまうからその時落ちないように
             return;
         }
-        int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
-        playlistHandle((currentVideoIndex + 1) % PlaylistsCash.Instance.getPlayingListSize());
+        int currentVideoIndex = PlaylistsCache.Instance.getCurrentVideoIndex();
+        playlistHandle((currentVideoIndex + 1) % PlaylistsCache.Instance.getPlayingListSize());
 
     }
 
     public void prevPlay() {
-        if (PlaylistsCash.Instance.getPlayingListSize() == 0) {
+        if (PlaylistsCache.Instance.getPlayingListSize() == 0) {
             //When playlist is not set, you can also press it so that it will not fall at that time
             //playlistセットされてないときも押せてしまうからその時落ちないように
             return;
         }
-        int currentVideoIndex = PlaylistsCash.Instance.getCurrentVideoIndex();
-        int playlistSize = PlaylistsCash.Instance.getPlayingListSize();
+        int currentVideoIndex = PlaylistsCache.Instance.getCurrentVideoIndex();
+        int playlistSize = PlaylistsCache.Instance.getPlayingListSize();
         playlistHandle((currentVideoIndex - 1 + playlistSize) % playlistSize);
 
     }

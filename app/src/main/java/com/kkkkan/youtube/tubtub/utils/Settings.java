@@ -18,10 +18,6 @@ package com.kkkkan.youtube.tubtub.utils;
 
 import android.arch.lifecycle.MutableLiveData;
 
-import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
-
-import java.util.List;
-
 /**
  * Horizontal screen lock · One song repeat · Playlist repeat setting is put in singleton class
  * <p>
@@ -80,33 +76,6 @@ public class Settings {
         //どこから呼ばれてもいいようにpostにする
         //->postにしたら遅すぎてUI表示との齟齬が生まれてしまったのでsetに変更
         shuffleMutableLiveData.setValue(shuffle);
-
-        if (PlaylistsCash.Instance.getPlayingListSize() == 0) {
-            //何もビデオセットする前からシャッフルモードのON/OFFはいじれるのでその時に落ちないよう対策
-            return;
-        }
-
-        //以下、PlaylistCashのcurrentIndexを今再生中のビデオの変更先モードでのリストでのindexに変更する
-        PlaylistsCash playlistsCash = PlaylistsCash.Instance;
-        YouTubeVideo nowPlayingVideo;
-        int currentIndex = playlistsCash.getCurrentVideoIndex();
-        List<YouTubeVideo> normalList = playlistsCash.getNormalList();
-        List<YouTubeVideo> shuffleList = playlistsCash.getShuffleList();
-
-        switch (shuffle) {
-            case ON:
-                nowPlayingVideo = normalList.get(currentIndex);
-                int nowPlayingVideoInShuffleListIndex = shuffleList.indexOf(nowPlayingVideo);
-                playlistsCash.setCurrentVideoIndex(nowPlayingVideoInShuffleListIndex);
-                break;
-            case OFF:
-                nowPlayingVideo = shuffleList.get(currentIndex);
-                int nowPlayingVideoindexInNormalListIndex = normalList.indexOf(nowPlayingVideo);
-                playlistsCash.setCurrentVideoIndex(nowPlayingVideoindexInNormalListIndex);
-                //shuffleをOFFにするたびに次シャッフルモードになったときのためにリストをシャッフルし直す
-                PlaylistsCash.Instance.reShuffle();
-                break;
-        }
     }
 
     public void setRepeatOne(RepeatOne repeatOne) {

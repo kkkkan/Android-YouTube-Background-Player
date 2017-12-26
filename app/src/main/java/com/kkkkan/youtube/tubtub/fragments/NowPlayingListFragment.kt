@@ -36,7 +36,7 @@ import com.kkkkan.youtube.tubtub.interfaces.CurrentPositionChanger
 import com.kkkkan.youtube.tubtub.interfaces.ItemEventsListener
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo
-import com.kkkkan.youtube.tubtub.utils.PlaylistsCash
+import com.kkkkan.youtube.tubtub.utils.PlaylistsCache
 import com.kkkkan.youtube.tubtub.utils.Settings
 
 /**
@@ -116,10 +116,10 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
         val nowList: List<YouTubeVideo>?
         when (Settings.getInstance().shuffle) {
             Settings.Shuffle.ON -> {
-                nowList = PlaylistsCash.Instance.shuffleList
+                nowList = PlaylistsCache.Instance.shuffleList
             }
             Settings.Shuffle.OFF -> {
-                nowList = PlaylistsCash.Instance.normalList
+                nowList = PlaylistsCache.Instance.normalList
             }
             null -> {
                 //Settingsのコンストラクタで初期値を与えているので
@@ -157,7 +157,7 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
         }
 
         val smoothScroller: LinearSmoothScroller = mySmoothScroller()
-        smoothScroller.setTargetPosition(PlaylistsCash.Instance.currentVideoIndex);
+        smoothScroller.setTargetPosition(PlaylistsCache.Instance.currentVideoIndex);
         recyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
     }
 
@@ -180,7 +180,7 @@ class NowPlayingListFragment : BaseFragment(), ItemEventsListener<YouTubeVideo> 
     }
 
     override fun onDeleteClicked(video: YouTubeVideo?) {
-        PlaylistsCash.Instance.deleteVideoInList(video, Settings.getInstance().shuffle)
+        PlaylistsCache.Instance.deleteVideoInList(video, Settings.getInstance().shuffle)
         updateRecyclerView()
     }
 

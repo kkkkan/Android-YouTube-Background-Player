@@ -74,7 +74,7 @@ import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
 import com.kkkkan.youtube.tubtub.utils.Settings;
-import com.kkkkan.youtube.tubtub.utils.VideoQualitys;
+import com.kkkkan.youtube.tubtub.utils.VideoQualities;
 import com.kkkkan.youtube.tubtub.youtube.SuggestionsLoader;
 
 import java.util.ArrayList;
@@ -689,7 +689,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         Log.d(TAG, "surfaceChanged");
         Activity activity = getActivity();
         if (activity instanceof SurfaceHolderListener) {
-            ((SurfaceHolderListener) activity).changeSurfaceHolder(surfaceView.getHolder(), surfaceView);
+            ((SurfaceHolderListener) activity).changeSurfaceHolder(paramSurfaceHolder, surfaceView);
         }
     }
 
@@ -750,8 +750,8 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         final AlertDialog.Builder mListDlg = new AlertDialog.Builder(activity);
         final AlertDialog.Builder mDlg = new AlertDialog.Builder(activity);
 
-        final SharedPreferences sharedPreferences = getActivity().getSharedPreferences(VideoQualitys.VideoQualityPreferenceFileName, Context.MODE_PRIVATE);
-        int nowQuality = sharedPreferences.getInt(VideoQualitys.VideoQualityPreferenceKey, VideoQualitys.videoQualityNormal);
+        final SharedPreferences sharedPreferences = getActivity().getSharedPreferences(VideoQualities.VideoQualityPreferenceFileName, Context.MODE_PRIVATE);
+        int nowQuality = sharedPreferences.getInt(VideoQualities.VideoQualityPreferenceKey, VideoQualities.videoQualityNormal);
 
         //チェックされたやつの番号を入れておく。
         final ArrayList<Integer> checkedItems = new ArrayList<Integer>();
@@ -761,7 +761,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
         //ダイアログ表示のための準備
         mListDlg.setTitle("再生画質設定");
-        mListDlg.setSingleChoiceItems(VideoQualitys.getVideoQualityChoices(), nowQuality, new DialogInterface.OnClickListener() {
+        mListDlg.setSingleChoiceItems(VideoQualities.getVideoQualityChoices(), nowQuality, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 checkedItems.clear();
@@ -773,7 +773,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             public void onClick(DialogInterface dialog, int which) {
                 if (!checkedItems.isEmpty()) {
                     SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putInt(VideoQualitys.VideoQualityPreferenceKey, checkedItems.get(0));
+                    editor.putInt(VideoQualities.VideoQualityPreferenceKey, checkedItems.get(0));
                     boolean result = editor.commit();
                     if (result) {
                         mDlg.setMessage(getString(R.string.video_quality_setting_success)).setPositiveButton("OK", null).show();

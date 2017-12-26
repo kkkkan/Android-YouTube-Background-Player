@@ -16,6 +16,9 @@
 package com.kkkkan.youtube.tubtub.utils;
 
 import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.Observer;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
@@ -28,24 +31,57 @@ import java.util.List;
  * Created by admin on 2017/12/07.
  */
 
-public class PlaylistsCash {
+public class PlaylistsCache {
     private final String TAG = "PlaylistsCash";
     public static int tag = 0;
-    static public PlaylistsCash Instance = new PlaylistsCash();
+    static public PlaylistsCache Instance = new PlaylistsCache();
 
-    private PlaylistsCash() {
+    private PlaylistsCache() {
+        //PlaylistCasheクラスで、設定の再生モードがシャッフルか否か監視し、シャッフルのON/OFFが切り替わるたびに
+        //currentIndexを変更先モードでのリストでの今再生中のビデオのindexに変える
+        Settings.getInstance().getShuffleMutableLiveData().observeForever(new Observer<Settings.Shuffle>() {
+            @Override
+            public void onChanged(@Nullable Settings.Shuffle shuffle) {
 
+                if (shuffle == null || getPlayingListSize() == 0) {
+                    //何もビデオセットする前からシャッフルモードのON/OFFはいじれるのでその時に落ちないよう対策
+                    return;
+                }
+
+                //以下、PlaylistCashのcurrentIndexを今再生中のビデオの変更先モードでのリストでのindexに変更する
+                YouTubeVideo nowPlayingVideo;
+                int currentIndex = getCurrentVideoIndex();
+                List<YouTubeVideo> normalList = getNormalList();
+                List<YouTubeVideo> shuffleList = getShuffleList();
+
+                switch (shuffle) {
+                    case ON:
+                        nowPlayingVideo = normalList.get(currentIndex);
+                        int nowPlayingVideoInShuffleListIndex = shuffleList.indexOf(nowPlayingVideo);
+                        setCurrentVideoIndex(nowPlayingVideoInShuffleListIndex);
+                        break;
+                    case OFF:
+                        nowPlayingVideo = shuffleList.get(currentIndex);
+                        int nowPlayingVideoindexInNormalListIndex = normalList.indexOf(nowPlayingVideo);
+                        setCurrentVideoIndex(nowPlayingVideoindexInNormalListIndex);
+                        //shuffleをOFFにするたびに次シャッフルモードになったときのためにリストをシャッフルし直す
+                        reShuffle();
+                        break;
+                }
+            }
+        });
     }
 
-    //回転しても検索内容覚えておくためのList
+    //回転後、Activityのfinish後も検索内容覚えておくためのList
     private List<YouTubeVideo> searchResultsList;
 
     public void setSearchResultsList(List<YouTubeVideo> searchResultsList) {
         this.searchResultsList = new ArrayList<>(searchResultsList);
     }
 
+    @NonNull
     public List<YouTubeVideo> getSearchResultsList() {
-        return searchResultsList != null ? new ArrayList<>(searchResultsList) : null;
+        return searchResultsList != null ? new ArrayList<>(searchResultsList) : new ArrayList<YouTubeVideo>();
     }
 
     //NowPlayingListFragment用の、今再生しているplaylistとpositionを入れとくためのList
@@ -108,11 +144,6 @@ public class PlaylistsCash {
         return normalList.size();
     }
 
-    /*public boolean isPlayingListNull() {
-        return normalList == null || shuffleList == null;
-    }
-*/
-
     /**
      * shuffleし直す
      */
@@ -121,4 +152,6 @@ public class PlaylistsCash {
         shuffleList = new ArrayList<>(normalList);
         Collections.shuffle(shuffleList);
     }
+
+
 }
