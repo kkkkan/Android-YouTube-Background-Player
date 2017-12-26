@@ -36,6 +36,7 @@ import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -78,7 +79,6 @@ import com.kkkkan.youtube.tubtub.interfaces.SurfaceHolderListener;
 import com.kkkkan.youtube.tubtub.interfaces.TitlebarListener;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
-import com.kkkkan.youtube.tubtub.utils.NetworkConf;
 import com.kkkkan.youtube.tubtub.utils.PlaylistsCache;
 import com.kkkkan.youtube.tubtub.utils.Settings;
 import com.kkkkan.youtube.tubtub.youtube.YouTubeShareVideoGetLoader;
@@ -116,11 +116,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private MediaController mMediaController;
     private ProgressDialog mProgressDialog;
 
-    private NetworkConf networkConf;
-
     private Toast toast;
 
     private boolean isConnect = false;
+    private MainViewModel viewModel;
+
     private ServiceConnection connection = new ServiceConnection() {
         /**
          * bindがされたときに呼び出される。
@@ -134,6 +134,34 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         public void onServiceConnected(ComponentName name, IBinder service) {
             MainActivity.this.service = ((MediaPlayerService.MediaPlayerBinder) service).getService();
             isConnect = true;
+            //viewModelにVideoTitleをobserveしてもらう
+            viewModel.startObserve(MainActivity.this.service);
+            //LoadingStateは直接observe
+            MainActivity.this.service.getLoadingState().observe(MainActivity.this, new Observer<MediaPlayerService.LoadingState>() {
+                @Override
+                public void onChanged(@Nullable MediaPlayerService.LoadingState loadingState) {
+                    if (loadingState == null) {
+                        return;
+                    }
+                    switch (loadingState) {
+                        case StartLoading:
+                            setProgressDialogShow();
+                            break;
+                        case StopLoading:
+                            setProgressDialogDismiss();
+                            break;
+                        case Error:
+                            if (toast != null) {
+                                toast.cancel();
+                            }
+                            toast = Toast.makeText(mainContext, getString(R.string.video_read_fail), Toast.LENGTH_SHORT);
+                            toast.show();
+                            break;
+                    }
+                }
+            });
+
+
         }
 
         /**
@@ -156,31 +184,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //serviceにbindする際に渡すコネクション
-        MediaPlayerService.getLoadingState().observe(MainActivity.this, new Observer<MediaPlayerService.LoadingState>() {
-            @Override
-            public void onChanged(@Nullable MediaPlayerService.LoadingState loadingState) {
-                if (loadingState == null) {
-                    return;
-                }
-                switch (loadingState) {
-                    case StartLoading:
-                        setProgressDialogShow();
-                        break;
-                    case StopLoading:
-                        setProgressDialogDismiss();
-                        break;
-                    case Error:
-                        if (toast != null) {
-                            toast.cancel();
-                        }
-                        toast = Toast.makeText(mainContext, getString(R.string.video_read_fail), Toast.LENGTH_SHORT);
-                        toast.show();
-                        break;
-                }
-            }
-        });
-
+        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
         startService(new Intent(this, MediaPlayerService.class));
         bindService(new Intent(this, MediaPlayerService.class), connection, BIND_AUTO_CREATE);
@@ -224,8 +228,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
         });
 
-
-        networkConf = new NetworkConf(this);
         Configuration config = getResources().getConfiguration();
         switch (config.orientation) {
             case Configuration.ORIENTATION_PORTRAIT:
@@ -566,7 +568,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         FragmentTransaction transaction = getSupportFragmentManager()
                 .beginTransaction();
         //フラグメント追加
-        Fragment fragment = LandscapeFragment.getNewLandscapeFragment(this);
+        Fragment fragment = LandscapeFragment.getNewLandscapeFragment(this, viewModel);
         transaction.replace(R.id.parent_layout, fragment, LandscapeFragmentTAG);
         //transaction.addToBackStack(null);
         transaction.commitAllowingStateLoss();
@@ -580,7 +582,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Log.d(TAG, "viewChangeWhenPortrait()");
         FragmentTransaction transaction = getSupportFragmentManager()
                 .beginTransaction();
-        Fragment fragment = PortraitFragment.getNewPortraitFragment(this);
+        Fragment fragment = PortraitFragment.getNewPortraitFragment(this, viewModel);
         transaction.replace(R.id.parent_layout, fragment, PortraitFragmentTAG);
         transaction.commitAllowingStateLoss();
     }

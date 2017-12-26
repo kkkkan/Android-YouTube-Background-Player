@@ -68,31 +68,27 @@ public class MediaPlayerService extends Service implements MediaController.Media
         Error
     }
 
-    static private final MutableLiveData<LoadingState> loadingState = new MutableLiveData<>();
-    static private final MutableLiveData<String> videoTitle = new MutableLiveData<>();
+    private final MutableLiveData<LoadingState> loadingState = new MutableLiveData<>();
+    private final MutableLiveData<String> videoTitle = new MutableLiveData<>();
 
-    static public MutableLiveData<LoadingState> getLoadingState() {
+    public MutableLiveData<LoadingState> getLoadingState() {
         return loadingState;
     }
 
-    static public MutableLiveData<String> getVideoTitle() {
+    public MutableLiveData<String> getVideoTitle() {
         return videoTitle;
     }
 
-    static private void setStateStartLoading() {
+    private void setStateStartLoading() {
         loadingState.setValue(LoadingState.StartLoading);
     }
 
-    static public void setStateStopLoading() {
+    public void setStateStopLoading() {
         loadingState.setValue(LoadingState.StopLoading);
     }
 
-    static private void setStateError() {
+    private void setStateError() {
         loadingState.setValue(LoadingState.Error);
-    }
-
-    static public void setVideoTitle(String videoTitle) {
-        MediaPlayerService.videoTitle.setValue(videoTitle);
     }
 
     private String videoUrl;

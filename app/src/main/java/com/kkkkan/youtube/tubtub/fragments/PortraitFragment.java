@@ -62,7 +62,7 @@ import com.google.api.services.youtube.model.PlaylistStatus;
 import com.google.api.services.youtube.model.ResourceId;
 import com.kkkkan.youtube.BuildConfig;
 import com.kkkkan.youtube.R;
-import com.kkkkan.youtube.tubtub.MediaPlayerService;
+import com.kkkkan.youtube.tubtub.MainViewModel;
 import com.kkkkan.youtube.tubtub.adapters.PlaylistsAdapter;
 import com.kkkkan.youtube.tubtub.database.YouTubeSqlDb;
 import com.kkkkan.youtube.tubtub.interfaces.LoginHandler;
@@ -107,6 +107,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     private CheckBox nowPlayingListBox;
     private SurfaceView surfaceView;
     private Handler handler = new Handler();
+    private MainViewModel viewModel;
 
     //For movie title
     //動画タイトル用
@@ -121,9 +122,10 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
      * 再生成時も必ずこのメゾッドを呼んで新しいインスタンス作るようにしているのでviewModelなども入れてしまう。
      * <p>
      */
-    static public PortraitFragment getNewPortraitFragment(TitlebarListener titlebarListener) {
+    static public PortraitFragment getNewPortraitFragment(TitlebarListener titlebarListener, MainViewModel viewModel) {
         PortraitFragment fragment = new PortraitFragment();
         fragment.titlebarListener = titlebarListener;
+        fragment.viewModel = viewModel;
         return fragment;
     }
 
@@ -150,7 +152,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             ft.commit();
         }
         titleView = (TextView) view.findViewById(R.id.title_view);
-        MediaPlayerService.getVideoTitle().observe(this, new Observer<String>() {
+        viewModel.getVideoTitle().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 titleView.setText(s);
