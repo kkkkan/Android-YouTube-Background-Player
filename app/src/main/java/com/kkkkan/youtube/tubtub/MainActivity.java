@@ -517,14 +517,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
     @Override
-    public void changeSurfaceHolder(SurfaceHolder holder, SurfaceView surfaceView) {
-        boolean setDisplaySuccess = false;
-        if (service != null) {
-            setDisplaySuccess = service.setDisplay(holder);
-        }
-        if (!setDisplaySuccess) {
-            Log.d(TAG, "!setDisplaySuccess");
+    public void changeSurfaceHolder(@Nullable SurfaceHolder holder, SurfaceView surfaceView) {
+        if (holder == null) {
+            Log.d(TAG, "changeSurfaceHolder : holder==null");
             return;
+        }
+        if (service != null) {
+            service.setDisplay(holder);
         }
         //縦画面→横画面になったときなど用
         //MediaControllerを付けなおし

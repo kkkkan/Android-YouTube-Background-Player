@@ -14,6 +14,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -48,7 +49,7 @@ import static android.media.MediaPlayer.MEDIA_INFO_UNKNOWN;
 import static com.kkkkan.youtube.tubtub.utils.Settings.RepeatPlaylist.ON;
 
 /**
- * Created by ka1n9 on 2017/11/24.
+ * Created by kkkkan on 2017/11/24.
  */
 
 public class MediaPlayerService extends Service implements MediaController.MediaPlayerControl {
@@ -110,13 +111,8 @@ public class MediaPlayerService extends Service implements MediaController.Media
      * @param holder
      * @return
      */
-    public boolean setDisplay(SurfaceHolder holder) {
+    public void setDisplay(@NonNull SurfaceHolder holder) {
         mHolder = holder;
-        if (holder == null) {
-            //基本的にあり得ない
-            Log.d(TAG, "changeSurfaceHolderAndTitlebar#\nholder==null");
-            return false;
-        }
         try {
             mediaPlayer.setDisplay(holder);
         } catch (IllegalArgumentException e) {
@@ -126,7 +122,6 @@ public class MediaPlayerService extends Service implements MediaController.Media
             mHolder = null;
             mediaPlayer.setDisplay(null);
         }
-        return true;
     }
 
     /**
