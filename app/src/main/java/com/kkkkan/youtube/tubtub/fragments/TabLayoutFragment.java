@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by ka1n9 on 2017/12/10.
+ * Created by kkkkan on 2017/12/10.
  */
 
 public class TabLayoutFragment extends Fragment implements OnFavoritesSelected, PlaylistsAdapter.OnDetailClickListener {

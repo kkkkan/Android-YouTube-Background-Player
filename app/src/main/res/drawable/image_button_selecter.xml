@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 押下状態 -->
+    <item android:state_enabled="true" android:state_pressed="true">
+        <color android:color="@color/grey" />
+    </item>
+    <!-- 通常状態 -->
+    <item>
+        <color android:color="@android:color/transparent" />
+    </item>
+</selector>

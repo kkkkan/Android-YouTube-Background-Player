@@ -23,7 +23,7 @@ import android.arch.lifecycle.MutableLiveData;
  * <p>
  * 横画面ロック・一曲リピート・プレイリストリピートの設定を
  * 入れておくsingletonクラス
- * Created by admin on 2017/11/07.
+ * Created by kkkkan on 2017/11/07.
  */
 
 public class Settings {
