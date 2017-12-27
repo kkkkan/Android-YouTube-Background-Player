@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/parent_layout">
@@ -45,6 +46,7 @@
                 android:layout_height="match_parent"
                 android:background="@drawable/now_playinglist_show_selector"
                 android:layout_margin="5dp"
+                android:minWidth="34dp"
                 android:gravity="center"
                 android:layout_gravity="center"
                 android:button="@null"
@@ -61,40 +63,31 @@
                 android:ellipsize="end"
                 android:gravity="center" />
 
-            <CheckBox
+            <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="@drawable/shuffle_selector"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_marginLeft="5dp"
+                android:src="@drawable/shuffle_selector"
+                android:padding="5dp"
                 android:layout_gravity="center_vertical"
-                android:button="@null"
+                android:background="@android:color/transparent"
                 android:id="@+id/shuffle_box" />
 
-            <CheckBox
+            <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="@drawable/playlist_repeat_selector"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_marginLeft="5dp"
+                android:src="@drawable/playlist_repeat_selector"
+                android:padding="5dp"
                 android:layout_gravity="center_vertical"
-                android:button="@null"
+                android:background="@android:color/transparent"
                 android:id="@+id/repeat_playlist_box" />
 
-            <CheckBox
+            <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="@drawable/repeat_selector"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_marginLeft="5dp"
+                android:src="@drawable/repeat_selector"
+                android:padding="5dp"
                 android:layout_gravity="center_vertical"
-                android:button="@null"
+                android:background="@android:color/transparent"
                 android:id="@+id/repeat_one_box" />
 
         </LinearLayout>

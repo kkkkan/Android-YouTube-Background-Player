@@ -106,7 +106,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
     }
 
     /**
-     * 引数のsurfaceHolderがnullだったらfalseを返す
+     * 映像投影先のsurfaceHolderをセットする。
      *
      * @param holder
      * @return

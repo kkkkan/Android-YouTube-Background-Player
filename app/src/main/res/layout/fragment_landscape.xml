@@ -28,48 +28,36 @@
             android:scrollHorizontally="true"
             android:ellipsize="end" />
 
-        <CheckBox
+        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:background="@drawable/landscape_lock_selector"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:button="@null"
+            android:src="@drawable/landscape_lock_selector"
+            android:padding="10dp"
+            android:background="@android:color/transparent"
             android:id="@+id/lock_box" />
 
-        <CheckBox
+        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:background="@drawable/shuffle_selector"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:button="@null"
+            android:src="@drawable/shuffle_selector"
+            android:padding="10dp"
+            android:background="@android:color/transparent"
             android:id="@+id/shuffle_box" />
 
-        <CheckBox
+        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:background="@drawable/playlist_repeat_selector"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:button="@null"
+            android:src="@drawable/playlist_repeat_selector"
+            android:padding="10dp"
+            android:background="@android:color/transparent"
             android:id="@+id/repeat_playlist_box" />
 
-        <CheckBox
+        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:background="@drawable/repeat_selector"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:button="@null"
+            android:src="@drawable/repeat_selector"
+            android:padding="10dp"
+            android:background="@android:color/transparent"
             android:id="@+id/repeat_one_box" />
     </LinearLayout>
 

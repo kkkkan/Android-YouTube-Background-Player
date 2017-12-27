@@ -50,6 +50,7 @@ import android.view.ViewTreeObserver;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -101,9 +102,9 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
 
     private Toolbar toolbar;
     private TitlebarListener titlebarListener;
-    private CheckBox shuffleBox;
-    private CheckBox repeatOneBox;
-    private CheckBox repeatPlaylistBox;
+    private ImageButton shuffleBox;
+    private ImageButton repeatOneBox;
+    private ImageButton repeatPlaylistBox;
     private CheckBox nowPlayingListBox;
     private SurfaceView surfaceView;
     private Handler handler = new Handler();
@@ -175,17 +176,18 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         });
         //Setting for shuffle check box on the title bar
         //タイトルバーのシャッフルチェックボックスについての設定
-        shuffleBox = (CheckBox) view.findViewById(R.id.shuffle_box);
+        shuffleBox = (ImageButton) view.findViewById(R.id.shuffle_box);
         shuffleBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, "shuffle is touched!");
                 titlebarListener.shuffleCheckListener();
                 checkBoxUpdata();
             }
         });
         //Setting for one repeat check box on the title bar
         //タイトルバーの1リピートチェックボックスについての設定
-        repeatOneBox = (CheckBox) view.findViewById(R.id.repeat_one_box);
+        repeatOneBox = (ImageButton) view.findViewById(R.id.repeat_one_box);
         repeatOneBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -195,7 +197,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         });
         //Settings for the playlist repeat checkbox on the title bar
         //タイトルバーのプレイリストリピートチェックボックスについての設定
-        repeatPlaylistBox = (CheckBox) view.findViewById(R.id.repeat_playlist_box);
+        repeatPlaylistBox = (ImageButton) view.findViewById(R.id.repeat_playlist_box);
         repeatPlaylistBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -721,7 +723,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                 shuffle = false;
                 break;
         }
-        shuffleBox.setChecked(shuffle);
+        shuffleBox.setSelected(shuffle);
         //一曲リピートか否かに合わせてチェックボックス画面変更
         boolean repeatOne = false;
         switch (settings.getRepeatOne()) {
@@ -731,7 +733,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             case OFF:
                 repeatOne = false;
         }
-        repeatOneBox.setChecked(repeatOne);
+        repeatOneBox.setSelected(repeatOne);
         //プレイリストリピートか否かに合わせてチェックボックス画面変更
         boolean repeatPlaylist = false;
         switch (settings.getRepeatPlaylist()) {
@@ -741,7 +743,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             case OFF:
                 repeatPlaylist = false;
         }
-        repeatPlaylistBox.setChecked(repeatPlaylist);
+        repeatPlaylistBox.setSelected(repeatPlaylist);
     }
 
     /**
