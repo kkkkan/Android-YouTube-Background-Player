@@ -61,7 +61,6 @@ import com.google.api.services.youtube.model.PlaylistItemSnippet;
 import com.google.api.services.youtube.model.PlaylistSnippet;
 import com.google.api.services.youtube.model.PlaylistStatus;
 import com.google.api.services.youtube.model.ResourceId;
-import com.kkkkan.youtube.BuildConfig;
 import com.kkkkan.youtube.R;
 import com.kkkkan.youtube.tubtub.MainViewModel;
 import com.kkkkan.youtube.tubtub.adapters.PlaylistsAdapter;
@@ -616,12 +615,8 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             case R.id.action_about:
                 Log.d(TAG, "onOptionsItemSelected:about");
                 AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                alertDialog.setTitle(getString(R.string.myName));
-                alertDialog.setIcon(R.drawable.dbwan);
-
-                alertDialog.setMessage(getString(R.string.app_name) + " " + BuildConfig.VERSION_NAME + "\n\n" +
-                        getString(R.string.email) + "\n\n" +
-                        getString(R.string.date) + "\n");
+                View view = View.inflate(getActivity(), R.layout.dialog_about_me, null);
+                alertDialog.setView(view);
                 alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok),
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
