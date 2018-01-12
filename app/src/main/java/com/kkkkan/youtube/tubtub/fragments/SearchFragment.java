@@ -81,7 +81,8 @@ import java.util.List;
 public class SearchFragment extends BaseFragment implements ItemEventsListener<YouTubeVideo> {
     private static final String TAG = "SearchFragment";
     private RecyclerView videosFoundListView;
-    private List<YouTubeVideo> searchResultsList;
+    private List<YouTubeVideo> searchResultsVideoList;
+    private List<YouTubePlaylist> searchResultsPlaylistList;
     private VideosAdapter videoListAdapter;
     private ProgressBar loadingProgressBar;
     private NetworkConf networkConf;
@@ -123,7 +124,9 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
-        searchResultsList = PlaylistsCache.Instance.getSearchResultsList();
+        Pair<List<YouTubeVideo>, List<YouTubePlaylist>> pair = PlaylistsCache.Instance.getSearchResultsList();
+        searchResultsVideoList = pair.first;
+        searchResultsPlaylistList = pair.second;
     }
 
     @Override
@@ -143,7 +146,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         videosFoundListView.addItemDecoration(dividerItemDecoration);
 
         loadingProgressBar = (ProgressBar) v.findViewById(R.id.fragment_progress_bar);
-        videoListAdapter = new VideosAdapter(context, searchResultsList);
+        videoListAdapter = new VideosAdapter(context, searchResultsVideoList);
         videoListAdapter.setOnItemEventsListener(this);
         videosFoundListView.setAdapter(videoListAdapter);
 
@@ -174,8 +177,8 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     public void reflectSearchResult(List<YouTubeVideo> data) {
         Log.d(TAG, " reflectSearchResult tag is : " + String.valueOf(tag));
         videosFoundListView.smoothScrollToPosition(0);
-        searchResultsList.clear();
-        searchResultsList.addAll(data);
+        searchResultsVideoList.clear();
+        searchResultsVideoList.addAll(data);
         videoListAdapter.notifyDataSetChanged();
         //loadingProgressBar.setVisibility(View.INVISIBLE);
     }
@@ -215,18 +218,18 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
                 if (data == null)
                     return;
                 Log.d(TAG, "onLoadFinished : data != null");
-                PlaylistsCache.Instance.setSearchResultsList(data.first);
+                PlaylistsCache.Instance.setSearchResultsList(data);
                 videosFoundListView.smoothScrollToPosition(0);
-                searchResultsList.clear();
-                searchResultsList.addAll(data.first);
+                searchResultsVideoList.clear();
+                searchResultsVideoList.addAll(data.first);
                 videoListAdapter.notifyDataSetChanged();
                 loadingProgressBar.setVisibility(View.INVISIBLE);
             }
 
             @Override
             public void onLoaderReset(Loader<Pair<List<YouTubeVideo>, List<YouTubePlaylist>>> loader) {
-                searchResultsList.clear();
-                searchResultsList.addAll(Collections.<YouTubeVideo>emptyList());
+                searchResultsVideoList.clear();
+                searchResultsVideoList.addAll(Collections.<YouTubeVideo>emptyList());
                 videoListAdapter.notifyDataSetChanged();
             }
         }).forceLoad();
@@ -253,7 +256,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     public void onItemClick(YouTubeVideo video) {
         //Recently added lists are playlistselected
         //最近見たリスト追加はplaylistselectedでやる！
-        itemSelected.onPlaylistSelected(searchResultsList, searchResultsList.indexOf(video));
+        itemSelected.onPlaylistSelected(searchResultsVideoList, searchResultsVideoList.indexOf(video));
     }
 
     @Override

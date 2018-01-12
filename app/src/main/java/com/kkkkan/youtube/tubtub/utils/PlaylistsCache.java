@@ -20,7 +20,9 @@ import android.arch.lifecycle.Observer;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.util.Pair;
 
+import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 
 import java.util.ArrayList;
@@ -73,15 +75,28 @@ public class PlaylistsCache {
     }
 
     //回転後、Activityのfinish後も検索内容覚えておくためのList
-    private List<YouTubeVideo> searchResultsList;
+    private Pair<List<YouTubeVideo>, List<YouTubePlaylist>> searchResultsList;
 
-    public void setSearchResultsList(List<YouTubeVideo> searchResultsList) {
-        this.searchResultsList = new ArrayList<>(searchResultsList);
+    public void setSearchResultsList(Pair<List<YouTubeVideo>, List<YouTubePlaylist>> searchResultsList) {
+        //渡した先でリストの中身をいじってもキャッシュに影響でないように必ず新しいListのインスタンスを作って保持
+        List<YouTubeVideo> videoList = new ArrayList<>(searchResultsList.first);
+        List<YouTubePlaylist> playlistList = new ArrayList<>(searchResultsList.second);
+        this.searchResultsList = new Pair<>(videoList, playlistList);
     }
 
     @NonNull
-    public List<YouTubeVideo> getSearchResultsList() {
-        return searchResultsList != null ? new ArrayList<>(searchResultsList) : new ArrayList<YouTubeVideo>();
+    public Pair<List<YouTubeVideo>, List<YouTubePlaylist>> getSearchResultsList() {
+        //渡した先でリストの中身をいじってもキャッシュに影響でないように必ず新しいListのインスタンスでPairを作る
+        List<YouTubeVideo> videoList;
+        List<YouTubePlaylist> playlistList;
+        if (searchResultsList != null) {
+            videoList = new ArrayList<>(searchResultsList.first);
+            playlistList = new ArrayList<>(searchResultsList.second);
+        } else {
+            videoList = new ArrayList<>();
+            playlistList = new ArrayList<>();
+        }
+        return new Pair<>(videoList, playlistList);
     }
 
     //NowPlayingListFragment用の、今再生しているplaylistとpositionを入れとくためのList
