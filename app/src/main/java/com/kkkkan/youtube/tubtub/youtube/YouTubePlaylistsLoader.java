@@ -17,7 +17,6 @@
 package com.kkkkan.youtube.tubtub.youtube;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
 import android.widget.Toast;
@@ -36,10 +35,10 @@ import com.kkkkan.youtube.tubtub.utils.NetworkConf;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import static com.kkkkan.youtube.tubtub.MainActivity.mainHandler;
+import static com.kkkkan.youtube.tubtub.utils.Utils.putPlaylistsToArrayList;
 import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getCredential;
 import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentials;
 
@@ -158,22 +157,5 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
         Log.d(TAG, "onCanceled: ");
     }
 
-    private void putPlaylistsToArrayList(@NonNull ArrayList<YouTubePlaylist> youTubePlaylistList, @NonNull List<Playlist> playlists) {
-        Iterator<Playlist> iteratorPlaylistResults = playlists.iterator();
-        if (!iteratorPlaylistResults.hasNext()) {
-            Log.d(TAG, " There aren't any results for your query. ");
-        }
 
-        while (iteratorPlaylistResults.hasNext()) {
-            Playlist playlist = iteratorPlaylistResults.next();
-            String id = playlist.getId();
-
-            YouTubePlaylist playlistItem = new YouTubePlaylist(playlist.getSnippet().getTitle(),
-                    playlist.getSnippet().getThumbnails().getDefault().getUrl(),
-                    playlist.getId(),
-                    playlist.getContentDetails().getItemCount(),
-                    playlist.getStatus().getPrivacyStatus());
-            youTubePlaylistList.add(playlistItem);
-        }
-    }
 }

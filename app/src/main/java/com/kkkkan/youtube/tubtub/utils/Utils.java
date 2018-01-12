@@ -1,8 +1,11 @@
 package com.kkkkan.youtube.tubtub.utils;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.SearchResult;
+import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 
 import java.util.Iterator;
@@ -129,4 +132,49 @@ public class Utils {
         return contentDetails.toString();
     }
 
+    public static String concatenatePlaylistIDs(List<SearchResult> searchResults) {
+
+        StringBuilder contentDetails = new StringBuilder();
+        for (SearchResult result : searchResults) {
+            String id = result.getId().getPlaylistId();
+            if (id != null) {
+                contentDetails.append(id);
+                contentDetails.append(",");
+            }
+        }
+
+        if (contentDetails.length() == 0) {
+            return null;
+        }
+
+        if (contentDetails.toString().endsWith(",")) {
+            contentDetails.setLength(contentDetails.length() - 1); //remove last ,
+        }
+        return contentDetails.toString();
+    }
+
+    /**
+     * Youtube ApiのPlaylistのListのアイテムを渡ってきたYouTubePlaylistのListに追加するメゾッド
+     *
+     * @param youTubePlaylistList
+     * @param playlists
+     */
+    static public void putPlaylistsToArrayList(@NonNull List<YouTubePlaylist> youTubePlaylistList, @NonNull List<Playlist> playlists) {
+        Iterator<Playlist> iteratorPlaylistResults = playlists.iterator();
+        if (!iteratorPlaylistResults.hasNext()) {
+            Log.d(TAG, " There aren't any results for your query. ");
+        }
+
+        while (iteratorPlaylistResults.hasNext()) {
+            Playlist playlist = iteratorPlaylistResults.next();
+            String id = playlist.getId();
+
+            YouTubePlaylist playlistItem = new YouTubePlaylist(playlist.getSnippet().getTitle(),
+                    playlist.getSnippet().getThumbnails().getDefault().getUrl(),
+                    playlist.getId(),
+                    playlist.getContentDetails().getItemCount(),
+                    playlist.getStatus().getPrivacyStatus());
+            youTubePlaylistList.add(playlistItem);
+        }
+    }
 }

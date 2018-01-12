@@ -43,6 +43,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -202,28 +203,28 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         }, 50);
         loadingProgressBar.setVisibility(View.VISIBLE);
 
-        getLoaderManager().restartLoader(Config.YouTubeVideosLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
+        getLoaderManager().restartLoader(Config.YouTubeVideosLoaderId, null, new LoaderManager.LoaderCallbacks<Pair<List<YouTubeVideo>, List<YouTubePlaylist>>>() {
             @Override
-            public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
+            public Loader<Pair<List<YouTubeVideo>, List<YouTubePlaylist>>> onCreateLoader(final int id, final Bundle args) {
                 return new YouTubeVideosLoader(context, query);
             }
 
             @Override
-            public void onLoadFinished(Loader<List<YouTubeVideo>> loader, List<YouTubeVideo> data) {
+            public void onLoadFinished(Loader<Pair<List<YouTubeVideo>, List<YouTubePlaylist>>> loader, Pair<List<YouTubeVideo>, List<YouTubePlaylist>> data) {
                 Log.d(TAG, "onLoadFinished");
                 if (data == null)
                     return;
                 Log.d(TAG, "onLoadFinished : data != null");
-                PlaylistsCache.Instance.setSearchResultsList(data);
+                PlaylistsCache.Instance.setSearchResultsList(data.first);
                 videosFoundListView.smoothScrollToPosition(0);
                 searchResultsList.clear();
-                searchResultsList.addAll(data);
+                searchResultsList.addAll(data.first);
                 videoListAdapter.notifyDataSetChanged();
                 loadingProgressBar.setVisibility(View.INVISIBLE);
             }
 
             @Override
-            public void onLoaderReset(Loader<List<YouTubeVideo>> loader) {
+            public void onLoaderReset(Loader<Pair<List<YouTubeVideo>, List<YouTubePlaylist>>> loader) {
                 searchResultsList.clear();
                 searchResultsList.addAll(Collections.<YouTubeVideo>emptyList());
                 videoListAdapter.notifyDataSetChanged();
