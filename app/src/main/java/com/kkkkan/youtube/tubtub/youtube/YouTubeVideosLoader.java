@@ -59,30 +59,31 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<List<YouTubeVideo>> {
             YouTube.Search.List searchPlayList = youtube.search().list("id,snippet");
             YouTube.Videos.List videosList = youtube.videos().list("id,contentDetails,statistics");
 
+            //videoの検索
             searchList.setKey(Config.YOUTUBE_API_KEY);
             searchList.setType("video"); //TODO ADD PLAYLISTS SEARCH
             searchList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
             searchList.setFields("items(id/videoId,snippet/title,snippet/thumbnails/default/url)");
-
-           /* searchPlayList.setKey(Config.YOUTUBE_API_KEY);
-            searchPlayList.setType("playlist"); //TODO ADD PLAYLISTS SEARCH
-            searchPlayList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
-            //searchPlayList.setFields("items(id/playlistId,snippet/title,snippet/thumbnails/default/url,id/kind)");
-            searchPlayList.setQ(keywords);
-            SearchListResponse searchPlayListResponse = searchList.execute();
-            List<SearchResult> searchPlayListResults = searchPlayListResponse.getItems();
-            for (SearchResult result:searchPlayListResults){
-                Log.d(TAG,"searchPlayListResults tytle is : "+result.getSnippet().getTitle());
-            }*/
-
-            videosList.setKey(Config.YOUTUBE_API_KEY);
-            videosList.setFields("items(id,contentDetails/duration,statistics/viewCount)");
-
             //search
             searchList.setQ(keywords);
             SearchListResponse searchListResponse = searchList.execute();
             List<SearchResult> searchResults = searchListResponse.getItems();
 
+            //playlistの検索
+            searchPlayList.setKey(Config.YOUTUBE_API_KEY);
+            searchPlayList.setType("playlist"); //TODO ADD PLAYLISTS SEARCH
+            searchPlayList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
+            //searchPlayList.setFields("items(id/playlistId,snippet/title,snippet/thumbnails/default/url,id/kind)");
+            searchPlayList.setQ(keywords);
+            SearchListResponse searchPlayListResponse = searchPlayList.execute();
+            // List<SearchResult> searchPlayListResults = searchPlayListResponse.getItems();
+            // for (SearchResult result:searchPlayListResults){
+            //     Log.d(TAG,"searchPlayListResults tytle is : "+result.getSnippet().getTitle()+"\nplaylist id is : "+result.getId().getPlaylistId()+"\nkind is : "+result.getId().getKind());
+            // }
+
+            //検索したそれぞれのvideoの詳細情報の取得
+            videosList.setKey(Config.YOUTUBE_API_KEY);
+            videosList.setFields("items(id,contentDetails/duration,statistics/viewCount)");
             //find video list
             videosList.setId(Utils.concatenateIDs(searchResults));  //save all ids from searchList list in order to find video list
             VideoListResponse resp = videosList.execute();

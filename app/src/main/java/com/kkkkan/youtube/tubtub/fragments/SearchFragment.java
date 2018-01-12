@@ -132,7 +132,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         super.onCreateView(inflater, container, savedInstanceState);
         Log.d(TAG, "onCreateView");
         Log.d(TAG, "tag is : " + String.valueOf(tag));
-        View v = inflater.inflate(R.layout.fragment_list, container, false);
+        View v = inflater.inflate(R.layout.fragment_search, container, false);
         videosFoundListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         videosFoundListView.setLayoutManager(linearLayoutManager);

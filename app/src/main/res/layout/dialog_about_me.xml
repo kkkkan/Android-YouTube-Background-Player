@@ -47,6 +47,7 @@
             android:layout_height="wrap_content"
             android:textSize="20sp"
             android:text="@string/date"
+            android:textStyle="bold"
             android:textColor="@android:color/black" />
     </LinearLayout>
 </FrameLayout>
