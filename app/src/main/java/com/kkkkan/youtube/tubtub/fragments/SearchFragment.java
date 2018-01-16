@@ -33,9 +33,10 @@
 package com.kkkkan.youtube.tubtub.fragments;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Point;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -47,7 +48,7 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
+import android.view.WindowManager;
 import android.widget.RadioGroup;
 
 import com.kkkkan.youtube.R;
@@ -81,19 +82,19 @@ import java.util.List;
  * Created by smedic on 7.3.16..
  */
 
-public class SearchFragment extends BaseFragment implements PlaylistsAdapter.OnDetailClickListener {
+public class SearchFragment extends BaseFragment {
     private static final String TAG = "SearchFragment";
     private RecyclerView videosFoundListView;
     private List<YouTubeVideo> searchResultsVideoList;
     private List<YouTubePlaylist> searchResultsPlaylistList;
     private VideosAdapter videoListAdapter;
     private PlaylistsAdapter playlistsAdapter;
-    private ProgressBar loadingProgressBar;
     private NetworkConf networkConf;
     private Context context;
     private OnItemSelected itemSelected;
     private OnFavoritesSelected onFavoritesSelected;
     private RadioGroup radioGroup;
+    private ProgressDialog progressDialog;
 
 
     private final int tag = PlaylistsCache.tag;
@@ -150,13 +151,41 @@ public class SearchFragment extends BaseFragment implements PlaylistsAdapter.OnD
                 linearLayoutManager.getOrientation());
         videosFoundListView.addItemDecoration(dividerItemDecoration);
 
-        loadingProgressBar = (ProgressBar) v.findViewById(R.id.fragment_progress_bar);
+        //Searching…ダイアログのための設定
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setIndeterminate(true);
+        progressDialog.setMessage("Searching…");
+        //Make the color of the back of the dialog transparent.
+        //ダイアログの裏の色を透明にする。
+        progressDialog.getWindow().setFlags(0, WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 
+        //Make the place where the dialog will appear in the middle of playlistDetailFragment.
+        //ダイアログの出す場所をplaylistDetailFragmentの真ん中にする。
+        //Get screen height
+        //画面の高さを取得
+        Point size = new Point();
+        getActivity().getWindowManager().getDefaultDisplay().getSize(size);
+        int windowHeight = size.y;
+
+        //Get the height of playlistDetailFragment
+        //playlistDetailFragmentの高さを取得
+        // FrameLayout frameLayout = (FrameLayout) getView().findViewById(R.id.frame_layout);
+        int framelayoutHeight = v.getHeight();
+
+        //Set in the middle of playlistDetailFragment
+        //playlistDetailFragmentの真ん中にセット
+        //WindowManager.LayoutParams.y px specified in the screen is displayed shifted downward from the center of the screen.
+        // WindowManager.LayoutParams.yに指定したpx分画面真ん中から下にずらされて表示される。
+        WindowManager.LayoutParams layoutParams = progressDialog.getWindow().getAttributes();
+        layoutParams.y = (windowHeight - framelayoutHeight) / 2;
+        progressDialog.getWindow().setAttributes(layoutParams);
+
+        //検索結果（ビデオ）を表示するための設定
         videoListAdapter = new VideosAdapter(context, searchResultsVideoList);
         videoListAdapter.setOnItemEventsListener(videoItemEventsListener);
-
-        playlistsAdapter = new PlaylistsAdapter(context, searchResultsPlaylistList);
-        playlistsAdapter.setOnDetailClickListener(this);
+        //検索結果（プレイリスト）を表示するための設定
+        playlistsAdapter = new PlaylistsAdapter(context, searchResultsPlaylistList, false);
+        playlistsAdapter.setOnDetailClickListener((PlaylistsAdapter.OnDetailClickListener) getParentFragment());
         playlistsAdapter.setOnItemEventsListener(playlistItemEventsListener);
 
 
@@ -232,18 +261,11 @@ public class SearchFragment extends BaseFragment implements PlaylistsAdapter.OnD
             networkConf.createNetErrorDialog();
             return;
         }
-        //すぐ検索中のくるくる出そうとするとpopBackStack()で戻ってきたときうまく表示されないので少し遅らせる
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                loadingProgressBar.setVisibility(View.VISIBLE);
-            }
-        }, 50);
-        loadingProgressBar.setVisibility(View.VISIBLE);
 
         getLoaderManager().restartLoader(Config.YouTubeVideosLoaderId, null, new LoaderManager.LoaderCallbacks<Pair<List<YouTubeVideo>, List<YouTubePlaylist>>>() {
             @Override
             public Loader<Pair<List<YouTubeVideo>, List<YouTubePlaylist>>> onCreateLoader(final int id, final Bundle args) {
+                showProgressDialog();
                 return new YouTubeVideosLoader(context, query);
             }
 
@@ -260,7 +282,7 @@ public class SearchFragment extends BaseFragment implements PlaylistsAdapter.OnD
                 searchResultsPlaylistList.clear();
                 searchResultsPlaylistList.addAll(data.second);
                 notifyDataSetChanged();
-                loadingProgressBar.setVisibility(View.INVISIBLE);
+                hideProgressDialog();
             }
 
             @Override
@@ -308,13 +330,25 @@ public class SearchFragment extends BaseFragment implements PlaylistsAdapter.OnD
         }).forceLoad();
     }
 
-
-    @Override
-    public void onDetailClick(YouTubePlaylist playlist) {
-
+    /**
+     * Searching…のダイアログを出す
+     */
+    private void showProgressDialog() {
+        progressDialog.show();
     }
 
+    /**
+     * Searching…のダイアログを消す
+     */
+    private void hideProgressDialog() {
+        if (progressDialog.isShowing()) {
+            progressDialog.hide();
+        }
+    }
 
+    /**
+     * videoの検索結果をクリックしたときの動きのためのItemEventsListener
+     */
     private ItemEventsListener<YouTubeVideo> videoItemEventsListener = new ItemEventsListener<YouTubeVideo>() {
         @Override
         public void onShareClicked(String itemId) {
@@ -349,6 +383,9 @@ public class SearchFragment extends BaseFragment implements PlaylistsAdapter.OnD
         }
     };
 
+    /**
+     * playlistの検索結果をクリックしたときの動きのためのItemEventsListener
+     */
     private ItemEventsListener<YouTubePlaylist> playlistItemEventsListener = new ItemEventsListener<YouTubePlaylist>() {
         @Override
         public void onShareClicked(String itemId) {

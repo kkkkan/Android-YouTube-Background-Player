@@ -43,20 +43,45 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
     private ItemEventsListener<YouTubePlaylist> itemEventsListener;
     private OnDetailClickListener onDetailClickListener;
 
+    final private boolean deleteIconShow;
+
 
     public interface OnDetailClickListener {
         void onDetailClick(YouTubePlaylist playlist);
     }
 
+
     public PlaylistsAdapter(Context context, List<YouTubePlaylist> playlists) {
         super();
         this.context = context;
         this.playlists = playlists;
+        deleteIconShow = true;
+    }
+
+    /**
+     * ゴミ箱アイコンを見せるか見せないか指定してインスタンスを作るコンストラクタ。
+     * デフォルトは見えるようにしているので、特に見せたくないときに使うのを想定。
+     *
+     * @param context
+     * @param playlists
+     * @param deleteIconShow
+     */
+    public PlaylistsAdapter(Context context, List<YouTubePlaylist> playlists, boolean deleteIconShow) {
+        super();
+        this.context = context;
+        this.playlists = playlists;
+        this.deleteIconShow = deleteIconShow;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.playlist_item, null);
+        ViewHolder holder = new ViewHolder(v);
+        //1つのPlaylistAdapterのインスタンスのなかではdeleteIconShowの値は変わらないので、
+        // ViewHolder生成時にdeleteButtonの見える/見えないを決めてしまう。
+        if (!deleteIconShow) {
+            holder.deleteButton.setVisibility(View.INVISIBLE);
+        }
         return new ViewHolder(v);
     }
 
