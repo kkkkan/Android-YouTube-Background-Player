@@ -63,7 +63,7 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<List<YouTubeVideo>
             YouTube.Search.List searchList = youtube.search().list("id,snippet");
             YouTube.Search.List searchPlayList = youtube.search().list("id,snippet");
             YouTube.Videos.List videosList = youtube.videos().list("id,contentDetails,statistics");
-            YouTube.Playlists.List playlistList = youtube.playlists().list("id,contentDetails,statistics");
+            YouTube.Playlists.List playlistList = youtube.playlists().list("id,snippet,contentDetails,status");
 
             //videoの検索
             List<SearchResult> searchVideoResults = searchVideo(searchList);
@@ -76,6 +76,7 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<List<YouTubeVideo>
             playlistItems = getPlaylistList(playlistList, searchPlayListResults);
 
         } catch (IOException e) {
+            Log.d(TAG, "IOException");
             e.printStackTrace();
         }
 
@@ -186,9 +187,10 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<List<YouTubeVideo>
         searchPlayList.setKey(Config.YOUTUBE_API_KEY);
         searchPlayList.setType("playlist"); //TODO ADD PLAYLISTS SEARCH
         searchPlayList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
-        //searchPlayList.setFields("items(id/playlistId,snippet/title,snippet/thumbnails/default/url,id/kind)");
+        searchPlayList.setFields("items(id/playlistId,snippet/title,snippet/thumbnails/default/url,id/kind)");
         searchPlayList.setQ(keywords);
         SearchListResponse searchPlayListResponse = searchPlayList.execute();
+        Log.d(TAG, "searchPlayListResponse.size() is : " + searchPlayListResponse.getItems().size());
         return searchPlayListResponse.getItems();
     }
 
@@ -202,7 +204,7 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<List<YouTubeVideo>
      */
     private List<YouTubePlaylist> getPlaylistList(YouTube.Playlists.List playlistList, List<SearchResult> searchPlayListResults) throws IOException {
         List<YouTubePlaylist> playlistItems = new ArrayList<>();
-
+        playlistList.setKey(Config.YOUTUBE_API_KEY);
         playlistList.setFields("items(id,snippet/title,snippet/thumbnails/default/url,contentDetails/itemCount,status)");
         playlistList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
         playlistList.setId(Utils.concatenatePlaylistIDs(searchPlayListResults));
@@ -210,6 +212,7 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<List<YouTubeVideo>
 
         List<Playlist> playlists = playlistListResponse.getItems();
 
+        Log.d(TAG, "playlists.size() is : " + playlists.size());
 
         if (playlists != null) {
             //自分で作った再生リストを返り値用のArrayListに入れる

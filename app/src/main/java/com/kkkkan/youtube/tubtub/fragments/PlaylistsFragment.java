@@ -277,6 +277,7 @@ public class PlaylistsFragment extends BaseFragment implements
         //何もしない
     }
 
+    @Override
     public void onDeleteClicked(final YouTubePlaylist playlist) {
         //Give a confirmation dialog of deletion.
         //削除の確認のダイアログを出す。

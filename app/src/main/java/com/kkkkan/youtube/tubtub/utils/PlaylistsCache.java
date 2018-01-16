@@ -75,28 +75,40 @@ public class PlaylistsCache {
     }
 
     //回転後、Activityのfinish後も検索内容覚えておくためのList
-    private Pair<List<YouTubeVideo>, List<YouTubePlaylist>> searchResultsList;
+    //内部的にはPairでキャッシュを取っておくことはしない
+    private List<YouTubeVideo> searchResultsVideoList = new ArrayList<>();
+    private List<YouTubePlaylist> searchResultsPlaylistList = new ArrayList<>();
 
+    /**
+     * 検索結果はvideoとplaylist一方だけが変わることは無いのでsetterはPairの形のもののみ
+     *
+     * @param searchResultsList
+     */
     public void setSearchResultsList(Pair<List<YouTubeVideo>, List<YouTubePlaylist>> searchResultsList) {
         //渡した先でリストの中身をいじってもキャッシュに影響でないように必ず新しいListのインスタンスを作って保持
-        List<YouTubeVideo> videoList = new ArrayList<>(searchResultsList.first);
-        List<YouTubePlaylist> playlistList = new ArrayList<>(searchResultsList.second);
-        this.searchResultsList = new Pair<>(videoList, playlistList);
+        searchResultsVideoList = new ArrayList<>(searchResultsList.first);
+        searchResultsPlaylistList = new ArrayList<>(searchResultsList.second);
     }
 
+    /**
+     * Pairの形で返すgetter
+     *
+     * @return
+     */
     @NonNull
     public Pair<List<YouTubeVideo>, List<YouTubePlaylist>> getSearchResultsList() {
         //渡した先でリストの中身をいじってもキャッシュに影響でないように必ず新しいListのインスタンスでPairを作る
-        List<YouTubeVideo> videoList;
-        List<YouTubePlaylist> playlistList;
-        if (searchResultsList != null) {
-            videoList = new ArrayList<>(searchResultsList.first);
-            playlistList = new ArrayList<>(searchResultsList.second);
-        } else {
-            videoList = new ArrayList<>();
-            playlistList = new ArrayList<>();
-        }
+        List<YouTubeVideo> videoList = new ArrayList<>(searchResultsVideoList);
+        List<YouTubePlaylist> playlistList = new ArrayList<>(searchResultsPlaylistList);
         return new Pair<>(videoList, playlistList);
+    }
+
+    public List<YouTubeVideo> getSearchResultsVideoList() {
+        return new ArrayList<>(searchResultsVideoList);
+    }
+
+    public List<YouTubePlaylist> getSearchResultsPlaylistList() {
+        return new ArrayList<>(searchResultsPlaylistList);
     }
 
     //NowPlayingListFragment用の、今再生しているplaylistとpositionを入れとくためのList

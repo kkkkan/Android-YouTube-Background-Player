@@ -48,9 +48,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.RadioGroup;
 
 import com.kkkkan.youtube.R;
 import com.kkkkan.youtube.tubtub.MainActivity;
+import com.kkkkan.youtube.tubtub.adapters.PlaylistsAdapter;
 import com.kkkkan.youtube.tubtub.adapters.VideosAdapter;
 import com.kkkkan.youtube.tubtub.interfaces.ItemEventsListener;
 import com.kkkkan.youtube.tubtub.interfaces.OnFavoritesSelected;
@@ -60,6 +62,7 @@ import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
 import com.kkkkan.youtube.tubtub.utils.PlaylistsCache;
+import com.kkkkan.youtube.tubtub.youtube.YouTubePlaylistVideosLoader;
 import com.kkkkan.youtube.tubtub.youtube.YouTubeVideosLoader;
 
 import java.util.Collections;
@@ -78,17 +81,20 @@ import java.util.List;
  * Created by smedic on 7.3.16..
  */
 
-public class SearchFragment extends BaseFragment implements ItemEventsListener<YouTubeVideo> {
+public class SearchFragment extends BaseFragment implements PlaylistsAdapter.OnDetailClickListener {
     private static final String TAG = "SearchFragment";
     private RecyclerView videosFoundListView;
     private List<YouTubeVideo> searchResultsVideoList;
     private List<YouTubePlaylist> searchResultsPlaylistList;
     private VideosAdapter videoListAdapter;
+    private PlaylistsAdapter playlistsAdapter;
     private ProgressBar loadingProgressBar;
     private NetworkConf networkConf;
     private Context context;
     private OnItemSelected itemSelected;
     private OnFavoritesSelected onFavoritesSelected;
+    private RadioGroup radioGroup;
+
 
     private final int tag = PlaylistsCache.tag;
 
@@ -124,9 +130,8 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
-        Pair<List<YouTubeVideo>, List<YouTubePlaylist>> pair = PlaylistsCache.Instance.getSearchResultsList();
-        searchResultsVideoList = pair.first;
-        searchResultsPlaylistList = pair.second;
+        searchResultsVideoList = PlaylistsCache.Instance.getSearchResultsVideoList();
+        searchResultsPlaylistList = PlaylistsCache.Instance.getSearchResultsPlaylistList();
     }
 
     @Override
@@ -146,9 +151,25 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         videosFoundListView.addItemDecoration(dividerItemDecoration);
 
         loadingProgressBar = (ProgressBar) v.findViewById(R.id.fragment_progress_bar);
+
         videoListAdapter = new VideosAdapter(context, searchResultsVideoList);
-        videoListAdapter.setOnItemEventsListener(this);
-        videosFoundListView.setAdapter(videoListAdapter);
+        videoListAdapter.setOnItemEventsListener(videoItemEventsListener);
+
+        playlistsAdapter = new PlaylistsAdapter(context, searchResultsPlaylistList);
+        playlistsAdapter.setOnDetailClickListener(this);
+        playlistsAdapter.setOnItemEventsListener(playlistItemEventsListener);
+
+
+        radioGroup = (RadioGroup) v.findViewById(R.id.radio_group);
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                setAdapter();
+                notifyDataSetChanged();
+            }
+        });
+
+        setAdapter();
 
         //disable swipe to refresh for this tab
         v.findViewById(R.id.swipe_to_refresh).setEnabled(false);
@@ -162,7 +183,7 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         Log.d(TAG, "onResume");
         //Notice that the data changed to reflect the results of favorite operation on other tabs
         //他のタブでのfavoriteの操作の結果を反映させるためにデータが変化したことをお知らせ
-        videoListAdapter.notifyDataSetChanged();
+        notifyDataSetChanged();
     }
 
     @Override
@@ -174,13 +195,27 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
         this.onFavoritesSelected = null;
     }
 
-    public void reflectSearchResult(List<YouTubeVideo> data) {
-        Log.d(TAG, " reflectSearchResult tag is : " + String.valueOf(tag));
-        videosFoundListView.smoothScrollToPosition(0);
-        searchResultsVideoList.clear();
-        searchResultsVideoList.addAll(data);
-        videoListAdapter.notifyDataSetChanged();
-        //loadingProgressBar.setVisibility(View.INVISIBLE);
+    private void setAdapter() {
+        switch (radioGroup.getCheckedRadioButtonId()) {
+            case R.id.video:
+                videosFoundListView.setAdapter(videoListAdapter);
+                break;
+            case R.id.playlist:
+                videosFoundListView.setAdapter(playlistsAdapter);
+                break;
+        }
+    }
+
+    private void notifyDataSetChanged() {
+        Log.d(TAG, "notifyDataSetChanged()");
+        switch (radioGroup.getCheckedRadioButtonId()) {
+            case R.id.video:
+                videoListAdapter.notifyDataSetChanged();
+                break;
+            case R.id.playlist:
+                playlistsAdapter.notifyDataSetChanged();
+                break;
+        }
     }
 
     /**
@@ -217,12 +252,14 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
                 Log.d(TAG, "onLoadFinished");
                 if (data == null)
                     return;
-                Log.d(TAG, "onLoadFinished : data != null");
+                Log.d(TAG, "onLoadFinished : data != null  " + data.second.size());
                 PlaylistsCache.Instance.setSearchResultsList(data);
                 videosFoundListView.smoothScrollToPosition(0);
                 searchResultsVideoList.clear();
                 searchResultsVideoList.addAll(data.first);
-                videoListAdapter.notifyDataSetChanged();
+                searchResultsPlaylistList.clear();
+                searchResultsPlaylistList.addAll(data.second);
+                notifyDataSetChanged();
                 loadingProgressBar.setVisibility(View.INVISIBLE);
             }
 
@@ -230,43 +267,123 @@ public class SearchFragment extends BaseFragment implements ItemEventsListener<Y
             public void onLoaderReset(Loader<Pair<List<YouTubeVideo>, List<YouTubePlaylist>>> loader) {
                 searchResultsVideoList.clear();
                 searchResultsVideoList.addAll(Collections.<YouTubeVideo>emptyList());
-                videoListAdapter.notifyDataSetChanged();
+                searchResultsPlaylistList.clear();
+                searchResultsPlaylistList.addAll(Collections.<YouTubePlaylist>emptyList());
+                notifyDataSetChanged();
+            }
+        }).forceLoad();
+    }
+
+    private void acquirePlaylistVideos(final YouTubePlaylist playlist) {
+        Log.d(TAG, "acquirePlaylistVideos");
+        getLoaderManager().restartLoader(Config.YouTubePlaylistDetailLoaderId, null, new LoaderManager.LoaderCallbacks<List<YouTubeVideo>>() {
+            //このフラグがないとこのfragmentに戻ったときなぜか onLoadFinishedが呼ばれてしまうことがある
+            boolean loaderRunning = false;
+
+            @Override
+            public Loader<List<YouTubeVideo>> onCreateLoader(final int id, final Bundle args) {
+                Log.d(TAG, "PlaylistsFragment.acquirePlaylistVideos.onCreateLoader-id:" + playlist.getId());
+                loaderRunning = true;
+                return new YouTubePlaylistVideosLoader(context, playlist);
+            }
+
+            @Override
+            public void onLoadFinished(Loader<List<YouTubeVideo>> loader, List<YouTubeVideo> data) {
+                Log.d(TAG, "PlaylistsFragment.acquirePlaylistVideos.onLoadFinished");
+                if (!loaderRunning) {
+                    return;
+                }
+                loaderRunning = false;
+                if (data == null || data.isEmpty()) {
+                    return;
+                }
+                itemSelected.onPlaylistSelected(data, 0);
+            }
+
+            @Override
+            public void onLoaderReset(Loader<List<YouTubeVideo>> loader) {
+                Log.d(TAG, "PlaylistsFragment.acquirePlaylistVideos.onLoaderReset");
+
             }
         }).forceLoad();
     }
 
 
     @Override
-    public void onShareClicked(String itemId) {
-        share(Config.SHARE_VIDEO_URL + itemId);
-    }
-
-    @Override
-    public void onFavoriteClicked(YouTubeVideo video, boolean isChecked) {
-        onFavoritesSelected.onFavoritesSelected(video, isChecked); // pass event to MainActivity
-    }
-
-    @Override
-    public void onAddClicked(YouTubeVideo video) {
-        onFavoritesSelected.onAddSelected(video); // pass event to MainActivity
-    }
-
-
-    @Override
-    public void onItemClick(YouTubeVideo video) {
-        //Recently added lists are playlistselected
-        //最近見たリスト追加はplaylistselectedでやる！
-        itemSelected.onPlaylistSelected(searchResultsVideoList, searchResultsVideoList.indexOf(video));
-    }
-
-    @Override
-    public void onDeleteClicked(YouTubeVideo video) {
+    public void onDetailClick(YouTubePlaylist playlist) {
 
     }
 
-    @Override
-    public void onDeleteClicked(YouTubePlaylist playlist) {
 
-    }
+    private ItemEventsListener<YouTubeVideo> videoItemEventsListener = new ItemEventsListener<YouTubeVideo>() {
+        @Override
+        public void onShareClicked(String itemId) {
+            share(Config.SHARE_VIDEO_URL + itemId);
+        }
+
+        @Override
+        public void onFavoriteClicked(YouTubeVideo video, boolean isChecked) {
+            onFavoritesSelected.onFavoritesSelected(video, isChecked); // pass event to MainActivity
+        }
+
+        @Override
+        public void onAddClicked(YouTubeVideo video) {
+            onFavoritesSelected.onAddSelected(video); // pass event to MainActivity
+        }
+
+        @Override
+        public void onItemClick(YouTubeVideo video) {
+            //Recently added lists are playlistselected
+            //最近見たリスト追加はplaylistselectedでやる！
+            itemSelected.onPlaylistSelected(searchResultsVideoList, searchResultsVideoList.indexOf(video));
+        }
+
+        @Override
+        public void onDeleteClicked(YouTubeVideo video) {
+
+        }
+
+        @Override
+        public void onDeleteClicked(YouTubePlaylist playlist) {
+
+        }
+    };
+
+    private ItemEventsListener<YouTubePlaylist> playlistItemEventsListener = new ItemEventsListener<YouTubePlaylist>() {
+        @Override
+        public void onShareClicked(String itemId) {
+            share(Config.SHARE_PLAYLIST_URL + itemId);
+        }
+
+        @Override
+        public void onFavoriteClicked(YouTubeVideo video, boolean isChecked) {
+
+        }
+
+        @Override
+        public void onAddClicked(YouTubeVideo video) {
+
+        }
+
+        @Override
+        public void onItemClick(YouTubePlaylist playlist) {
+            //results are in onVideosReceived callback method
+            Log.d(TAG, "onItemClick");
+            String id = playlist.getId();
+            Log.d(TAG, "PlaylistsFragment-onItemClicked-id:" + id);
+            acquirePlaylistVideos(playlist);
+        }
+
+        @Override
+        public void onDeleteClicked(YouTubeVideo video) {
+
+        }
+
+        @Override
+        public void onDeleteClicked(YouTubePlaylist playlist) {
+
+        }
+    };
+
 
 }
