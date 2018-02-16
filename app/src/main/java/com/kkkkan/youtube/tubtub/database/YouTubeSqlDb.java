@@ -196,7 +196,8 @@ public class YouTubeSqlDb {
                         //Delete it if you can take the oldest one of the recently seen list
                         //最近見たものリストのうち一番古いものをとれてればそれを削除
                         c.moveToNext();
-                        db.delete(tableName, YouTubeVideoEntry.COLUMN_ENTRY_ID + "='" + c.getColumnName(c.getColumnIndex(YouTubeVideoEntry.COLUMN_ENTRY_ID)) + "'", null);
+                        db.delete(tableName, YouTubeVideoEntry.COLUMN_ENTRY_ID + "=?",
+                                new String[] { c.getString(c.getColumnIndex(YouTubeVideoEntry.COLUMN_ENTRY_ID)) });
                         //Try to register again in the list.
                         //もう一度リストに登録を試す。
                         result = db.insert(tableName, YouTubeVideoEntry.COLUMN_NAME_NULLABLE, values) > 0;
@@ -272,9 +273,6 @@ public class YouTubeSqlDb {
         public ArrayList<YouTubeVideo> readAll() {
             Log.d(TAG, "readAll");
 
-            final String SELECT_QUERY_ORDER_DESC = "SELECT * FROM " + tableName + " ORDER BY "
-                    + YouTubeVideoEntry.COLUMN_ENTRY_ID + " DESC";
-
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             ArrayList<YouTubeVideo> list = new ArrayList<>();
 
@@ -298,8 +296,8 @@ public class YouTubeSqlDb {
                 if (c != null) {
                     c.close();
                 }
-                return list;
             }
+            return list;
         }
 
         /**
@@ -310,7 +308,8 @@ public class YouTubeSqlDb {
          */
         public boolean deleteByVideoId(String videoId) {
             return dbHelper.getWritableDatabase().delete(tableName,
-                    YouTubeVideoEntry.COLUMN_VIDEO_ID + "='" + videoId + "'", null) > 0;
+                    YouTubeVideoEntry.COLUMN_VIDEO_ID + "=?",
+                    new String[] { videoId }) > 0;
         }
 
         /**
@@ -321,7 +320,8 @@ public class YouTubeSqlDb {
          */
         public boolean deleteByUniqueId(String videoId) {
             return dbHelper.getWritableDatabase().delete(tableName,
-                    YouTubeVideoEntry.COLUMN_ENTRY_ID + "='" + videoId + "'", null) > 0;
+                    YouTubeVideoEntry.COLUMN_ENTRY_ID + "=?",
+                    new String[] { videoId }) > 0;
         }
 
         /**
@@ -330,7 +330,7 @@ public class YouTubeSqlDb {
          * @return
          */
         public boolean deleteAll() {
-            return dbHelper.getWritableDatabase().delete(tableName, "1", null) > 0;
+            return dbHelper.getWritableDatabase().delete(tableName, null, null) > 0;
         }
     }
 
@@ -391,9 +391,8 @@ public class YouTubeSqlDb {
                 if (c != null) {
                     c.close();
                 }
-                return list;
             }
-
+            return list;
         }
 
         /**
@@ -404,7 +403,8 @@ public class YouTubeSqlDb {
          */
         public boolean delete(String playlistId) {
             return dbHelper.getWritableDatabase().delete(YouTubePlaylistEntry.TABLE_NAME,
-                    YouTubePlaylistEntry.COLUMN_PLAYLIST_ID + "='" + playlistId + "'", null) > 0;
+                    YouTubePlaylistEntry.COLUMN_PLAYLIST_ID + "=?",
+                    new String[] { playlistId }) > 0;
         }
 
         /**
@@ -413,7 +413,7 @@ public class YouTubeSqlDb {
          * @return
          */
         public boolean deleteAll() {
-            return dbHelper.getWritableDatabase().delete(YouTubePlaylistEntry.TABLE_NAME, "1", null) > 0;
+            return dbHelper.getWritableDatabase().delete(YouTubePlaylistEntry.TABLE_NAME, null, null) > 0;
         }
     }
 
@@ -421,7 +421,7 @@ public class YouTubeSqlDb {
      * Inner class that defines Videos table entry
      */
     public static abstract class YouTubeVideoEntry implements BaseColumns {
-        public static final String COLUMN_ENTRY_ID = "_id";
+        public static final String COLUMN_ENTRY_ID = _ID;
         public static final String COLUMN_VIDEO_ID = "video_id";
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_DURATION = "duration";
@@ -457,7 +457,7 @@ public class YouTubeSqlDb {
      */
     public static abstract class YouTubePlaylistEntry implements BaseColumns {
         public static final String TABLE_NAME = "playlists";
-        public static final String COLUMN_ENTRY_ID = "_id";
+        public static final String COLUMN_ENTRY_ID = _ID;
         public static final String COLUMN_PLAYLIST_ID = "playlist_id";
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_VIDEOS_NUMBER = "videos_number";
