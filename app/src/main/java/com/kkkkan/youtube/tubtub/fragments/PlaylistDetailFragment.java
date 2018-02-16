@@ -36,6 +36,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -90,6 +91,8 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     private YouTubePlaylist playlist;
     private int deleteVideoIndex;
     private ProgressDialog progressDialog;
+    //プレイリスト詳細のfragmentを閉じるためのボタン
+    private ImageView closeButton;
 
     private String playlistTitle;
 
@@ -154,6 +157,15 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
             public void onRefresh() {
                 Log.d(TAG, "onRefresh");
                 acquirePlaylistVideos(playlist);
+            }
+        });
+
+        //×画像タッチでこのフラグメントを消す
+        closeButton=(ImageView)v.findViewById(R.id.close_button);
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getParentFragment().getChildFragmentManager().popBackStack();
             }
         });
 
