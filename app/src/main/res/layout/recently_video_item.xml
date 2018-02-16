@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/item_background"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:paddingBottom="1dp"
-    android:id="@+id/item_background"
+    android:background="@drawable/item_background"
     android:clickable="true"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    android:background="@drawable/item_background">
+    android:paddingBottom="1dp">
 
     <LinearLayout
         android:id="@+id/row_item"
@@ -19,12 +19,12 @@
         android:weightSum="100">
 
         <FrameLayout
-            android:layout_marginBottom="4dp"
             android:id="@+id/image_frame_layout"
             android:layout_width="0dp"
-            tools:background="#808080"
             android:layout_height="match_parent"
-            android:layout_weight="40">
+            android:layout_marginBottom="4dp"
+            android:layout_weight="40"
+            tools:background="#808080">
 
             <ImageView
                 android:id="@+id/video_thumbnail"
@@ -61,19 +61,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
-                android:paddingBottom="4dp"
-                tools:text="114,416 views"
                 android:maxLines="1"
-                android:textSize="14sp" />
+                android:paddingBottom="4dp"
+                android:textSize="14sp"
+                tools:text="114,416 views" />
 
             <CheckBox
                 android:id="@+id/favoriteButton"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:layout_margin="4dp"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
+                android:layout_margin="4dp"
                 android:background="@drawable/favorite_button_selector"
                 android:button="@null" />
 
@@ -81,10 +81,10 @@
                 android:id="@+id/shareButton"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:padding="4dip"
                 android:layout_alignParentBottom="true"
                 android:layout_toLeftOf="@id/favoriteButton"
                 android:layout_toStartOf="@id/favoriteButton"
+                android:padding="4dip"
                 android:src="@drawable/share_button_selector" />
 
             <ImageView
@@ -92,9 +92,9 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_alignParentBottom="true"
-                android:padding="4dp"
                 android:layout_toLeftOf="@id/musicDeleteButton"
                 android:layout_toStartOf="@id/musicDeleteButton"
+                android:padding="4dp"
                 android:src="@drawable/add_button" />
 
             <ImageView
@@ -102,9 +102,9 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_alignParentBottom="true"
-                android:padding="4dp"
                 android:layout_toLeftOf="@id/shareButton"
                 android:layout_toStartOf="@id/shareButton"
+                android:padding="4dp"
                 android:src="@drawable/delete_music" />
 
 

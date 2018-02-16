@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/parent_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/parent_layout">
+    android:layout_height="match_parent">
 
     <RelativeLayout
         android:layout_width="wrap_content"
@@ -33,70 +33,70 @@
         </android.support.design.widget.AppBarLayout>
 
         <LinearLayout
+            android:id="@+id/title_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_below="@+id/app_bar_layout"
-            android:id="@+id/title_bar"
-            android:background="@color/colorPrimaryDark">
+            android:background="@color/colorPrimaryDark"
+            android:orientation="horizontal">
 
             <CheckBox
+                android:id="@+id/now_playlinglist_show_button"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="@drawable/now_playinglist_show_selector"
-                android:layout_margin="5dp"
-                android:minWidth="34dp"
-                android:gravity="center"
                 android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:background="@drawable/now_playinglist_show_selector"
                 android:button="@null"
-                android:id="@+id/now_playlinglist_show_button" />
+                android:gravity="center"
+                android:minWidth="34dp" />
 
 
             <TextView
                 android:id="@+id/title_view"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="40dp"
-                android:singleLine="true"
-                android:scrollHorizontally="true"
+                android:layout_weight="1"
                 android:ellipsize="end"
-                android:gravity="center" />
+                android:gravity="center"
+                android:scrollHorizontally="true"
+                android:singleLine="true" />
 
             <ImageButton
+                android:id="@+id/shuffle_box"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:src="@drawable/shuffle_selector"
-                android:padding="5dp"
                 android:layout_gravity="center_vertical"
                 android:background="@android:color/transparent"
-                android:id="@+id/shuffle_box" />
+                android:padding="5dp"
+                android:src="@drawable/shuffle_selector" />
 
             <ImageButton
+                android:id="@+id/repeat_playlist_box"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:src="@drawable/playlist_repeat_selector"
-                android:padding="5dp"
                 android:layout_gravity="center_vertical"
                 android:background="@android:color/transparent"
-                android:id="@+id/repeat_playlist_box" />
+                android:padding="5dp"
+                android:src="@drawable/playlist_repeat_selector" />
 
             <ImageButton
+                android:id="@+id/repeat_one_box"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:src="@drawable/repeat_selector"
-                android:padding="5dp"
                 android:layout_gravity="center_vertical"
                 android:background="@android:color/transparent"
-                android:id="@+id/repeat_one_box" />
+                android:padding="5dp"
+                android:src="@drawable/repeat_selector" />
 
         </LinearLayout>
 
 
         <FrameLayout
+            android:id="@+id/tab_and_viewpager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/title_bar"
-            android:id="@+id/tab_and_viewpager">
+            android:layout_below="@id/title_bar">
 
         </FrameLayout>
     </RelativeLayout>

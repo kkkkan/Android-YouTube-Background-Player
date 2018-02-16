@@ -28,13 +28,19 @@ def keystoreProperties = new Properties()
 // Load your keystore.properties file into the keystoreProperties object.
 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
+// .gradle/gradle.propertiesに以下のエントリを用意しておくこと
+//
+// youtubeKeyStoreFile=<keystoreファイル名>
+// youtubeKeyStorePassword=<パス>
+// youtubeKeyAlias=<alias>
+// youtubeKeyPassword=<パス>
 android {
     signingConfigs {
         config {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
+            storeFile file(youtubeKeyStoreFile)
+            storePassword youtubeKeyStorePassword
+            keyAlias youtubeKeyAlias
+            keyPassword youtubeKeyPassword
         }
     }
     compileSdkVersion 25
@@ -49,14 +55,16 @@ android {
     buildTypes {
         debug {
             applicationVariants.all { variant ->
-                variant.outputs.all{ output ->
+                variant.outputs.all { output ->
                     def file = output.outputFile
                     def appId = android.defaultConfig.applicationId
                     def fileName = appId + "-" + variant.buildType.name + "-" + defaultConfig.versionName + ".apk"
                     //output.outputFile = new File(file.parent, fileName)
-                    outputFileName=fileName
+                    outputFileName = fileName
                 }
             }
+            signingConfig signingConfigs.config
+            applicationIdSuffix ".dev"
         }
         release {
             minifyEnabled false
@@ -68,7 +76,7 @@ android {
                         def appId = android.defaultConfig.applicationId
                         def fileName = appId + "-" + variant.buildType.name + ".apk"
                         //output.outputFile = new File(file.parent, fileName)
-                        outputFileName=fileName
+                        outputFileName = fileName
                     }
                 }
             }

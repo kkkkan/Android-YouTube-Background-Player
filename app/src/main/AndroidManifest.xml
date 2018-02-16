@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
     <uses-sdk
         android:minSdkVersion="16"
         android:targetSdkVersion="25" />
@@ -20,20 +21,23 @@
         android:supportsRtl="true"
         android:theme="@style/MyMaterialTheme"
         tools:replace="android:allowBackup">
-        <receiver android:name="com.kkkkan.youtube.tubtub.BroadcastReceiver.NextReceiver"/>
-        <receiver android:name=".tubtub.BroadcastReceiver.PauseStartReceiver"/>
-        <receiver android:name=".tubtub.BroadcastReceiver.PrevReceiver"/>
+        <receiver android:name="com.kkkkan.youtube.tubtub.BroadcastReceiver.NextReceiver" />
+        <receiver android:name=".tubtub.BroadcastReceiver.PauseStartReceiver" />
+        <receiver android:name=".tubtub.BroadcastReceiver.PrevReceiver" />
+
         <activity
             android:name="com.kkkkan.youtube.tubtub.MainActivity"
-            android:launchMode="singleTop"
             android:configChanges="orientation|screenSize"
+            android:launchMode="singleTop"
             android:resizeableActivity="false"><!--とりあえずマルチウインドウ非対応に-->
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.SEARCH" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
@@ -42,7 +46,7 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
-        <service android:name=".tubtub.MediaPlayerService"/>
+        <service android:name=".tubtub.MediaPlayerService" />
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="bb541db4fab98abcf060b297ca5461bf77a33880" />

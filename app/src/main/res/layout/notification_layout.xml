@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="64dp">
+    android:layout_height="64dp"
+    android:orientation="horizontal">
 
     <ImageView
+        android:id="@+id/video_thumbnail"
         android:layout_width="0dp"
-        android:paddingBottom="1dp"
-        android:paddingTop="1dp"
         android:layout_height="match_parent"
         android:layout_weight="2"
-        android:id="@+id/video_thumbnail" />
+        android:paddingBottom="1dp"
+        android:paddingTop="1dp" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -19,10 +19,10 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/title_view"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:id="@+id/title_view" />
+            android:layout_weight="1" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -31,31 +31,31 @@
             android:orientation="horizontal">
 
             <TextView
+                android:id="@+id/video_duration"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:id="@+id/video_duration"
-                android:layout_gravity="bottom" />
+                android:layout_gravity="bottom"
+                android:layout_weight="1" />
 
             <ImageView
+                android:id="@+id/prev"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/prev"
                 android:padding="3dp"
                 android:src="@drawable/ic_skip_previous_black_24dp" />
 
             <ImageView
+                android:id="@+id/pause_start"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/pause_start"
                 android:padding="3dp" />
 
             <ImageView
+                android:id="@+id/next"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/next"
-                android:src="@drawable/ic_skip_next_black_24dp"
-                android:padding="3dp" />
+                android:padding="3dp"
+                android:src="@drawable/ic_skip_next_black_24dp" />
 
         </LinearLayout>
 
