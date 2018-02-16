@@ -51,30 +51,25 @@ import java.util.ArrayList;
  */
 public class YouTubeSqlDb {
 
-    private static final int DATABASE_VERSION = 5;
-    private static final String DATABASE_NAME = "YouTubeDb.db";
-
     public static final String RECENTLY_WATCHED_TABLE_NAME = "recently_watched_videos";
     public static final String FAVORITES_TABLE_NAME = "favorites_videos";
+    private static final int DATABASE_VERSION = 5;
+    private static final String DATABASE_NAME = "YouTubeDb.db";
     private static final String TAG = "SMEDIC TABLE SQL";
-
-    public enum VIDEOS_TYPE {FAVORITE, RECENTLY_WATCHED}
-
+    //db itself is common even if you create instances of YouTubeDB class many times
+    //db自体は何度YouTubeDBクラスのインスタンスを作っても共通
+    private static YouTubeSqlDb ourInstance = new YouTubeSqlDb();
     private YouTubeDbHelper dbHelper;
 
     private Playlists playlists;
     private Videos recentlyWatchedVideos;
     private Videos favoriteVideos;
 
-    //db itself is common even if you create instances of YouTubeDB class many times
-    //db自体は何度YouTubeDBクラスのインスタンスを作っても共通
-    private static YouTubeSqlDb ourInstance = new YouTubeSqlDb();
+    private YouTubeSqlDb() {
+    }
 
     public static YouTubeSqlDb getInstance() {
         return ourInstance;
-    }
-
-    private YouTubeSqlDb() {
     }
 
     public void init(Context context) {
@@ -108,6 +103,65 @@ public class YouTubeSqlDb {
 
     public Playlists playlists() {
         return playlists;
+    }
+
+    public enum VIDEOS_TYPE {FAVORITE, RECENTLY_WATCHED}
+
+    /**
+     * Inner class that defines Videos table entry
+     */
+    public static abstract class YouTubeVideoEntry implements BaseColumns {
+        public static final String COLUMN_ENTRY_ID = _ID;
+        public static final String COLUMN_VIDEO_ID = "video_id";
+        public static final String COLUMN_TITLE = "title";
+        public static final String COLUMN_DURATION = "duration";
+        public static final String COLUMN_THUMBNAIL_URL = "thumbnail_url";
+        public static final String COLUMN_VIEWS_NUMBER = "views_number";
+
+        public static final String COLUMN_NAME_NULLABLE = "null";
+        public static final String DROP_QUERY_RECENTLY_WATCHED = "DROP TABLE " + RECENTLY_WATCHED_TABLE_NAME;
+        public static final String DROP_QUERY_FAVORITES = "DROP TABLE " + FAVORITES_TABLE_NAME;
+        private static final String DATABASE_RECENTLY_WATCHED_TABLE_CREATE =
+                "CREATE TABLE " + RECENTLY_WATCHED_TABLE_NAME + "(" +
+                        COLUMN_ENTRY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                        COLUMN_VIDEO_ID + " TEXT NOT NULL," +
+                        COLUMN_TITLE + " TEXT NOT NULL," +
+                        COLUMN_DURATION + " TEXT," +
+                        COLUMN_THUMBNAIL_URL + " TEXT," +
+                        COLUMN_VIEWS_NUMBER + " TEXT)";
+        private static final String DATABASE_FAVORITES_TABLE_CREATE =
+                "CREATE TABLE " + FAVORITES_TABLE_NAME + "(" +
+                        COLUMN_ENTRY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                        COLUMN_VIDEO_ID + " TEXT NOT NULL UNIQUE," +
+                        COLUMN_TITLE + " TEXT NOT NULL," +
+                        COLUMN_DURATION + " TEXT," +
+                        COLUMN_THUMBNAIL_URL + " TEXT," +
+                        COLUMN_VIEWS_NUMBER + " TEXT)";
+    }
+
+    /**
+     * Inner class that defines Playlist table entry
+     */
+    public static abstract class YouTubePlaylistEntry implements BaseColumns {
+        public static final String TABLE_NAME = "playlists";
+        public static final String COLUMN_ENTRY_ID = _ID;
+        public static final String COLUMN_PLAYLIST_ID = "playlist_id";
+        public static final String COLUMN_TITLE = "title";
+        public static final String COLUMN_VIDEOS_NUMBER = "videos_number";
+        public static final String COLUMN_STATUS = "status";
+        public static final String COLUMN_THUMBNAIL_URL = "thumbnail_url";
+
+        public static final String COLUMN_NAME_NULLABLE = "null";
+        public static final String DROP_QUERY = "DROP TABLE " + TABLE_NAME;
+        public static final String SELECT_QUERY_ORDER_DESC = "SELECT * FROM " + TABLE_NAME + " ORDER BY " + COLUMN_ENTRY_ID + " DESC";
+        private static final String DATABASE_TABLE_CREATE =
+                "CREATE TABLE " + YouTubePlaylistEntry.TABLE_NAME + "(" +
+                        COLUMN_ENTRY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                        COLUMN_PLAYLIST_ID + " TEXT NOT NULL UNIQUE," +
+                        COLUMN_TITLE + " TEXT NOT NULL," +
+                        COLUMN_VIDEOS_NUMBER + " INTEGER," +
+                        COLUMN_THUMBNAIL_URL + " TEXT," +
+                        COLUMN_STATUS + " TEXT);";
     }
 
     private final class YouTubeDbHelper extends SQLiteOpenHelper {
@@ -197,7 +251,7 @@ public class YouTubeSqlDb {
                         //最近見たものリストのうち一番古いものをとれてればそれを削除
                         c.moveToNext();
                         db.delete(tableName, YouTubeVideoEntry.COLUMN_ENTRY_ID + "=?",
-                                new String[] { c.getString(c.getColumnIndex(YouTubeVideoEntry.COLUMN_ENTRY_ID)) });
+                                new String[]{c.getString(c.getColumnIndex(YouTubeVideoEntry.COLUMN_ENTRY_ID))});
                         //Try to register again in the list.
                         //もう一度リストに登録を試す。
                         result = db.insert(tableName, YouTubeVideoEntry.COLUMN_NAME_NULLABLE, values) > 0;
@@ -309,7 +363,7 @@ public class YouTubeSqlDb {
         public boolean deleteByVideoId(String videoId) {
             return dbHelper.getWritableDatabase().delete(tableName,
                     YouTubeVideoEntry.COLUMN_VIDEO_ID + "=?",
-                    new String[] { videoId }) > 0;
+                    new String[]{videoId}) > 0;
         }
 
         /**
@@ -321,7 +375,7 @@ public class YouTubeSqlDb {
         public boolean deleteByUniqueId(String videoId) {
             return dbHelper.getWritableDatabase().delete(tableName,
                     YouTubeVideoEntry.COLUMN_ENTRY_ID + "=?",
-                    new String[] { videoId }) > 0;
+                    new String[]{videoId}) > 0;
         }
 
         /**
@@ -404,7 +458,7 @@ public class YouTubeSqlDb {
         public boolean delete(String playlistId) {
             return dbHelper.getWritableDatabase().delete(YouTubePlaylistEntry.TABLE_NAME,
                     YouTubePlaylistEntry.COLUMN_PLAYLIST_ID + "=?",
-                    new String[] { playlistId }) > 0;
+                    new String[]{playlistId}) > 0;
         }
 
         /**
@@ -415,67 +469,5 @@ public class YouTubeSqlDb {
         public boolean deleteAll() {
             return dbHelper.getWritableDatabase().delete(YouTubePlaylistEntry.TABLE_NAME, null, null) > 0;
         }
-    }
-
-    /**
-     * Inner class that defines Videos table entry
-     */
-    public static abstract class YouTubeVideoEntry implements BaseColumns {
-        public static final String COLUMN_ENTRY_ID = _ID;
-        public static final String COLUMN_VIDEO_ID = "video_id";
-        public static final String COLUMN_TITLE = "title";
-        public static final String COLUMN_DURATION = "duration";
-        public static final String COLUMN_THUMBNAIL_URL = "thumbnail_url";
-        public static final String COLUMN_VIEWS_NUMBER = "views_number";
-
-        public static final String COLUMN_NAME_NULLABLE = "null";
-
-        private static final String DATABASE_RECENTLY_WATCHED_TABLE_CREATE =
-                "CREATE TABLE " + RECENTLY_WATCHED_TABLE_NAME + "(" +
-                        COLUMN_ENTRY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                        COLUMN_VIDEO_ID + " TEXT NOT NULL," +
-                        COLUMN_TITLE + " TEXT NOT NULL," +
-                        COLUMN_DURATION + " TEXT," +
-                        COLUMN_THUMBNAIL_URL + " TEXT," +
-                        COLUMN_VIEWS_NUMBER + " TEXT)";
-
-        private static final String DATABASE_FAVORITES_TABLE_CREATE =
-                "CREATE TABLE " + FAVORITES_TABLE_NAME + "(" +
-                        COLUMN_ENTRY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                        COLUMN_VIDEO_ID + " TEXT NOT NULL UNIQUE," +
-                        COLUMN_TITLE + " TEXT NOT NULL," +
-                        COLUMN_DURATION + " TEXT," +
-                        COLUMN_THUMBNAIL_URL + " TEXT," +
-                        COLUMN_VIEWS_NUMBER + " TEXT)";
-
-        public static final String DROP_QUERY_RECENTLY_WATCHED = "DROP TABLE " + RECENTLY_WATCHED_TABLE_NAME;
-        public static final String DROP_QUERY_FAVORITES = "DROP TABLE " + FAVORITES_TABLE_NAME;
-    }
-
-    /**
-     * Inner class that defines Playlist table entry
-     */
-    public static abstract class YouTubePlaylistEntry implements BaseColumns {
-        public static final String TABLE_NAME = "playlists";
-        public static final String COLUMN_ENTRY_ID = _ID;
-        public static final String COLUMN_PLAYLIST_ID = "playlist_id";
-        public static final String COLUMN_TITLE = "title";
-        public static final String COLUMN_VIDEOS_NUMBER = "videos_number";
-        public static final String COLUMN_STATUS = "status";
-        public static final String COLUMN_THUMBNAIL_URL = "thumbnail_url";
-
-        public static final String COLUMN_NAME_NULLABLE = "null";
-
-        private static final String DATABASE_TABLE_CREATE =
-                "CREATE TABLE " + YouTubePlaylistEntry.TABLE_NAME + "(" +
-                        COLUMN_ENTRY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                        COLUMN_PLAYLIST_ID + " TEXT NOT NULL UNIQUE," +
-                        COLUMN_TITLE + " TEXT NOT NULL," +
-                        COLUMN_VIDEOS_NUMBER + " INTEGER," +
-                        COLUMN_THUMBNAIL_URL + " TEXT," +
-                        COLUMN_STATUS + " TEXT);";
-
-        public static final String DROP_QUERY = "DROP TABLE " + TABLE_NAME;
-        public static final String SELECT_QUERY_ORDER_DESC = "SELECT * FROM " + TABLE_NAME + " ORDER BY " + COLUMN_ENTRY_ID + " DESC";
     }
 }

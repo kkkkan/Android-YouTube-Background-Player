@@ -97,22 +97,17 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getCredential;
  */
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks,
         OnItemSelected, TitlebarListener, MediaController.MediaPlayerControl, SurfaceHolderListener, LoginHandler, CurrentPositionChanger {
-    public static Handler mainHandler = new Handler();
-    private MediaPlayerService service;
-
-    private final Context mainContext = this;
-
+    public static final String PREF_ACCOUNT_NAME = "accountName";
+    static final int REQUEST_ACCOUNT_PICKER = 1000;
+    static final int REQUEST_CODE_TOKEN_AUTH = 1006;
     private static final String TAG = "MainActivity";
     private static final String LandscapeFragmentTAG = "LandscapeFragmentTAG";
     private static final String PortraitFragmentTAG = "PortraitFragmentTAG";
 
     private static final int PERMISSIONS = 1;
-    public static final String PREF_ACCOUNT_NAME = "accountName";
-
-
-    static final int REQUEST_ACCOUNT_PICKER = 1000;
-    static final int REQUEST_CODE_TOKEN_AUTH = 1006;
-
+    public static Handler mainHandler = new Handler();
+    private final Context mainContext = this;
+    private MediaPlayerService service;
     private MediaController mMediaController;
     private ProgressDialog mProgressDialog;
 
@@ -804,10 +799,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     static private class LoginTask extends AsyncTask<Void, Void, String> {
         private LoginTaskListener loginTaskListener;
 
-        interface LoginTaskListener {
-            String loginListener();
-        }
-
         LoginTask(LoginTaskListener loginTaskListener) {
             this.loginTaskListener = loginTaskListener;
         }
@@ -821,6 +812,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         protected void onPostExecute(String token) {
             //tokenの文字列の表示
             Log.i(TAG, "Access token retrieved:" + token);
+        }
+
+        interface LoginTaskListener {
+            String loginListener();
         }
     }
 }

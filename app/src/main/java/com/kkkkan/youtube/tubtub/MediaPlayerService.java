@@ -69,23 +69,74 @@ import static com.kkkkan.youtube.tubtub.utils.Settings.RepeatPlaylist.ON;
 
 public class MediaPlayerService extends Service implements MediaController.MediaPlayerControl {
     static final private String TAG = "MediaPlayerService";
+    static private int notificationId = 1;
     private final IBinder binder = new MediaPlayerBinder();
     private final MediaPlayer mediaPlayer = new MediaPlayer();
+    private final MutableLiveData<LoadingState> loadingState = new MutableLiveData<>();
+    private final MutableLiveData<String> videoTitle = new MutableLiveData<>();
     public RemoteViews mRemoteViews;
     public NotificationCompat.Builder mNotificationCompatBuilder;
     public NotificationManagerCompat mNotificationManagerCompat;
-    static private int notificationId = 1;
     private boolean playlistSelectedCancelFlag = false;
     private SurfaceHolder mHolder;
+    private String videoUrl;
+    private BroadcastReceiver pauseStartBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "pauseStartBroadcastReceiver");
+            //違うビルドタイプのAPKが同一端末で動いていたときに正しいAPKのみ反応できるようハンドリングする。
+            //Broadcast発し先で、ビルドタイプごとに異なるフィルターとなる文字列をインテントに入れてるはず
+            String filterKey = context.getString(R.string.broadcast_receiver_filter_key);
+            String filter = intent.getStringExtra(filterKey);
+            if (filter == null || !filter.equals(context.getString(R.string.broadcast_receiver_filter))) {
+                return;
+            }
+            if (!mediaPlayer.isPlaying()) {
+                mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
+                //mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
+                startForeground(notificationId, mNotificationCompatBuilder.build());
+                mediaPlayer.start();
+            } else {
+                mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
+                mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
+                stopForeground(false);
+                mediaPlayer.pause();
+            }
 
-    public enum LoadingState {
-        StartLoading,
-        StopLoading,
-        Error
-    }
+        }
+    };
+    private BroadcastReceiver prevBroadcastReceiver = new BroadcastReceiver() {
 
-    private final MutableLiveData<LoadingState> loadingState = new MutableLiveData<>();
-    private final MutableLiveData<String> videoTitle = new MutableLiveData<>();
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "prevBroadcastReceiver");
+            //違うビルドタイプのAPKが同一端末で動いていたときに正しいAPKのみ反応できるようハンドリングする。
+            //Broadcast発し先で、ビルドタイプごとに異なるフィルターとなる文字列をインテントに入れてるはず
+            String filterKey = context.getString(R.string.broadcast_receiver_filter_key);
+            String filter = intent.getStringExtra(filterKey);
+            if (filter == null || !filter.equals(context.getString(R.string.broadcast_receiver_filter))) {
+                return;
+            }
+            int currentVideoIndex = PlaylistsCache.Instance.getCurrentVideoIndex();
+            playlistHandle((currentVideoIndex - 1 + PlaylistsCache.Instance.getPlayingListSize()) % PlaylistsCache.Instance.getPlayingListSize());
+        }
+
+    };
+    private BroadcastReceiver nextBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "nextStartBroadcastReceiver");
+            //違うビルドタイプのAPKが同一端末で動いていたときに正しいAPKのみ反応できるようハンドリングする。
+            //Broadcast発し先で、ビルドタイプごとに異なるフィルターとなる文字列をインテントに入れてるはず
+            String filterKey = context.getString(R.string.broadcast_receiver_filter_key);
+            String filter = intent.getStringExtra(filterKey);
+            if (filter == null || !filter.equals(context.getString(R.string.broadcast_receiver_filter))) {
+                return;
+            }
+            int currentVideoIndex = PlaylistsCache.Instance.getCurrentVideoIndex();
+            playlistHandle((currentVideoIndex + 1) % PlaylistsCache.Instance.getPlayingListSize());
+        }
+    };
 
     public MutableLiveData<LoadingState> getLoadingState() {
         return loadingState;
@@ -105,15 +156,6 @@ public class MediaPlayerService extends Service implements MediaController.Media
 
     private void setStateError() {
         loadingState.setValue(LoadingState.Error);
-    }
-
-    private String videoUrl;
-
-
-    public class MediaPlayerBinder extends Binder {
-        public MediaPlayerService getService() {
-            return MediaPlayerService.this;
-        }
     }
 
     public void setPlaylistSelectedCancelFlag(boolean playlistSelectedCancelFlag) {
@@ -172,18 +214,27 @@ public class MediaPlayerService extends Service implements MediaController.Media
         //pause_start Touch pause / start
         //pause_startタッチでpause/start
         intent = new Intent(this, PauseStartReceiver.class);
+        //違うビルドタイプのAPKが同一端末で動いていたときに正しいAPKのみ反応できるようBroadcastReceiverでハンドリングする。
+        // その判断のための情報をintentに追加。
+        intent.putExtra(getString(R.string.broadcast_receiver_filter_key), getString(R.string.broadcast_receiver_filter));
         pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mRemoteViews.setOnClickPendingIntent(R.id.pause_start, pendingIntent);
 
         //Go to the previous video with prev touch
         //prevタッチで前のビデオに行く
         intent = new Intent(this, PrevReceiver.class);
+        //違うビルドタイプのAPKが同一端末で動いていたときに正しいAPKのみ反応できるようBroadcastReceiverでハンドリングする。
+        // その判断のための情報をintentに追加。
+        intent.putExtra(getString(R.string.broadcast_receiver_filter_key), getString(R.string.broadcast_receiver_filter));
         pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mRemoteViews.setOnClickPendingIntent(R.id.prev, pendingIntent);
 
         //Go to next video with next touch
         //nextタッチで次のビデオに行く
         intent = new Intent(this, NextReceiver.class);
+        //違うビルドタイプのAPKが同一端末で動いていたときに正しいAPKのみ反応できるようBroadcastReceiverでハンドリングする。
+        // その判断のための情報をintentに追加。
+        intent.putExtra(getString(R.string.broadcast_receiver_filter_key), getString(R.string.broadcast_receiver_filter));
         pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mRemoteViews.setOnClickPendingIntent(R.id.next, pendingIntent);
 
@@ -325,47 +376,6 @@ public class MediaPlayerService extends Service implements MediaController.Media
         Log.d(TAG, "onDestroy()");
         stopSelf();
     }
-
-    private BroadcastReceiver pauseStartBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "pauseStartBroadcastReceiver");
-            if (!mediaPlayer.isPlaying()) {
-                mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_pause_black_24dp);
-                //mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
-                startForeground(notificationId, mNotificationCompatBuilder.build());
-                mediaPlayer.start();
-            } else {
-                mRemoteViews.setImageViewResource(R.id.pause_start, R.drawable.ic_play_arrow_black_24dp);
-                mNotificationManagerCompat.notify(notificationId, mNotificationCompatBuilder.build());
-                stopForeground(false);
-                mediaPlayer.pause();
-            }
-
-        }
-    };
-
-
-    private BroadcastReceiver prevBroadcastReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "prevBroadcastReceiver");
-            int currentVideoIndex = PlaylistsCache.Instance.getCurrentVideoIndex();
-            playlistHandle((currentVideoIndex - 1 + PlaylistsCache.Instance.getPlayingListSize()) % PlaylistsCache.Instance.getPlayingListSize());
-        }
-
-    };
-
-    private BroadcastReceiver nextBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "nextStartBroadcastReceiver");
-            int currentVideoIndex = PlaylistsCache.Instance.getCurrentVideoIndex();
-            playlistHandle((currentVideoIndex + 1) % PlaylistsCache.Instance.getPlayingListSize());
-        }
-    };
-
 
     /**
      * 検索画面や、プレイリスト詳細表示画面や履歴などでビデオを選んで再生始めた時に呼ばれるメゾッド。
@@ -701,16 +711,18 @@ public class MediaPlayerService extends Service implements MediaController.Media
         return 0;
     }
 
+    public enum LoadingState {
+        StartLoading,
+        StopLoading,
+        Error
+    }
+
     /**
      * YouTubeExtractor()を使うためのstatic innerクラス
      * そのままYouTubeExtractor()をnew して使うとメモリーリークのwarningが出るためインナークラスにする。
      */
     static private class YouTubeExtractorTask extends YouTubeExtractor {
         private YouTubeExtractorTaskCallback callback;
-
-        interface YouTubeExtractorTaskCallback {
-            void onExtractionCompleteListener(SparseArray<YtFile> ytFiles, VideoMeta videoMeta);
-        }
 
         public YouTubeExtractorTask(Context context, YouTubeExtractorTaskCallback callback) {
             super(context);
@@ -720,6 +732,16 @@ public class MediaPlayerService extends Service implements MediaController.Media
         @Override
         protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
             callback.onExtractionCompleteListener(ytFiles, videoMeta);
+        }
+
+        interface YouTubeExtractorTaskCallback {
+            void onExtractionCompleteListener(SparseArray<YtFile> ytFiles, VideoMeta videoMeta);
+        }
+    }
+
+    public class MediaPlayerBinder extends Binder {
+        public MediaPlayerService getService() {
+            return MediaPlayerService.this;
         }
     }
 

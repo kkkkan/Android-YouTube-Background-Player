@@ -42,8 +42,8 @@ import java.util.List;
  * limitations under the License.
  */
 public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAdapter.ViewHolder> {
-    private Context context;
     private final List<YouTubeVideo> list;
+    private Context context;
     private Boolean[] itemChecked;
     private ItemEventsListener<YouTubeVideo> itemEventsListener;
 
@@ -142,6 +142,9 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
         return (null != list ? list.size() : 0);
     }
 
+    public void setOnItemEventsListener(ItemEventsListener<YouTubeVideo> listener) {
+        itemEventsListener = listener;
+    }
 
     class ViewHolder extends RecyclerView.ViewHolder {
         ImageView thumbnail;
@@ -179,9 +182,5 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
                 }
             });
         }
-    }
-
-    public void setOnItemEventsListener(ItemEventsListener<YouTubeVideo> listener) {
-        itemEventsListener = listener;
     }
 }

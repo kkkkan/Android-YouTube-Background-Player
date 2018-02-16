@@ -34,15 +34,15 @@ public class YTApplication extends Application {
 
     private static Context mContext;
 
+    public static Context getAppContext() {
+        return mContext;
+    }
+
     public void onCreate() {
         super.onCreate();
         Fabric.with(this, new Crashlytics());
         mContext = getApplicationContext();
         YouTubeSqlDb.getInstance().init(this);
-    }
-
-    public static Context getAppContext() {
-        return mContext;
     }
 
 }

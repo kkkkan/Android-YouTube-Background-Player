@@ -42,12 +42,12 @@ import java.util.List;
 
 public class TabLayoutFragment extends Fragment implements OnFavoritesSelected, PlaylistsAdapter.OnDetailClickListener {
     final private static String TAG = "TabLayoutFragment";
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
     private final int favoriteTabNum = 0;
     private final int recentlyTabNum = 1;
     private final int searchTabNum = 2;
     private final int playlistTabNum = 3;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
     private int[] tabIcons = {
             R.drawable.ic_action_heart,
             R.drawable.ic_recently_wached,

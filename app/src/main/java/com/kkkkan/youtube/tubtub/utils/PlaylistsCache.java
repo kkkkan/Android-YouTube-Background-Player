@@ -34,9 +34,19 @@ import java.util.List;
  */
 
 public class PlaylistsCache {
-    private final String TAG = "PlaylistsCash";
     public static int tag = 0;
     static public PlaylistsCache Instance = new PlaylistsCache();
+    private final String TAG = "PlaylistsCash";
+    //回転後、Activityのfinish後も検索内容覚えておくためのList
+    //内部的にはPairでキャッシュを取っておくことはしない
+    private List<YouTubeVideo> searchResultsVideoList = new ArrayList<>();
+    private List<YouTubePlaylist> searchResultsPlaylistList = new ArrayList<>();
+    //通常の並びに並んでいるリスト
+    private List<YouTubeVideo> normalList = new ArrayList<>();
+    //shuffle再生用のランダムに並んでいるリスト
+    private List<YouTubeVideo> shuffleList = new ArrayList<>();
+    //NowPlayingListFragmentで今再生中のビデオのみ色を変えるためのMutableLiveData
+    private MutableLiveData<Integer> mutableCurrentVideoIndex = new MutableLiveData<>();
 
     private PlaylistsCache() {
         //PlaylistCasheクラスで、設定の再生モードがシャッフルか否か監視し、シャッフルのON/OFFが切り替わるたびに
@@ -74,22 +84,6 @@ public class PlaylistsCache {
         });
     }
 
-    //回転後、Activityのfinish後も検索内容覚えておくためのList
-    //内部的にはPairでキャッシュを取っておくことはしない
-    private List<YouTubeVideo> searchResultsVideoList = new ArrayList<>();
-    private List<YouTubePlaylist> searchResultsPlaylistList = new ArrayList<>();
-
-    /**
-     * 検索結果はvideoとplaylist一方だけが変わることは無いのでsetterはPairの形のもののみ
-     *
-     * @param searchResultsList
-     */
-    public void setSearchResultsList(Pair<List<YouTubeVideo>, List<YouTubePlaylist>> searchResultsList) {
-        //渡した先でリストの中身をいじってもキャッシュに影響でないように必ず新しいListのインスタンスを作って保持
-        searchResultsVideoList = new ArrayList<>(searchResultsList.first);
-        searchResultsPlaylistList = new ArrayList<>(searchResultsList.second);
-    }
-
     /**
      * Pairの形で返すgetter
      *
@@ -103,27 +97,26 @@ public class PlaylistsCache {
         return new Pair<>(videoList, playlistList);
     }
 
+    //NowPlayingListFragment用の、今再生しているplaylistとpositionを入れとくためのList
+    //private List<YouTubeVideo> nowPlaylist;
+
+    /**
+     * 検索結果はvideoとplaylist一方だけが変わることは無いのでsetterはPairの形のもののみ
+     *
+     * @param searchResultsList
+     */
+    public void setSearchResultsList(Pair<List<YouTubeVideo>, List<YouTubePlaylist>> searchResultsList) {
+        //渡した先でリストの中身をいじってもキャッシュに影響でないように必ず新しいListのインスタンスを作って保持
+        searchResultsVideoList = new ArrayList<>(searchResultsList.first);
+        searchResultsPlaylistList = new ArrayList<>(searchResultsList.second);
+    }
+
     public List<YouTubeVideo> getSearchResultsVideoList() {
         return new ArrayList<>(searchResultsVideoList);
     }
 
     public List<YouTubePlaylist> getSearchResultsPlaylistList() {
         return new ArrayList<>(searchResultsPlaylistList);
-    }
-
-    //NowPlayingListFragment用の、今再生しているplaylistとpositionを入れとくためのList
-    //private List<YouTubeVideo> nowPlaylist;
-
-    //通常の並びに並んでいるリスト
-    private List<YouTubeVideo> normalList = new ArrayList<>();
-    //shuffle再生用のランダムに並んでいるリスト
-    private List<YouTubeVideo> shuffleList = new ArrayList<>();
-    //NowPlayingListFragmentで今再生中のビデオのみ色を変えるためのMutableLiveData
-    private MutableLiveData<Integer> mutableCurrentVideoIndex = new MutableLiveData<>();
-
-
-    public void setCurrentVideoIndex(int currentVideoIndex) {
-        mutableCurrentVideoIndex.setValue(currentVideoIndex);
     }
 
     public void setNewList(List<YouTubeVideo> newNormalList) {
@@ -161,6 +154,9 @@ public class PlaylistsCache {
         return mutableCurrentVideoIndex.getValue() != null ? mutableCurrentVideoIndex.getValue() : 0;
     }
 
+    public void setCurrentVideoIndex(int currentVideoIndex) {
+        mutableCurrentVideoIndex.setValue(currentVideoIndex);
+    }
 
     public MutableLiveData<Integer> getMutableCurrentVideoIndex() {
         return mutableCurrentVideoIndex;

@@ -88,6 +88,10 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
         return new FavoritesFragment();
     }
 
+    static public void addToFavoritesList(YouTubeVideo video) {
+        YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).create(video);
+    }
+
     @Override
     public void onAttach(Context context) {
         Log.d(TAG, "onAttach");
@@ -167,11 +171,6 @@ public class FavoritesFragment extends BaseFragment implements ItemEventsListene
         super.onDetach();
         this.itemSelected = null;
         this.context = null;
-    }
-
-
-    static public void addToFavoritesList(YouTubeVideo video) {
-        YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.FAVORITE).create(video);
     }
 
     public void removeFromFavorites(YouTubeVideo video) {

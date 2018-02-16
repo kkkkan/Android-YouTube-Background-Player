@@ -40,10 +40,47 @@ import java.util.HashMap;
 public class VideoQualities {
     final static public String VideoQualityPreferenceFileName = "VideoQualityPreferenceFileName";
     final static public String VideoQualityPreferenceKey = "VideoQualityPreferenceKey";
+    final static public int videoQualityNormal = 2;
     final static private int videoQualitySuperLow = 0;
     final static private int videoQualityLow = 1;
-    final static public int videoQualityNormal = 2;
     final static private int videoQualityHight = 3;
+    final static private Integer[] videoQualityTagUnder144 = {
+            17,//17:3gp/144p
+            91//91:Live Stream/144p
+    };
+    final static private Integer[] videoQualityTagUnder240 = {
+            36,//36:3gp/240p
+            92, //92:Live Stream/240p
+
+            17,//17:3gp/144p
+            91//91:Live Stream/144p
+    };
+    final static private Integer[] videoQualityTagUnder360 = {
+            18,//18:Non-DASH/MP4/360p
+            43,//43:Non-DASH/WEBM/360p
+            93,//93:Live Stream/360p
+
+            36,//36:MP3/240p
+            92, //92:Live Stream/240p
+
+            17,//17:MP3/144p
+            91//91:Live Stream/144p
+    };
+    final static private Integer[] videoQualityTagUnder720 = {
+            22,//22:Non-DASH/MP4/720p
+            95,//95:Live Stream/720p
+
+            18,//18:Non-DASH/MP4/360p
+            43,//43:Non-DASH/WEBM/360p
+            93,//93:Live Stream/360p
+
+            36,//36:3gp/240p
+            92, //92:Live Stream/240p
+
+            17,//17:3gp/144p
+            91//91:Live Stream/144p
+
+    };
 
     static public CharSequence[] getVideoQualityChoices() {
         CharSequence[] qualityChoices = new CharSequence[4];
@@ -62,45 +99,4 @@ public class VideoQualities {
         tagMap.put(videoQualityHight, videoQualityTagUnder720);
         return tagMap;
     }
-
-    final static private Integer[] videoQualityTagUnder144 = {
-            17,//17:3gp/144p
-            91//91:Live Stream/144p
-    };
-
-    final static private Integer[] videoQualityTagUnder240 = {
-            36,//36:3gp/240p
-            92, //92:Live Stream/240p
-
-            17,//17:3gp/144p
-            91//91:Live Stream/144p
-    };
-
-    final static private Integer[] videoQualityTagUnder360 = {
-            18,//18:Non-DASH/MP4/360p
-            43,//43:Non-DASH/WEBM/360p
-            93,//93:Live Stream/360p
-
-            36,//36:MP3/240p
-            92, //92:Live Stream/240p
-
-            17,//17:MP3/144p
-            91//91:Live Stream/144p
-    };
-
-    final static private Integer[] videoQualityTagUnder720 = {
-            22,//22:Non-DASH/MP4/720p
-            95,//95:Live Stream/720p
-
-            18,//18:Non-DASH/MP4/360p
-            43,//43:Non-DASH/WEBM/360p
-            93,//93:Live Stream/360p
-
-            36,//36:3gp/240p
-            92, //92:Live Stream/240p
-
-            17,//17:3gp/144p
-            91//91:Live Stream/144p
-
-    };
 }

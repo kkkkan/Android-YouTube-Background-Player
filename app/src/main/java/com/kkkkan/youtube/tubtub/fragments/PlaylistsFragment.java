@@ -90,10 +90,6 @@ public class PlaylistsFragment extends BaseFragment implements
     private OnItemSelected itemSelected;
     private Handler mainHandler;
 
-    public PlaylistsAdapter getPlaylistsAdapter() {
-        return playlistsAdapter;
-    }
-
     public PlaylistsFragment() {
         // Required empty public constructor
     }
@@ -102,6 +98,9 @@ public class PlaylistsFragment extends BaseFragment implements
         return new PlaylistsFragment();
     }
 
+    public PlaylistsAdapter getPlaylistsAdapter() {
+        return playlistsAdapter;
+    }
 
     @Override
     public void onAttach(Context context) {

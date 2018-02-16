@@ -54,6 +54,10 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
     private MainViewModel viewModel;
 
 
+    public LandscapeFragment() {
+        // Required empty public constructor
+    }
+
     /**
      * When making a new instance of LandscapeFragment make sure to make with this mezzo
      * <p>
@@ -67,10 +71,6 @@ public class LandscapeFragment extends Fragment implements SurfaceHolder.Callbac
         fragment.titlebarListener = titlebarListener;
         fragment.viewModel = viewModel;
         return fragment;
-    }
-
-    public LandscapeFragment() {
-        // Required empty public constructor
     }
 
     @Override

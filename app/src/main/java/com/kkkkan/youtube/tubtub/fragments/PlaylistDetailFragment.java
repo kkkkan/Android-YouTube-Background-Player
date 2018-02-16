@@ -78,8 +78,9 @@ import java.util.List;
 public class PlaylistDetailFragment extends BaseFragment implements ItemEventsListener<YouTubeVideo> {
 
     private static final String TAG = "PlaylistDetailFragment";
-    private RecyclerView detailFoundListView;
     static private ArrayList<YouTubeVideo> playlistDetailList;
+    final private Handler mainHandler = ((MainActivity) getActivity()).mainHandler;
+    private RecyclerView detailFoundListView;
     private PlaylistDetailAdapter detailListAdapter;
     private Context context;
     private OnItemSelected itemSelected;
@@ -88,7 +89,6 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
     private SwipeRefreshLayout swipeToRefresh;
     private YouTubePlaylist playlist;
     private int deleteVideoIndex;
-    final private Handler mainHandler = ((MainActivity) getActivity()).mainHandler;
     private ProgressDialog progressDialog;
 
     private String playlistTitle;

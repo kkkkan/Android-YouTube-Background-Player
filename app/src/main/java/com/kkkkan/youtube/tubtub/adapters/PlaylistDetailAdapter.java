@@ -40,8 +40,8 @@ import java.util.List;
 public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAdapter.ViewHolder> {
 
     private static final String TAG = "PlaylistDetailAdapter";
-    private Context context;
     private final List<YouTubeVideo> list;
+    private Context context;
     private boolean[] itemChecked;
     private ItemEventsListener<YouTubeVideo> itemEventsListener;
 
@@ -136,6 +136,9 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
         return (null != list ? list.size() : 0);
     }
 
+    public void setOnItemEventsListener(ItemEventsListener<YouTubeVideo> listener) {
+        itemEventsListener = listener;
+    }
 
     class ViewHolder extends RecyclerView.ViewHolder {
         ImageView thumbnail;
@@ -156,10 +159,6 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
             shareButton = (ImageView) itemView.findViewById(R.id.shareButton);
             DeleteButton = (ImageView) itemView.findViewById(R.id.musicDeleteButton);
         }
-    }
-
-    public void setOnItemEventsListener(ItemEventsListener<YouTubeVideo> listener) {
-        itemEventsListener = listener;
     }
 
 }

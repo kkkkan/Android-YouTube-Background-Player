@@ -113,6 +113,10 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
     //動画タイトル用
     private TextView titleView;
 
+    public PortraitFragment() {
+        // Required empty public constructor
+    }
+
     /**
      * When making a new instance of PortraitFragment make sure to make with this mezzo
      * <p>
@@ -127,10 +131,6 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
         fragment.titlebarListener = titlebarListener;
         fragment.viewModel = viewModel;
         return fragment;
-    }
-
-    public PortraitFragment() {
-        // Required empty public constructor
     }
 
     @Override

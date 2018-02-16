@@ -37,16 +37,11 @@ import static com.kkkkan.youtube.tubtub.utils.Auth.SCOPES;
  */
 public class YouTubeSingleton {
 
+    private static final String TAG = "YouTubeSingleton";
     private static YouTube youTube;
     private static YouTube youTubeWithCredentials;
     private static GoogleAccountCredential credential;
-    private static final String TAG = "YouTubeSingleton";
-
     private static YouTubeSingleton ourInstance = new YouTubeSingleton();
-
-    public static YouTubeSingleton getInstance() {
-        return ourInstance;
-    }
 
     private YouTubeSingleton() {
 
@@ -70,6 +65,10 @@ public class YouTubeSingleton {
 
 
         Log.d(TAG, "googleAccount!");
+    }
+
+    public static YouTubeSingleton getInstance() {
+        return ourInstance;
     }
 
     public static YouTube getYouTube() {

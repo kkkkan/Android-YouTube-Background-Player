@@ -84,6 +84,7 @@ import java.util.List;
 
 public class SearchFragment extends BaseFragment {
     private static final String TAG = "SearchFragment";
+    private final int tag = PlaylistsCache.tag;
     private RecyclerView videosFoundListView;
     private List<YouTubeVideo> searchResultsVideoList;
     private List<YouTubePlaylist> searchResultsPlaylistList;
@@ -95,9 +96,80 @@ public class SearchFragment extends BaseFragment {
     private OnFavoritesSelected onFavoritesSelected;
     private RadioGroup radioGroup;
     private ProgressDialog progressDialog;
+    /**
+     * videoの検索結果をクリックしたときの動きのためのItemEventsListener
+     */
+    private ItemEventsListener<YouTubeVideo> videoItemEventsListener = new ItemEventsListener<YouTubeVideo>() {
+        @Override
+        public void onShareClicked(String itemId) {
+            share(Config.SHARE_VIDEO_URL + itemId);
+        }
 
+        @Override
+        public void onFavoriteClicked(YouTubeVideo video, boolean isChecked) {
+            onFavoritesSelected.onFavoritesSelected(video, isChecked); // pass event to MainActivity
+        }
 
-    private final int tag = PlaylistsCache.tag;
+        @Override
+        public void onAddClicked(YouTubeVideo video) {
+            onFavoritesSelected.onAddSelected(video); // pass event to MainActivity
+        }
+
+        @Override
+        public void onItemClick(YouTubeVideo video) {
+            //Recently added lists are playlistselected
+            //最近見たリスト追加はplaylistselectedでやる！
+            itemSelected.onPlaylistSelected(searchResultsVideoList, searchResultsVideoList.indexOf(video));
+        }
+
+        @Override
+        public void onDeleteClicked(YouTubeVideo video) {
+
+        }
+
+        @Override
+        public void onDeleteClicked(YouTubePlaylist playlist) {
+
+        }
+    };
+    /**
+     * playlistの検索結果をクリックしたときの動きのためのItemEventsListener
+     */
+    private ItemEventsListener<YouTubePlaylist> playlistItemEventsListener = new ItemEventsListener<YouTubePlaylist>() {
+        @Override
+        public void onShareClicked(String itemId) {
+            share(Config.SHARE_PLAYLIST_URL + itemId);
+        }
+
+        @Override
+        public void onFavoriteClicked(YouTubeVideo video, boolean isChecked) {
+
+        }
+
+        @Override
+        public void onAddClicked(YouTubeVideo video) {
+
+        }
+
+        @Override
+        public void onItemClick(YouTubePlaylist playlist) {
+            //results are in onVideosReceived callback method
+            Log.d(TAG, "onItemClick");
+            String id = playlist.getId();
+            Log.d(TAG, "PlaylistsFragment-onItemClicked-id:" + id);
+            acquirePlaylistVideos(playlist);
+        }
+
+        @Override
+        public void onDeleteClicked(YouTubeVideo video) {
+
+        }
+
+        @Override
+        public void onDeleteClicked(YouTubePlaylist playlist) {
+
+        }
+    };
 
     public SearchFragment() {
         // Required empty public constructor
@@ -204,7 +276,6 @@ public class SearchFragment extends BaseFragment {
         v.findViewById(R.id.swipe_to_refresh).setEnabled(false);
         return v;
     }
-
 
     @Override
     public void onResume() {
@@ -345,82 +416,6 @@ public class SearchFragment extends BaseFragment {
             progressDialog.hide();
         }
     }
-
-    /**
-     * videoの検索結果をクリックしたときの動きのためのItemEventsListener
-     */
-    private ItemEventsListener<YouTubeVideo> videoItemEventsListener = new ItemEventsListener<YouTubeVideo>() {
-        @Override
-        public void onShareClicked(String itemId) {
-            share(Config.SHARE_VIDEO_URL + itemId);
-        }
-
-        @Override
-        public void onFavoriteClicked(YouTubeVideo video, boolean isChecked) {
-            onFavoritesSelected.onFavoritesSelected(video, isChecked); // pass event to MainActivity
-        }
-
-        @Override
-        public void onAddClicked(YouTubeVideo video) {
-            onFavoritesSelected.onAddSelected(video); // pass event to MainActivity
-        }
-
-        @Override
-        public void onItemClick(YouTubeVideo video) {
-            //Recently added lists are playlistselected
-            //最近見たリスト追加はplaylistselectedでやる！
-            itemSelected.onPlaylistSelected(searchResultsVideoList, searchResultsVideoList.indexOf(video));
-        }
-
-        @Override
-        public void onDeleteClicked(YouTubeVideo video) {
-
-        }
-
-        @Override
-        public void onDeleteClicked(YouTubePlaylist playlist) {
-
-        }
-    };
-
-    /**
-     * playlistの検索結果をクリックしたときの動きのためのItemEventsListener
-     */
-    private ItemEventsListener<YouTubePlaylist> playlistItemEventsListener = new ItemEventsListener<YouTubePlaylist>() {
-        @Override
-        public void onShareClicked(String itemId) {
-            share(Config.SHARE_PLAYLIST_URL + itemId);
-        }
-
-        @Override
-        public void onFavoriteClicked(YouTubeVideo video, boolean isChecked) {
-
-        }
-
-        @Override
-        public void onAddClicked(YouTubeVideo video) {
-
-        }
-
-        @Override
-        public void onItemClick(YouTubePlaylist playlist) {
-            //results are in onVideosReceived callback method
-            Log.d(TAG, "onItemClick");
-            String id = playlist.getId();
-            Log.d(TAG, "PlaylistsFragment-onItemClicked-id:" + id);
-            acquirePlaylistVideos(playlist);
-        }
-
-        @Override
-        public void onDeleteClicked(YouTubeVideo video) {
-
-        }
-
-        @Override
-        public void onDeleteClicked(YouTubePlaylist playlist) {
-
-        }
-    };
 
 
 }

@@ -56,8 +56,8 @@ import java.util.List;
  */
 public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder> {
 
-    private Context context;
     private final List<YouTubeVideo> list;
+    private Context context;
     private Boolean[] itemChecked;
     private ItemEventsListener<YouTubeVideo> itemEventsListener;
 
@@ -144,6 +144,9 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
         return (null != list ? list.size() : 0);
     }
 
+    public void setOnItemEventsListener(ItemEventsListener<YouTubeVideo> listener) {
+        itemEventsListener = listener;
+    }
 
     class ViewHolder extends RecyclerView.ViewHolder {
         ImageView thumbnail;
@@ -164,9 +167,5 @@ public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder
             shareButton = (ImageView) itemView.findViewById(R.id.shareButton);
             addButton = (ImageView) itemView.findViewById(R.id.PlaylistAddButton);
         }
-    }
-
-    public void setOnItemEventsListener(ItemEventsListener<YouTubeVideo> listener) {
-        itemEventsListener = listener;
     }
 }

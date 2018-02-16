@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">BG player</string>
+    <string name="broadcast_receiver_filter_key">BGPlayerBroadcastReceiverFilterKey</string>
+    <string name="broadcast_receiver_filter">BGPlayer</string>
     <string name="action_about">About me</string>
     <string name="action_color_picker">Color picker</string>
     <string name="favorite_watched_tab">Recently watched</string>

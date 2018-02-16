@@ -52,6 +52,12 @@ public class Settings {
         return shuffleMutableLiveData.getValue();
     }
 
+    public void setShuffle(Shuffle shuffle) {
+        //どこから呼ばれてもいいようにpostにする
+        //->postにしたら遅すぎてUI表示との齟齬が生まれてしまったのでsetに変更
+        shuffleMutableLiveData.setValue(shuffle);
+    }
+
     public MutableLiveData<Shuffle> getShuffleMutableLiveData() {
         return shuffleMutableLiveData;
     }
@@ -60,26 +66,20 @@ public class Settings {
         return screenLock;
     }
 
-    public RepeatOne getRepeatOne() {
-        return repeatOne;
-    }
-
-    public RepeatPlaylist getRepeatPlaylist() {
-        return repeatPlaylist;
-    }
-
     public void setScreenLock(ScreenLock screenLock) {
         this.screenLock = screenLock;
     }
 
-    public void setShuffle(Shuffle shuffle) {
-        //どこから呼ばれてもいいようにpostにする
-        //->postにしたら遅すぎてUI表示との齟齬が生まれてしまったのでsetに変更
-        shuffleMutableLiveData.setValue(shuffle);
+    public RepeatOne getRepeatOne() {
+        return repeatOne;
     }
 
     public void setRepeatOne(RepeatOne repeatOne) {
         this.repeatOne = repeatOne;
+    }
+
+    public RepeatPlaylist getRepeatPlaylist() {
+        return repeatPlaylist;
     }
 
     public void setRepeatPlaylist(RepeatPlaylist repeatPlaylist) {

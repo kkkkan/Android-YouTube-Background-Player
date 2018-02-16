@@ -37,18 +37,11 @@ import java.util.List;
 
 public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.ViewHolder> {
     private final static String TAG_NAME = "PlaylistsAdapter";
-
+    final private boolean deleteIconShow;
     private Context context;
     private List<YouTubePlaylist> playlists;
     private ItemEventsListener<YouTubePlaylist> itemEventsListener;
     private OnDetailClickListener onDetailClickListener;
-
-    final private boolean deleteIconShow;
-
-
-    public interface OnDetailClickListener {
-        void onDetailClick(YouTubePlaylist playlist);
-    }
 
 
     public PlaylistsAdapter(Context context, List<YouTubePlaylist> playlists) {
@@ -57,6 +50,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
         this.playlists = playlists;
         deleteIconShow = true;
     }
+
 
     /**
      * ゴミ箱アイコンを見せるか見せないか指定してインスタンスを作るコンストラクタ。
@@ -155,6 +149,18 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
         return (null != playlists ? playlists.size() : 0);
     }
 
+    public void setOnItemEventsListener(ItemEventsListener<YouTubePlaylist> listener) {
+        itemEventsListener = listener;
+    }
+
+    public void setOnDetailClickListener(OnDetailClickListener onDetailClickListener) {
+        this.onDetailClickListener = onDetailClickListener;
+    }
+
+
+    public interface OnDetailClickListener {
+        void onDetailClick(YouTubePlaylist playlist);
+    }
 
     class ViewHolder extends RecyclerView.ViewHolder {
         ImageView thumbnail;
@@ -175,15 +181,6 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             playlistDetail = (ImageView) itemView.findViewById(R.id.detail_button);
             deleteButton = (ImageView) itemView.findViewById(R.id.delete_button);
         }
-    }
-
-
-    public void setOnItemEventsListener(ItemEventsListener<YouTubePlaylist> listener) {
-        itemEventsListener = listener;
-    }
-
-    public void setOnDetailClickListener(OnDetailClickListener onDetailClickListener) {
-        this.onDetailClickListener = onDetailClickListener;
     }
 
 }
