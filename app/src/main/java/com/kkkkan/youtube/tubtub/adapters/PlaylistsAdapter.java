@@ -92,7 +92,8 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
         if (playlist.getStatus().equals("private")) {
             holder.shareButton.setEnabled(false);
         } else {
-            holder.shareButton.setVisibility(View.VISIBLE);
+            //holder.shareButton.setVisibility(View.VISIBLE);
+            holder.shareButton.setEnabled(true);
         }
 
         holder.shareButton.setOnClickListener(new View.OnClickListener() {
