@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.kkkkan.youtube.R;
@@ -118,9 +119,19 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
             }
         });
 
-        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
+//        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (itemEventsListener != null) {
+//                    Log.d(TAG, "onClick");
+//                    itemEventsListener.onItemClick(video);
+//                }
+//            }
+//        });
+
+        holder.rootLayout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 if (itemEventsListener != null) {
                     Log.d(TAG, "onClick");
                     itemEventsListener.onItemClick(video);
@@ -148,6 +159,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
         CheckBox favoriteCheckBox;
         ImageView shareButton;
         ImageView DeleteButton;
+        RelativeLayout rootLayout;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -158,6 +170,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
             favoriteCheckBox = (CheckBox) itemView.findViewById(R.id.favoriteButton);
             shareButton = (ImageView) itemView.findViewById(R.id.shareButton);
             DeleteButton = (ImageView) itemView.findViewById(R.id.musicDeleteButton);
+            rootLayout = (RelativeLayout) itemView.findViewById(R.id.item_background);
         }
     }
 

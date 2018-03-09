@@ -161,7 +161,7 @@ public class PlaylistDetailFragment extends BaseFragment implements ItemEventsLi
         });
 
         //×画像タッチでこのフラグメントを消す
-        closeButton=(ImageView)v.findViewById(R.id.close_button);
+        closeButton = (ImageView) v.findViewById(R.id.close_button);
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

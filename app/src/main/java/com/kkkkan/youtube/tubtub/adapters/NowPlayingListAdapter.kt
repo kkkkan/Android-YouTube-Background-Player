@@ -56,7 +56,10 @@ class NowPlayingListAdapter(val context: Context, val playlist: List<YouTubeVide
         holder.title.setText(video.title)
         holder.duration.setText(video.duration)
         holder.viewCount.setText(video.viewCount)
-        holder.thumbnail.setOnClickListener(View.OnClickListener {
+//        holder.thumbnail.setOnClickListener(View.OnClickListener {
+//            itemEventsListener.onItemClick(video)
+//        })
+        holder.background.setOnClickListener(View.OnClickListener {
             itemEventsListener.onItemClick(video)
         })
 

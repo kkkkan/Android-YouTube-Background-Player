@@ -11,6 +11,7 @@ import android.view.ViewTreeObserver;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.kkkkan.youtube.R;
@@ -122,16 +123,22 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
                 }
             }
         });
-        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
+//        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (itemEventsListener != null) {
+//                    itemEventsListener.onItemClick(video);
+//                }
+//            }
+//        });
+        holder.rootLayout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 if (itemEventsListener != null) {
                     itemEventsListener.onItemClick(video);
                 }
             }
         });
-
-
         holder.itemView.setTag(video);
 
 
@@ -155,6 +162,7 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
         ImageView shareButton;
         ImageView addButton;
         ImageView deleteButton;
+        RelativeLayout rootLayout;
 
         public ViewHolder(final View itemView) {
             super(itemView);
@@ -166,6 +174,7 @@ public class RecentlyVideosAdapter extends RecyclerView.Adapter<RecentlyVideosAd
             shareButton = (ImageView) itemView.findViewById(R.id.shareButton);
             addButton = (ImageView) itemView.findViewById(R.id.PlaylistAddButton);
             deleteButton = (ImageView) itemView.findViewById(R.id.musicDeleteButton);
+            rootLayout = (RelativeLayout) itemView.findViewById(R.id.item_background);
 
             itemView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override

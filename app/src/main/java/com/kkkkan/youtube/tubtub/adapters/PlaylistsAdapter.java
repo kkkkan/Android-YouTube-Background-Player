@@ -26,6 +26,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.kkkkan.youtube.R;
@@ -132,9 +133,19 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             }
         });
 
-        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
+//        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (itemEventsListener != null) {
+//                    //itemEventListener:playlistFrragment
+//                    itemEventsListener.onItemClick(playlist);
+//                }
+//            }
+//        });
+
+        holder.rootLayout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 if (itemEventsListener != null) {
                     //itemEventListener:playlistFrragment
                     itemEventsListener.onItemClick(playlist);
@@ -171,6 +182,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
         ImageView shareButton;
         ImageView playlistDetail;
         ImageView deleteButton;
+        RelativeLayout rootLayout;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -181,6 +193,7 @@ public class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsAdapter.View
             shareButton = (ImageView) itemView.findViewById(R.id.share_button);
             playlistDetail = (ImageView) itemView.findViewById(R.id.detail_button);
             deleteButton = (ImageView) itemView.findViewById(R.id.delete_button);
+            rootLayout = (RelativeLayout) itemView.findViewById(R.id.item_background);
         }
     }
 
