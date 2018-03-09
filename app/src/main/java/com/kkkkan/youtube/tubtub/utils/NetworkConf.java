@@ -24,6 +24,8 @@ import android.net.NetworkInfo;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 
+import com.kkkkan.youtube.R;
+
 /**
  * Created by Stevan Medic on 17.3.16..
  */
@@ -68,7 +70,7 @@ public class NetworkConf {
                             }
                         }
                 )
-                .setNegativeButton("Cancel",
+                .setNegativeButton(activity.getString(R.string.cancel),
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 //activity.finish();

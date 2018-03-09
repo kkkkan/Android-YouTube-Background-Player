@@ -282,7 +282,7 @@ public class PlaylistsFragment extends BaseFragment implements
         //削除の確認のダイアログを出す。
         AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
         dialog.setTitle("削除").setMessage("プレイリスト " + playlist.getTitle() + "(" + playlist.getNumberOfVideos() + ")\nを削除しますか？")
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(getString(R.string.cancel), null)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
                     @Override

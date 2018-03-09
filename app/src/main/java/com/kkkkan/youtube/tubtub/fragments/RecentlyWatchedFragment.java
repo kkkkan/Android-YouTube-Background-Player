@@ -224,7 +224,7 @@ public class RecentlyWatchedFragment extends BaseFragment implements
         //削除の確認のダイアログを出す。
         AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
         dialog.setTitle("削除").setMessage(video.getTitle() + "\nを履歴から削除しますか？")
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(getString(R.string.cancel), null)
                 .setNeutralButton("履歴からこのビデオをすべて消す", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
