@@ -51,6 +51,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -81,6 +82,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 import static com.kkkkan.youtube.R.layout.suggestions;
 import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTubeWithCredentials;
 
@@ -435,33 +437,34 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                 if (!checkedItems.isEmpty()) {
                     if (checkedItems.get(0) == (playlists.length - 1)) {
                         //新しいプレイリスト作って追加
-                        final EditText titleEdit = new EditText(getActivity());
-                        mTitleDlg.setTitle("新規プレイリスト名入力");
-                        mTitleDlg.setView(titleEdit);
-                        mTitleDlg.setPositiveButton("非公開で作成", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                final String title = titleEdit.getText().toString();
-                                if (title.length() == 0) {
-                                    Toast.makeText(getActivity(), "プレイリスト名は空白は認められません。", Toast.LENGTH_LONG).show();
-                                } else {
-                                    AddPlaylist(title, "private", video);
-                                }
-                            }
-                        });
-                        mTitleDlg.setNeutralButton("公開で作成", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                final String title = titleEdit.getText().toString();
-                                if (title.length() == 0) {
-                                    Toast.makeText(getActivity(), "プレイリスト名は空白は認められません。", Toast.LENGTH_LONG).show();
-                                } else {
-                                    AddPlaylist(title, "public", video);
-                                }
-                            }
-                        });
 
-                        mTitleDlg.setNegativeButton("cancel", null);
+                        LayoutInflater layoutInflater = (LayoutInflater) getActivity().getSystemService(LAYOUT_INFLATER_SERVICE);
+                        View view = layoutInflater.inflate(R.layout.dialog_make_new_playlist, null);
+                        final RadioGroup radioGroup = (RadioGroup) view.findViewById(R.id.radio_group);
+                        final EditText titleEdit = (EditText) view.findViewById(R.id.title_edit);
+                        mTitleDlg.setView(view);
+                        mTitleDlg.setPositiveButton("作成", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                final String title = titleEdit.getText().toString();
+                                if (title.length() == 0) {
+                                    Toast.makeText(getActivity(), "プレイリスト名は空白は認められません。", Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+                                int status = radioGroup.getCheckedRadioButtonId();
+                                switch (status) {
+                                    case R.id.private_chech:
+                                        AddPlaylist(title, "private", video);
+                                        break;
+                                    case R.id.public_check:
+                                        AddPlaylist(title, "public", video);
+                                        break;
+                                }
+
+
+                            }
+                        });
+                        mTitleDlg.setNegativeButton(getString(R.string.cancel), null);
                         mTitleDlg.show();
 
 
@@ -472,7 +475,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             }
         });
 
-        mListDlg.setNegativeButton("キャンセル", null);
+        mListDlg.setNegativeButton(getString(R.string.cancel), null);
 
         mListDlg.create().show();
     }
@@ -637,7 +640,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
                             ((TabLayoutFragment) fragment).clearRecentlyPlayedList();
                         }
                     }
-                }).setNegativeButton("cancel", null).show();
+                }).setNegativeButton(getString(R.string.cancel), null).show();
                 return true;
 
             case R.id.log_in:
@@ -784,7 +787,7 @@ public class PortraitFragment extends Fragment implements OnFavoritesSelected, P
             }
         });
 
-        mListDlg.setNegativeButton("キャンセル", null);
+        mListDlg.setNegativeButton(getString(R.string.cancel), null);
 
         mListDlg.create().show();
     }
