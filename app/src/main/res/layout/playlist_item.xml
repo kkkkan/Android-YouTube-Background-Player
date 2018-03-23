@@ -62,35 +62,39 @@
                 android:textStyle="bold" />
 
             <ImageView
-                android:id="@+id/detail_button"
+                android:id="@+id/delete_button"
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:layout_alignParentBottom="true"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:background="@drawable/playlist_detail"
+                android:layout_margin="5dp"
+                android:layout_toLeftOf="@id/share_button"
+                android:layout_toStartOf="@id/share_button"
+                android:background="@drawable/delete_music"
                 android:padding="20dp" />
+
 
             <ImageView
                 android:id="@+id/share_button"
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:layout_alignParentBottom="true"
+                android:layout_margin="5dp"
                 android:layout_toLeftOf="@id/detail_button"
                 android:layout_toStartOf="@id/detail_button"
                 android:background="@drawable/share_button_selector"
                 android:padding="20dp" />
 
+
             <ImageView
-                android:id="@+id/delete_button"
+                android:id="@+id/detail_button"
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:layout_alignParentBottom="true"
-                android:layout_toLeftOf="@id/share_button"
-                android:layout_toStartOf="@id/share_button"
-                android:background="@drawable/delete_music"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_margin="5dp"
+                android:background="@drawable/playlist_detail"
                 android:padding="20dp" />
-
 
         </RelativeLayout>
     </LinearLayout>
