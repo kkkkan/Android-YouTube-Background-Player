@@ -35,6 +35,7 @@ import com.kkkkan.youtube.tubtub.utils.NetworkConf;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static com.kkkkan.youtube.tubtub.MainActivity.mainHandler;
@@ -44,6 +45,8 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTubeWithC
 
 
 /**
+ * アカウントに紐づけられているplaylistをサーバーから全てとってきて、playlistId昇順に並び替えて返します。
+ * <p>
  * Created by smedic on 13.2.17..
  */
 
@@ -123,6 +126,13 @@ public class YouTubePlaylistsLoader extends AsyncTaskLoader<List<YouTubePlaylist
                 //お気に入りリストなどを返り値用のArrayListに入れる
                 putPlaylistsToArrayList(youTubePlaylistList, playlists);
             }
+            //playlistのidが昇順になるように並び替え
+            Collections.sort(youTubePlaylistList, new Comparator<YouTubePlaylist>() {
+                @Override
+                public int compare(YouTubePlaylist t1, YouTubePlaylist t2) {
+                    return t2.getId().compareTo(t1.getId());
+                }
+            });
             return youTubePlaylistList;
         } catch (UserRecoverableAuthIOException e) {
             Log.d(TAG, "YouTubePlaylistLoader-" + e.toString());
