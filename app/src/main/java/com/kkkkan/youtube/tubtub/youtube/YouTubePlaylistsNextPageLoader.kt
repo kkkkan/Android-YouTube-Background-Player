@@ -10,6 +10,9 @@ import com.kkkkan.youtube.tubtub.utils.Config
 import com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTube
 import java.io.IOException
 
+/**
+ * 検索結果のYoutube PlaylistのnextPageTokenを渡すとそのpageとさらにnextPageTokenをとってきてくれるAsyncLoader
+ */
 class YouTubePlaylistsNextPageLoader(context: Context, nextPageToken: String) : AsyncTaskLoader<VideosLoaderMethods.SearchResultPlaylist>(context) {
     private val youtube: YouTube = getYouTube()
     private val nextPageToken = nextPageToken

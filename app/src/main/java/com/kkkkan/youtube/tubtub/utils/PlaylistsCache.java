@@ -85,7 +85,7 @@ public class PlaylistsCache {
     }
 
     /**
-     * Pairの形で返すgetter
+     * Listの部分のみPairの形で返すgetter
      *
      * @return
      */
