@@ -64,6 +64,7 @@ import com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -153,9 +154,8 @@ public class PlaylistsFragment extends BaseFragment implements
     @Override
     public void onResume() {
         super.onResume();
-        playlists.clear();
-        playlists.addAll(YouTubeSqlDb.getInstance().playlists().readAll());
-        playlistsAdapter.notifyDataSetChanged();
+        //DBに保存してあった前回時点でのプレイリストをとってきて、ソートしなおして表示
+        setNewDataAndSort(YouTubeSqlDb.getInstance().playlists().readAll());
     }
 
     @Override
@@ -189,9 +189,8 @@ public class PlaylistsFragment extends BaseFragment implements
 
                 Log.d(TAG, "onLoadFinished: data size: " + data.size());
 
-                playlists.clear();
-                playlists.addAll(data);
-                playlistsAdapter.notifyDataSetChanged();
+                //取ってきたデータをソートしなおして表示
+                setNewDataAndSort(data);
                 swipeToRefresh.setRefreshing(false);
 
                 for (YouTubePlaylist playlist : playlists) {
@@ -314,6 +313,24 @@ public class PlaylistsFragment extends BaseFragment implements
                     }
                 }).show();
 
+    }
+
+    /**
+     * List<YouTubePlaylist>を、アイテムをソートしなおしてから表示する
+     *
+     * @param data
+     */
+    private void setNewDataAndSort(List<YouTubePlaylist> data) {
+        playlists.clear();
+        //playlistのidが昇順になるように並び替え
+        Collections.sort(data, new Comparator<YouTubePlaylist>() {
+            @Override
+            public int compare(YouTubePlaylist t1, YouTubePlaylist t2) {
+                return t1.getId().compareTo(t2.getId());
+            }
+        });
+        playlists.addAll(data);
+        playlistsAdapter.notifyDataSetChanged();
     }
 
 }
