@@ -63,6 +63,7 @@ import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
 import com.kkkkan.youtube.tubtub.utils.NetworkConf;
 import com.kkkkan.youtube.tubtub.utils.PlaylistsCache;
+import com.kkkkan.youtube.tubtub.youtube.VideosLoaderMethods;
 import com.kkkkan.youtube.tubtub.youtube.YouTubePlaylistVideosLoader;
 import com.kkkkan.youtube.tubtub.youtube.YouTubeVideosLoader;
 
@@ -333,30 +334,30 @@ public class SearchFragment extends BaseFragment {
             return;
         }
 
-        getLoaderManager().restartLoader(Config.YouTubeVideosLoaderId, null, new LoaderManager.LoaderCallbacks<Pair<YouTubeVideosLoader.SearchResultVideo, YouTubeVideosLoader.SearchResultPlaylist>>() {
+        getLoaderManager().restartLoader(Config.YouTubeVideosLoaderId, null, new LoaderManager.LoaderCallbacks<Pair<VideosLoaderMethods.SearchResultVideo, VideosLoaderMethods.SearchResultPlaylist>>() {
             @Override
-            public Loader<Pair<YouTubeVideosLoader.SearchResultVideo, YouTubeVideosLoader.SearchResultPlaylist>> onCreateLoader(final int id, final Bundle args) {
+            public Loader<Pair<VideosLoaderMethods.SearchResultVideo, VideosLoaderMethods.SearchResultPlaylist>> onCreateLoader(final int id, final Bundle args) {
                 showProgressDialog();
                 return new YouTubeVideosLoader(context, query);
             }
 
             @Override
-            public void onLoadFinished(Loader<Pair<YouTubeVideosLoader.SearchResultVideo, YouTubeVideosLoader.SearchResultPlaylist>> loader, Pair<YouTubeVideosLoader.SearchResultVideo, YouTubeVideosLoader.SearchResultPlaylist> data) {
+            public void onLoadFinished(Loader<Pair<VideosLoaderMethods.SearchResultVideo, VideosLoaderMethods.SearchResultPlaylist>> loader, Pair<VideosLoaderMethods.SearchResultVideo, VideosLoaderMethods.SearchResultPlaylist> data) {
                 Log.d(TAG, "onLoadFinished");
                 if (data == null)
                     return;
                 PlaylistsCache.Instance.setSearchResultsList(data);
                 videosFoundListView.smoothScrollToPosition(0);
                 searchResultsVideoList.clear();
-                searchResultsVideoList.addAll(data.first.resultVideos);
+                searchResultsVideoList.addAll(data.first.getResultVideos());
                 searchResultsPlaylistList.clear();
-                searchResultsPlaylistList.addAll(data.second.resultPlaylists);
+                searchResultsPlaylistList.addAll(data.second.getResultPlaylists());
                 notifyDataSetChanged();
                 hideProgressDialog();
             }
 
             @Override
-            public void onLoaderReset(Loader<Pair<YouTubeVideosLoader.SearchResultVideo, YouTubeVideosLoader.SearchResultPlaylist>> loader) {
+            public void onLoaderReset(Loader<Pair<VideosLoaderMethods.SearchResultVideo, VideosLoaderMethods.SearchResultPlaylist>> loader) {
                 searchResultsVideoList.clear();
                 searchResultsVideoList.addAll(Collections.<YouTubeVideo>emptyList());
                 searchResultsPlaylistList.clear();

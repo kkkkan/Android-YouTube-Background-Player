@@ -7,7 +7,6 @@ import com.google.api.services.youtube.model.SearchListResponse
 import com.google.api.services.youtube.model.SearchResult
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist
 import com.kkkkan.youtube.tubtub.utils.Config
-import com.kkkkan.youtube.tubtub.youtube.VideosLoaderMethods.getPlaylistList
 import com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTube
 import java.io.IOException
 

@@ -24,7 +24,7 @@ import android.util.Pair;
 
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
-import com.kkkkan.youtube.tubtub.youtube.YouTubeVideosLoader;
+import com.kkkkan.youtube.tubtub.youtube.VideosLoaderMethods;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,8 +39,8 @@ public class PlaylistsCache {
     static public PlaylistsCache Instance = new PlaylistsCache();
     private final String TAG = "PlaylistsCash";
     //回転後、Activityのfinish後も検索内容覚えておくためのSearchResultVideoインスタンスとSearchResultPlaylistインスタンス
-    private YouTubeVideosLoader.SearchResultVideo searchResultVideo = new YouTubeVideosLoader.SearchResultVideo(new ArrayList<YouTubeVideo>(), null);
-    private YouTubeVideosLoader.SearchResultPlaylist searchResultPlaylist = new YouTubeVideosLoader.SearchResultPlaylist(new ArrayList<YouTubePlaylist>(), null);
+    private VideosLoaderMethods.SearchResultVideo searchResultVideo = new VideosLoaderMethods.SearchResultVideo(new ArrayList<YouTubeVideo>(), null);
+    private VideosLoaderMethods.SearchResultPlaylist searchResultPlaylist = new VideosLoaderMethods.SearchResultPlaylist(new ArrayList<YouTubePlaylist>(), null);
     //通常の並びに並んでいるリスト
     private List<YouTubeVideo> normalList = new ArrayList<>();
     //shuffle再生用のランダムに並んでいるリスト
@@ -92,8 +92,8 @@ public class PlaylistsCache {
     @NonNull
     public Pair<List<YouTubeVideo>, List<YouTubePlaylist>> getSearchResultsList() {
         //渡した先でリストの中身をいじってもキャッシュに影響でないように必ず新しいListのインスタンスでPairを作る
-        List<YouTubeVideo> videoList = new ArrayList<>(searchResultVideo.resultVideos);
-        List<YouTubePlaylist> playlistList = new ArrayList<>(searchResultPlaylist.resultPlaylists);
+        List<YouTubeVideo> videoList = new ArrayList<>(searchResultVideo.getResultVideos());
+        List<YouTubePlaylist> playlistList = new ArrayList<>(searchResultPlaylist.getResultPlaylists());
         return new Pair<>(videoList, playlistList);
     }
 
@@ -105,18 +105,18 @@ public class PlaylistsCache {
      *
      * @param results
      */
-    public void setSearchResultsList(Pair<YouTubeVideosLoader.SearchResultVideo, YouTubeVideosLoader.SearchResultPlaylist> results) {
+    public void setSearchResultsList(Pair<VideosLoaderMethods.SearchResultVideo, VideosLoaderMethods.SearchResultPlaylist> results) {
         //渡した先でリストの中身をいじってもキャッシュに影響でないように、List<>のほうは必ず新しいListのインスタンスを作って保持
-        searchResultVideo = new YouTubeVideosLoader.SearchResultVideo(new ArrayList<>(results.first.resultVideos), results.first.nextPageToken);
-        searchResultPlaylist = new YouTubeVideosLoader.SearchResultPlaylist(new ArrayList<>(results.second.resultPlaylists), results.second.nextPageToken);
+        searchResultVideo = new VideosLoaderMethods.SearchResultVideo(new ArrayList<>(results.first.getResultVideos()), results.first.getNextPageToken());
+        searchResultPlaylist = new VideosLoaderMethods.SearchResultPlaylist(new ArrayList<>(results.second.getResultPlaylists()), results.second.getNextPageToken());
     }
 
     public List<YouTubeVideo> getSearchResultsVideoList() {
-        return new ArrayList<>(searchResultVideo.resultVideos);
+        return new ArrayList<>(searchResultVideo.getResultVideos());
     }
 
     public List<YouTubePlaylist> getSearchResultsPlaylistList() {
-        return new ArrayList<>(searchResultPlaylist.resultPlaylists);
+        return new ArrayList<>(searchResultPlaylist.getResultPlaylists());
     }
 
     public void setNewList(List<YouTubeVideo> newNormalList) {

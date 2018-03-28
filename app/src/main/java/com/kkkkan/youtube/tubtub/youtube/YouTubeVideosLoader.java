@@ -31,8 +31,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.kkkkan.youtube.tubtub.youtube.VideosLoaderMethods.getPlaylistList;
-import static com.kkkkan.youtube.tubtub.youtube.VideosLoaderMethods.getVideoList;
+import static com.kkkkan.youtube.tubtub.youtube.VideosLoaderMethodsKt.getPlaylistList;
+import static com.kkkkan.youtube.tubtub.youtube.VideosLoaderMethodsKt.getVideoList;
 import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTube;
 
 /**
