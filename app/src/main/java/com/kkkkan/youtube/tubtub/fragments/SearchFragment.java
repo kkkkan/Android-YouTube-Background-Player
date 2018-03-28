@@ -333,31 +333,30 @@ public class SearchFragment extends BaseFragment {
             return;
         }
 
-        getLoaderManager().restartLoader(Config.YouTubeVideosLoaderId, null, new LoaderManager.LoaderCallbacks<Pair<List<YouTubeVideo>, List<YouTubePlaylist>>>() {
+        getLoaderManager().restartLoader(Config.YouTubeVideosLoaderId, null, new LoaderManager.LoaderCallbacks<Pair<YouTubeVideosLoader.SearchResultVideo, YouTubeVideosLoader.SearchResultPlaylist>>() {
             @Override
-            public Loader<Pair<List<YouTubeVideo>, List<YouTubePlaylist>>> onCreateLoader(final int id, final Bundle args) {
+            public Loader<Pair<YouTubeVideosLoader.SearchResultVideo, YouTubeVideosLoader.SearchResultPlaylist>> onCreateLoader(final int id, final Bundle args) {
                 showProgressDialog();
                 return new YouTubeVideosLoader(context, query);
             }
 
             @Override
-            public void onLoadFinished(Loader<Pair<List<YouTubeVideo>, List<YouTubePlaylist>>> loader, Pair<List<YouTubeVideo>, List<YouTubePlaylist>> data) {
+            public void onLoadFinished(Loader<Pair<YouTubeVideosLoader.SearchResultVideo, YouTubeVideosLoader.SearchResultPlaylist>> loader, Pair<YouTubeVideosLoader.SearchResultVideo, YouTubeVideosLoader.SearchResultPlaylist> data) {
                 Log.d(TAG, "onLoadFinished");
                 if (data == null)
                     return;
-                Log.d(TAG, "onLoadFinished : data != null  " + data.second.size());
                 PlaylistsCache.Instance.setSearchResultsList(data);
                 videosFoundListView.smoothScrollToPosition(0);
                 searchResultsVideoList.clear();
-                searchResultsVideoList.addAll(data.first);
+                searchResultsVideoList.addAll(data.first.resultVideos);
                 searchResultsPlaylistList.clear();
-                searchResultsPlaylistList.addAll(data.second);
+                searchResultsPlaylistList.addAll(data.second.resultPlaylists);
                 notifyDataSetChanged();
                 hideProgressDialog();
             }
 
             @Override
-            public void onLoaderReset(Loader<Pair<List<YouTubeVideo>, List<YouTubePlaylist>>> loader) {
+            public void onLoaderReset(Loader<Pair<YouTubeVideosLoader.SearchResultVideo, YouTubeVideosLoader.SearchResultPlaylist>> loader) {
                 searchResultsVideoList.clear();
                 searchResultsVideoList.addAll(Collections.<YouTubeVideo>emptyList());
                 searchResultsPlaylistList.clear();

@@ -21,32 +21,26 @@ import android.util.Log;
 import android.util.Pair;
 
 import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.Playlist;
-import com.google.api.services.youtube.model.PlaylistListResponse;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
-import com.google.api.services.youtube.model.Video;
-import com.google.api.services.youtube.model.VideoListResponse;
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
 import com.kkkkan.youtube.tubtub.utils.Config;
-import com.kkkkan.youtube.tubtub.utils.Utils;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.kkkkan.youtube.tubtub.utils.Utils.putPlaylistsToArrayList;
+import static com.kkkkan.youtube.tubtub.youtube.VideosLoaderMethods.getPlaylistList;
+import static com.kkkkan.youtube.tubtub.youtube.VideosLoaderMethods.getVideoList;
 import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTube;
 
 /**
  * Created by smedic on 13.2.17..
  */
 
-public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<List<YouTubeVideo>, List<YouTubePlaylist>>> {
-    private final String TAG = "YouTubeVideosLoader";
+public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<VideosLoaderMethods.SearchResultVideo, VideosLoaderMethods.SearchResultPlaylist>> {
+    static private final String TAG = "YouTubeVideosLoader";
     private YouTube youtube = getYouTube();
     private String keywords;
 
@@ -56,9 +50,11 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<List<YouTubeVideo>
     }
 
     @Override
-    public Pair<List<YouTubeVideo>, List<YouTubePlaylist>> loadInBackground() {
+    public Pair<VideosLoaderMethods.SearchResultVideo, VideosLoaderMethods.SearchResultPlaylist> loadInBackground() {
         List<YouTubeVideo> videoItems = new ArrayList<>();
         List<YouTubePlaylist> playlistItems = new ArrayList<>();
+        String videosNextToken = null;
+        String playlistsNextToken = null;
         try {
             YouTube.Search.List searchList = youtube.search().list("id,snippet");
             YouTube.Search.List searchPlayList = youtube.search().list("id,snippet");
@@ -66,25 +62,33 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<List<YouTubeVideo>
             YouTube.Playlists.List playlistList = youtube.playlists().list("id,snippet,contentDetails,status");
 
             //videoの検索
-            List<SearchResult> searchVideoResults = searchVideo(searchList);
+            SearchListResponse searchVideoResponse = searchVideo(searchList);
+            //検索結果のvideoのリストを取得
+            List<SearchResult> searchVideoResults = searchVideoResponse.getItems();
             //検索結果のそれぞれのvideoの詳細情報の取得
             videoItems = getVideoList(videosList, searchVideoResults);
+            //videoのnextToken取得(最終ページの場合はnull?)
+            videosNextToken = searchVideoResponse.getNextPageToken();
 
             //playlistの検索
-            List<SearchResult> searchPlayListResults = searchPlaylist(searchPlayList);
+            SearchListResponse searchPlaylistResponse = searchPlaylist(searchPlayList);
+            //検索結果のplaylistのリストを取得
+            List<SearchResult> searchPlayListResults = searchPlaylistResponse.getItems();
             //検索結果のそれぞれのplaylistの詳細情報の取得
             playlistItems = getPlaylistList(playlistList, searchPlayListResults);
+            //playlistのnextToken取得(最終ページの場合はnull?)
+            playlistsNextToken = searchPlaylistResponse.getNextPageToken();
 
         } catch (IOException e) {
             Log.d(TAG, "IOException");
             e.printStackTrace();
         }
 
-        return new Pair<>(videoItems, playlistItems);
+        return new Pair<>(new VideosLoaderMethods.SearchResultVideo(videoItems, videosNextToken), new VideosLoaderMethods.SearchResultPlaylist(playlistItems, playlistsNextToken));
     }
 
     @Override
-    public void deliverResult(Pair<List<YouTubeVideo>, List<YouTubePlaylist>> data) {
+    public void deliverResult(Pair<VideosLoaderMethods.SearchResultVideo, VideosLoaderMethods.SearchResultPlaylist> data) {
         if (isReset()) {
             // The Loader has been reset; ignore the result and invalidate the data.
             return;
@@ -92,15 +96,14 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<List<YouTubeVideo>
         super.deliverResult(data);
     }
 
-
     /**
-     * ビデオの検索を行い、検索結果のListを返す
+     * ビデオの検索を行い、検索結果を返す
      *
      * @param searchList
      * @return
      * @throws IOException
      */
-    private List<SearchResult> searchVideo(YouTube.Search.List searchList) throws IOException {
+    public SearchListResponse searchVideo(YouTube.Search.List searchList) throws IOException {
         searchList.setKey(Config.YOUTUBE_API_KEY);
         searchList.setType("video"); //TODO ADD PLAYLISTS SEARCH
         searchList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
@@ -108,82 +111,17 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<List<YouTubeVideo>
         //search
         searchList.setQ(keywords);
         SearchListResponse searchListResponse = searchList.execute();
-        return searchListResponse.getItems();
+        return searchListResponse;
     }
 
     /**
-     * 検索Typeをvideoにしたときの検索結果のリスト(List<SearchResult>)から検索結果のそれぞれのvideoの詳細情報の取得をし List<YouTubeVideo>を返す
-     *
-     * @param videosList
-     * @param searchResults
-     * @return
-     * @throws IOException
-     */
-    private List<YouTubeVideo> getVideoList(YouTube.Videos.List videosList, List<SearchResult> searchResults) throws IOException {
-        List<YouTubeVideo> items = new ArrayList<>();
-
-        videosList.setKey(Config.YOUTUBE_API_KEY);
-        videosList.setFields("items(id,contentDetails/duration,statistics/viewCount)");
-        //find video list
-        videosList.setId(Utils.concatenateIDs(searchResults));  //save all ids from searchList list in order to find video list
-        VideoListResponse resp = videosList.execute();
-        List<Video> videoResults = resp.getItems();
-        //make items for displaying in listView
-
-        Log.d(TAG, "YouTube.Search.List execute result size is : " + searchResults.size());
-        Log.d(TAG, "YouTube.Videos.List execute result size is : " + videoResults.size());
-
-        //どうやらYouTube.Search.Listは削除されたビデオもとってきて、
-        // YouTube.Videos.Listはとってきた50個のうち削除されたビデオはスルーして、userにデータは返してくれないようだ
-        //（つまり50個中1個削除されたビデオがあったら、searchResults.size()は50,videoResults.size()は49）
-
-        int count = 0;
-        for (int i = 0, j = 0; i < searchResults.size(); i++) {
-            YouTubeVideo youTubeVideo = new YouTubeVideo();
-
-            SearchResult searchResult = searchResults.get(i);
-            Video videoResult = videoResults.get(j);
-
-            youTubeVideo.setTitle(searchResult.getSnippet().getTitle());
-            youTubeVideo.setId(searchResult.getId().getVideoId());
-            if (searchResult.getId().getVideoId().equals(videoResult.getId())) {
-                //Log.d(TAG, String.valueOf(++count) + " : " + searchResult.getSnippet().getTitle() + " : not Deleted");
-                //削除されたビデオではないとき
-                //jをインクリメント
-                j++;
-                //thumbnailDetailsのurlをセット
-                youTubeVideo.setThumbnailURL(searchResult.getSnippet().getThumbnails().getDefault().getUrl());
-                //video由来の情報もyouTubeVideoに追加
-                if (videoResult.getStatistics() != null) {
-                    BigInteger viewsNumber = videoResult.getStatistics().getViewCount();
-                    String viewsFormatted = NumberFormat.getIntegerInstance().format(viewsNumber) + " views";
-                    youTubeVideo.setViewCount(viewsFormatted);
-                }
-                if (videoResult.getContentDetails() != null) {
-                    String isoTime = videoResult.getContentDetails().getDuration();
-                    String time = Utils.convertISO8601DurationToNormalTime(isoTime);
-                    youTubeVideo.setDuration(time);
-                }
-            } else {
-                //削除されたビデオの時
-                //Log.d(TAG, String.valueOf(++count) + " : " + searchResult.getSnippet().getTitle() + " : Deleted");
-                //削除されたビデオの場合はthumnailURLにnull、durationに"00:00"を入れる
-                youTubeVideo.setThumbnailURL(null);
-                youTubeVideo.setDuration("00:00");
-            }
-            items.add(youTubeVideo);
-        }
-        return items;
-    }
-
-    /**
-     * プレイリストの検索を行い、検索結果のListを返す
+     * プレイリストの検索を行い、検索結果を返す
      *
      * @param searchPlayList
      * @return
      * @throws IOException
      */
-    private List<SearchResult> searchPlaylist(YouTube.Search.List searchPlayList) throws IOException {
+    public SearchListResponse searchPlaylist(YouTube.Search.List searchPlayList) throws IOException {
         searchPlayList.setKey(Config.YOUTUBE_API_KEY);
         searchPlayList.setType("playlist"); //TODO ADD PLAYLISTS SEARCH
         searchPlayList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
@@ -191,34 +129,8 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<List<YouTubeVideo>
         searchPlayList.setQ(keywords);
         SearchListResponse searchPlayListResponse = searchPlayList.execute();
         Log.d(TAG, "searchPlayListResponse.size() is : " + searchPlayListResponse.getItems().size());
-        return searchPlayListResponse.getItems();
+        return searchPlayListResponse;
     }
 
-    /**
-     * 検索Typeをplaylistにしたときの検索結果のリスト(List<SearchResult>)から検索結果のそれぞれのplaylistの詳細情報の取得をし List<YouTubePlaylist>を返す
-     *
-     * @param playlistList
-     * @param searchPlayListResults
-     * @return
-     * @throws IOException
-     */
-    private List<YouTubePlaylist> getPlaylistList(YouTube.Playlists.List playlistList, List<SearchResult> searchPlayListResults) throws IOException {
-        List<YouTubePlaylist> playlistItems = new ArrayList<>();
-        playlistList.setKey(Config.YOUTUBE_API_KEY);
-        playlistList.setFields("items(id,snippet/title,snippet/thumbnails/default/url,contentDetails/itemCount,status)");
-        playlistList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
-        playlistList.setId(Utils.concatenatePlaylistIDs(searchPlayListResults));
-        PlaylistListResponse playlistListResponse = playlistList.execute();
 
-        List<Playlist> playlists = playlistListResponse.getItems();
-
-        Log.d(TAG, "playlists.size() is : " + playlists.size());
-
-        if (playlists != null) {
-            //自分で作った再生リストを返り値用のArrayListに入れる
-            putPlaylistsToArrayList(playlistItems, playlists);
-        }
-
-        return playlistItems;
-    }
 }

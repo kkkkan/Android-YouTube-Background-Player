@@ -24,6 +24,7 @@ import android.util.Pair;
 
 import com.kkkkan.youtube.tubtub.model.YouTubePlaylist;
 import com.kkkkan.youtube.tubtub.model.YouTubeVideo;
+import com.kkkkan.youtube.tubtub.youtube.YouTubeVideosLoader;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,10 +38,9 @@ public class PlaylistsCache {
     public static int tag = 0;
     static public PlaylistsCache Instance = new PlaylistsCache();
     private final String TAG = "PlaylistsCash";
-    //回転後、Activityのfinish後も検索内容覚えておくためのList
-    //内部的にはPairでキャッシュを取っておくことはしない
-    private List<YouTubeVideo> searchResultsVideoList = new ArrayList<>();
-    private List<YouTubePlaylist> searchResultsPlaylistList = new ArrayList<>();
+    //回転後、Activityのfinish後も検索内容覚えておくためのSearchResultVideoインスタンスとSearchResultPlaylistインスタンス
+    private YouTubeVideosLoader.SearchResultVideo searchResultVideo = new YouTubeVideosLoader.SearchResultVideo(new ArrayList<YouTubeVideo>(), null);
+    private YouTubeVideosLoader.SearchResultPlaylist searchResultPlaylist = new YouTubeVideosLoader.SearchResultPlaylist(new ArrayList<YouTubePlaylist>(), null);
     //通常の並びに並んでいるリスト
     private List<YouTubeVideo> normalList = new ArrayList<>();
     //shuffle再生用のランダムに並んでいるリスト
@@ -92,8 +92,8 @@ public class PlaylistsCache {
     @NonNull
     public Pair<List<YouTubeVideo>, List<YouTubePlaylist>> getSearchResultsList() {
         //渡した先でリストの中身をいじってもキャッシュに影響でないように必ず新しいListのインスタンスでPairを作る
-        List<YouTubeVideo> videoList = new ArrayList<>(searchResultsVideoList);
-        List<YouTubePlaylist> playlistList = new ArrayList<>(searchResultsPlaylistList);
+        List<YouTubeVideo> videoList = new ArrayList<>(searchResultVideo.resultVideos);
+        List<YouTubePlaylist> playlistList = new ArrayList<>(searchResultPlaylist.resultPlaylists);
         return new Pair<>(videoList, playlistList);
     }
 
@@ -103,20 +103,20 @@ public class PlaylistsCache {
     /**
      * 検索結果はvideoとplaylist一方だけが変わることは無いのでsetterはPairの形のもののみ
      *
-     * @param searchResultsList
+     * @param results
      */
-    public void setSearchResultsList(Pair<List<YouTubeVideo>, List<YouTubePlaylist>> searchResultsList) {
-        //渡した先でリストの中身をいじってもキャッシュに影響でないように必ず新しいListのインスタンスを作って保持
-        searchResultsVideoList = new ArrayList<>(searchResultsList.first);
-        searchResultsPlaylistList = new ArrayList<>(searchResultsList.second);
+    public void setSearchResultsList(Pair<YouTubeVideosLoader.SearchResultVideo, YouTubeVideosLoader.SearchResultPlaylist> results) {
+        //渡した先でリストの中身をいじってもキャッシュに影響でないように、List<>のほうは必ず新しいListのインスタンスを作って保持
+        searchResultVideo = new YouTubeVideosLoader.SearchResultVideo(new ArrayList<>(results.first.resultVideos), results.first.nextPageToken);
+        searchResultPlaylist = new YouTubeVideosLoader.SearchResultPlaylist(new ArrayList<>(results.second.resultPlaylists), results.second.nextPageToken);
     }
 
     public List<YouTubeVideo> getSearchResultsVideoList() {
-        return new ArrayList<>(searchResultsVideoList);
+        return new ArrayList<>(searchResultVideo.resultVideos);
     }
 
     public List<YouTubePlaylist> getSearchResultsPlaylistList() {
-        return new ArrayList<>(searchResultsPlaylistList);
+        return new ArrayList<>(searchResultPlaylist.resultPlaylists);
     }
 
     public void setNewList(List<YouTubeVideo> newNormalList) {
