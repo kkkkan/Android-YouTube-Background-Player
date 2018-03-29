@@ -42,11 +42,11 @@ import static com.kkkkan.youtube.tubtub.youtube.YouTubeSingleton.getYouTube;
 public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<VideosLoaderMethods.SearchResultVideo, VideosLoaderMethods.SearchResultPlaylist>> {
     static private final String TAG = "YouTubeVideosLoader";
     private YouTube youtube = getYouTube();
-    private String keywords;
+    private String keyword;
 
-    public YouTubeVideosLoader(Context context, String keywords) {
+    public YouTubeVideosLoader(Context context, String keyword) {
         super(context);
-        this.keywords = keywords;
+        this.keyword = keyword;
     }
 
     @Override
@@ -86,7 +86,7 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<VideosLoaderMethod
             e.printStackTrace();
         }
 
-        return new Pair<>(new VideosLoaderMethods.SearchResultVideo(videoItems, videosNextToken), new VideosLoaderMethods.SearchResultPlaylist(playlistItems, playlistsNextToken));
+        return new Pair<>(new VideosLoaderMethods.SearchResultVideo(videoItems, videosNextToken, keyword), new VideosLoaderMethods.SearchResultPlaylist(playlistItems, playlistsNextToken, keyword));
     }
 
     @Override
@@ -111,7 +111,7 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<VideosLoaderMethod
         searchList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
         searchList.setFields("nextPageToken,items(id/videoId,snippet/title,snippet/thumbnails/default/url)");
         //search
-        searchList.setQ(keywords);
+        searchList.setQ(keyword);
         SearchListResponse searchListResponse = searchList.execute();
         return searchListResponse;
     }
@@ -128,7 +128,7 @@ public class YouTubeVideosLoader extends AsyncTaskLoader<Pair<VideosLoaderMethod
         searchPlayList.setType("playlist"); //TODO ADD PLAYLISTS SEARCH
         searchPlayList.setMaxResults(Config.NUMBER_OF_VIDEOS_RETURNED);
         searchPlayList.setFields("nextPageToken,items(id/playlistId,snippet/title,snippet/thumbnails/default/url,id/kind)");
-        searchPlayList.setQ(keywords);
+        searchPlayList.setQ(keyword);
         SearchListResponse searchPlayListResponse = searchPlayList.execute();
         Log.d(TAG, "searchPlayListResponse.size() is : " + searchPlayListResponse.getItems().size());
         return searchPlayListResponse;

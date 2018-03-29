@@ -69,6 +69,7 @@ import com.kkkkan.youtube.tubtub.youtube.YouTubePlaylistsNextPageLoader;
 import com.kkkkan.youtube.tubtub.youtube.YouTubeVideosLoader;
 import com.kkkkan.youtube.tubtub.youtube.YouTubeVideosNextPageLoader;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -89,10 +90,11 @@ public class SearchFragment extends BaseFragment {
     private static final String TAG = "SearchFragment";
     private final int tag = PlaylistsCache.tag;
     private RecyclerView videosFoundListView;
-    private List<YouTubeVideo> searchResultsVideoList;
-    private List<YouTubePlaylist> searchResultsPlaylistList;
+    private List<YouTubeVideo> searchResultsVideoList = new ArrayList<>();
+    private List<YouTubePlaylist> searchResultsPlaylistList = new ArrayList<>();
     private String videoNextPageToken;
     private String playlistNextPageToken;
+    private String keyword;
     private VideosAdapter videoListAdapter;
     private PlaylistsAdapter playlistsAdapter;
     private NetworkConf networkConf;
@@ -186,7 +188,7 @@ public class SearchFragment extends BaseFragment {
         public Loader<VideosLoaderMethods.SearchResultVideo> onCreateLoader(int id, Bundle args) {
             Log.d(TAG, "onCreateLoader");
             isLoading = true;
-            return new YouTubeVideosNextPageLoader(context, videoNextPageToken);
+            return new YouTubeVideosNextPageLoader(context, videoNextPageToken, keyword);
         }
 
         @Override
@@ -198,7 +200,7 @@ public class SearchFragment extends BaseFragment {
             int itemCountBeforeAdd = searchResultsVideoList.size();
             searchResultsVideoList.addAll(data.getResultVideos());
             videoNextPageToken = data.getNextPageToken();
-            PlaylistsCache.Instance.changeSearchResultVideosList(new VideosLoaderMethods.SearchResultVideo(searchResultsVideoList, videoNextPageToken));
+            PlaylistsCache.Instance.changeSearchResultVideosList(new VideosLoaderMethods.SearchResultVideo(searchResultsVideoList, videoNextPageToken, keyword));
             videoListAdapter.notifyItemRangeInserted(itemCountBeforeAdd, data.getResultVideos().size());
             isLoading = false;
         }
@@ -216,7 +218,7 @@ public class SearchFragment extends BaseFragment {
         @Override
         public Loader<VideosLoaderMethods.SearchResultPlaylist> onCreateLoader(int id, Bundle args) {
             isLoading = true;
-            return new YouTubePlaylistsNextPageLoader(context, playlistNextPageToken);
+            return new YouTubePlaylistsNextPageLoader(context, playlistNextPageToken, keyword);
         }
 
         @Override
@@ -228,7 +230,7 @@ public class SearchFragment extends BaseFragment {
             int itemCountBeforeAdd = searchResultsPlaylistList.size();
             searchResultsPlaylistList.addAll(data.getResultPlaylists());
             playlistNextPageToken = data.getNextPageToken();
-            PlaylistsCache.Instance.changeSearchresultPlaylistList(new VideosLoaderMethods.SearchResultPlaylist(searchResultsPlaylistList, playlistNextPageToken));
+            PlaylistsCache.Instance.changeSearchresultPlaylistList(new VideosLoaderMethods.SearchResultPlaylist(searchResultsPlaylistList, playlistNextPageToken, keyword));
             playlistsAdapter.notifyItemRangeInserted(itemCountBeforeAdd, data.getResultPlaylists().size());
             isLoading = false;
         }
@@ -296,8 +298,14 @@ public class SearchFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
+        if (savedInstanceState == null) {
+            return;
+        }
         searchResultsVideoList = PlaylistsCache.Instance.getSearchResultsVideoList();
         searchResultsPlaylistList = PlaylistsCache.Instance.getSearchResultsPlaylistList();
+        videoNextPageToken = PlaylistsCache.Instance.getVideoNextPageToken();
+        playlistNextPageToken = PlaylistsCache.Instance.getPlaylistNextPageToken();
+        keyword = PlaylistsCache.Instance.getKeyword();
     }
 
     @Override
@@ -445,6 +453,8 @@ public class SearchFragment extends BaseFragment {
                 //次のページへのtokenがあれば保存
                 videoNextPageToken = data.first.getNextPageToken();
                 playlistNextPageToken = data.second.getNextPageToken();
+                //検索ワードを保存
+                keyword = data.first.getKeyword();
                 videosFoundListView.smoothScrollToPosition(0);
                 searchResultsVideoList.clear();
                 searchResultsVideoList.addAll(data.first.getResultVideos());

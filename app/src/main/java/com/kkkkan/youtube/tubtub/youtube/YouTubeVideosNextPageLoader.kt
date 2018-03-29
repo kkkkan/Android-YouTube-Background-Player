@@ -12,7 +12,7 @@ import java.io.IOException
 /**
  * 検索結果のYoutube VideoのnextPageTokenを渡すとそのpageとさらにnextPageTokenをとってきてくれるAsyncLoader
  */
-class YouTubeVideosNextPageLoader(context: Context, private val nextPageToken: String) : AsyncTaskLoader<VideosLoaderMethods.SearchResultVideo>(context) {
+class YouTubeVideosNextPageLoader(context: Context, private val nextPageToken: String, val keyword: String) : AsyncTaskLoader<VideosLoaderMethods.SearchResultVideo>(context) {
     private val youtube: YouTube = getYouTube()
     override fun loadInBackground(): VideosLoaderMethods.SearchResultVideo {
         var videoItem: List<YouTubeVideo> = ArrayList<YouTubeVideo>()
@@ -33,7 +33,7 @@ class YouTubeVideosNextPageLoader(context: Context, private val nextPageToken: S
         } catch (e: IOException) {
             e.printStackTrace()
         }
-        return VideosLoaderMethods.SearchResultVideo(videoItem, videosNextToken)
+        return VideosLoaderMethods.SearchResultVideo(videoItem, videosNextToken, keyword)
     }
 
     /**
@@ -44,6 +44,7 @@ class YouTubeVideosNextPageLoader(context: Context, private val nextPageToken: S
         searchList.type = "video"
         searchList.maxResults = Config.NUMBER_OF_VIDEOS_RETURNED
         searchList.fields = "nextPageToken,items(id/videoId,snippet/title,snippet/thumbnails/default/url)"
+        searchList.q = keyword
         searchList.pageToken = nextPageToken
         var searchListResponse = searchList.execute()
         return searchListResponse

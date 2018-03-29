@@ -39,8 +39,8 @@ public class PlaylistsCache {
     static public PlaylistsCache Instance = new PlaylistsCache();
     private final String TAG = "PlaylistsCash";
     //回転後、Activityのfinish後も検索内容覚えておくためのSearchResultVideoインスタンスとSearchResultPlaylistインスタンス
-    private VideosLoaderMethods.SearchResultVideo searchResultVideo = new VideosLoaderMethods.SearchResultVideo(new ArrayList<YouTubeVideo>(), null);
-    private VideosLoaderMethods.SearchResultPlaylist searchResultPlaylist = new VideosLoaderMethods.SearchResultPlaylist(new ArrayList<YouTubePlaylist>(), null);
+    private VideosLoaderMethods.SearchResultVideo searchResultVideo = new VideosLoaderMethods.SearchResultVideo(new ArrayList<YouTubeVideo>(), null, "");
+    private VideosLoaderMethods.SearchResultPlaylist searchResultPlaylist = new VideosLoaderMethods.SearchResultPlaylist(new ArrayList<YouTubePlaylist>(), null, "");
     //通常の並びに並んでいるリスト
     private List<YouTubeVideo> normalList = new ArrayList<>();
     //shuffle再生用のランダムに並んでいるリスト
@@ -107,8 +107,8 @@ public class PlaylistsCache {
      */
     public void setSearchResultsList(Pair<VideosLoaderMethods.SearchResultVideo, VideosLoaderMethods.SearchResultPlaylist> results) {
         //渡した先でリストの中身をいじってもキャッシュに影響でないように、List<>のほうは必ず新しいListのインスタンスを作って保持
-        searchResultVideo = new VideosLoaderMethods.SearchResultVideo(new ArrayList<>(results.first.getResultVideos()), results.first.getNextPageToken());
-        searchResultPlaylist = new VideosLoaderMethods.SearchResultPlaylist(new ArrayList<>(results.second.getResultPlaylists()), results.second.getNextPageToken());
+        searchResultVideo = new VideosLoaderMethods.SearchResultVideo(new ArrayList<>(results.first.getResultVideos()), results.first.getNextPageToken(), getKeyword());
+        searchResultPlaylist = new VideosLoaderMethods.SearchResultPlaylist(new ArrayList<>(results.second.getResultPlaylists()), results.second.getNextPageToken(), getKeyword());
     }
 
     /**
@@ -118,7 +118,7 @@ public class PlaylistsCache {
      * @param newVideosList
      */
     public void changeSearchResultVideosList(VideosLoaderMethods.SearchResultVideo newVideosList) {
-        searchResultVideo = new VideosLoaderMethods.SearchResultVideo(new ArrayList<>(newVideosList.getResultVideos()), newVideosList.getNextPageToken());
+        searchResultVideo = new VideosLoaderMethods.SearchResultVideo(new ArrayList<>(newVideosList.getResultVideos()), newVideosList.getNextPageToken(), newVideosList.getKeyword());
     }
 
     /**
@@ -128,8 +128,9 @@ public class PlaylistsCache {
      * @param newPlaylistList
      */
     public void changeSearchresultPlaylistList(VideosLoaderMethods.SearchResultPlaylist newPlaylistList) {
-        searchResultPlaylist = new VideosLoaderMethods.SearchResultPlaylist(new ArrayList<>(newPlaylistList.getResultPlaylists()), newPlaylistList.getNextPageToken());
+        searchResultPlaylist = new VideosLoaderMethods.SearchResultPlaylist(new ArrayList<>(newPlaylistList.getResultPlaylists()), newPlaylistList.getNextPageToken(), newPlaylistList.getKeyword());
     }
+
 
     public List<YouTubeVideo> getSearchResultsVideoList() {
         return new ArrayList<>(searchResultVideo.getResultVideos());
@@ -137,6 +138,22 @@ public class PlaylistsCache {
 
     public List<YouTubePlaylist> getSearchResultsPlaylistList() {
         return new ArrayList<>(searchResultPlaylist.getResultPlaylists());
+    }
+
+    @Nullable
+    public String getVideoNextPageToken() {
+        return searchResultVideo.getNextPageToken();
+    }
+
+    @Nullable
+    public String getPlaylistNextPageToken() {
+        return searchResultPlaylist.getNextPageToken();
+    }
+
+    @NonNull
+    public String getKeyword() {
+        //keywordは常にビデオとプレイリストで同じ
+        return searchResultVideo.getKeyword();
     }
 
     public void setNewList(List<YouTubeVideo> newNormalList) {

@@ -109,11 +109,11 @@ public fun getPlaylistList(playlistList: YouTube.Playlists.List, searchPlayListR
 }
 
 public class VideosLoaderMethods {
-    class SearchResultVideo(val resultVideos: List<YouTubeVideo>, val nextPageToken: String?) {
+    class SearchResultVideo(val resultVideos: List<YouTubeVideo>, val nextPageToken: String?, val keyword: String) {
         //nextPageTokenは最終ページの時はnextPageToken==nullであることに注意
     }
 
-    class SearchResultPlaylist(val resultPlaylists: List<YouTubePlaylist>, val nextPageToken: String?) {
+    class SearchResultPlaylist(val resultPlaylists: List<YouTubePlaylist>, val nextPageToken: String?, val keyword: String) {
         //nextPageTokenは最終ページの時はnextPageToken==nullであることに注意
     }
 }
