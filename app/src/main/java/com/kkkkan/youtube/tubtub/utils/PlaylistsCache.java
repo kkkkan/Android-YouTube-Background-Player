@@ -111,6 +111,26 @@ public class PlaylistsCache {
         searchResultPlaylist = new VideosLoaderMethods.SearchResultPlaylist(new ArrayList<>(results.second.getResultPlaylists()), results.second.getNextPageToken());
     }
 
+    /**
+     * 検索結果のうち、videoのみ変更された時用のメゾッド
+     * 検索結果の次のページをロードしたときに呼ばれることを想定
+     *
+     * @param newVideosList
+     */
+    public void changeSearchResultVideosList(VideosLoaderMethods.SearchResultVideo newVideosList) {
+        searchResultVideo = new VideosLoaderMethods.SearchResultVideo(new ArrayList<>(newVideosList.getResultVideos()), newVideosList.getNextPageToken());
+    }
+
+    /**
+     * 検索結果のうち、playlistのみ変更された時用のメゾッド
+     * 検索結果の次のページをロードしたときに呼ばれることを想定
+     *
+     * @param newPlaylistList
+     */
+    public void changeSearchresultPlaylistList(VideosLoaderMethods.SearchResultPlaylist newPlaylistList) {
+        searchResultPlaylist = new VideosLoaderMethods.SearchResultPlaylist(new ArrayList<>(newPlaylistList.getResultPlaylists()), newPlaylistList.getNextPageToken());
+    }
+
     public List<YouTubeVideo> getSearchResultsVideoList() {
         return new ArrayList<>(searchResultVideo.getResultVideos());
     }

@@ -65,7 +65,9 @@ import com.kkkkan.youtube.tubtub.utils.NetworkConf;
 import com.kkkkan.youtube.tubtub.utils.PlaylistsCache;
 import com.kkkkan.youtube.tubtub.youtube.VideosLoaderMethods;
 import com.kkkkan.youtube.tubtub.youtube.YouTubePlaylistVideosLoader;
+import com.kkkkan.youtube.tubtub.youtube.YouTubePlaylistsNextPageLoader;
 import com.kkkkan.youtube.tubtub.youtube.YouTubeVideosLoader;
+import com.kkkkan.youtube.tubtub.youtube.YouTubeVideosNextPageLoader;
 
 import java.util.Collections;
 import java.util.List;
@@ -89,6 +91,8 @@ public class SearchFragment extends BaseFragment {
     private RecyclerView videosFoundListView;
     private List<YouTubeVideo> searchResultsVideoList;
     private List<YouTubePlaylist> searchResultsPlaylistList;
+    private String videoNextPageToken;
+    private String playlistNextPageToken;
     private VideosAdapter videoListAdapter;
     private PlaylistsAdapter playlistsAdapter;
     private NetworkConf networkConf;
@@ -97,6 +101,8 @@ public class SearchFragment extends BaseFragment {
     private OnFavoritesSelected onFavoritesSelected;
     private RadioGroup radioGroup;
     private ProgressDialog progressDialog;
+    //次のページを読み込み中か否かのフラグ
+    private boolean isLoading = false;
     /**
      * videoの検索結果をクリックしたときの動きのためのItemEventsListener
      */
@@ -171,6 +177,92 @@ public class SearchFragment extends BaseFragment {
 
         }
     };
+    /**
+     * Videoの検索結果のnextPageをとってくるローダー
+     * 必ずvideoNextPageToken!=nullの時のみ使うこと
+     */
+    private LoaderManager.LoaderCallbacks<VideosLoaderMethods.SearchResultVideo> nextVideosLoader = new LoaderManager.LoaderCallbacks<VideosLoaderMethods.SearchResultVideo>() {
+        @Override
+        public Loader<VideosLoaderMethods.SearchResultVideo> onCreateLoader(int id, Bundle args) {
+            Log.d(TAG, "onCreateLoader");
+            isLoading = true;
+            return new YouTubeVideosNextPageLoader(context, videoNextPageToken);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<VideosLoaderMethods.SearchResultVideo> loader, VideosLoaderMethods.SearchResultVideo data) {
+            if (data == null) {
+                isLoading = false;
+                return;
+            }
+            int itemCountBeforeAdd = searchResultsVideoList.size();
+            searchResultsVideoList.addAll(data.getResultVideos());
+            videoNextPageToken = data.getNextPageToken();
+            PlaylistsCache.Instance.changeSearchResultVideosList(new VideosLoaderMethods.SearchResultVideo(searchResultsVideoList, videoNextPageToken));
+            videoListAdapter.notifyItemRangeInserted(itemCountBeforeAdd, data.getResultVideos().size());
+            isLoading = false;
+        }
+
+        @Override
+        public void onLoaderReset(Loader<VideosLoaderMethods.SearchResultVideo> loader) {
+
+        }
+    };
+    /**
+     * Playlistの検索結果のnextPageをとってくるローダー
+     * 必ずplaylistNextPageToken!=nullの時のみ使うこと
+     */
+    private LoaderManager.LoaderCallbacks<VideosLoaderMethods.SearchResultPlaylist> nextPlaylistLoader = new LoaderManager.LoaderCallbacks<VideosLoaderMethods.SearchResultPlaylist>() {
+        @Override
+        public Loader<VideosLoaderMethods.SearchResultPlaylist> onCreateLoader(int id, Bundle args) {
+            isLoading = true;
+            return new YouTubePlaylistsNextPageLoader(context, playlistNextPageToken);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<VideosLoaderMethods.SearchResultPlaylist> loader, VideosLoaderMethods.SearchResultPlaylist data) {
+            if (data == null) {
+                isLoading = false;
+                return;
+            }
+            int itemCountBeforeAdd = searchResultsPlaylistList.size();
+            searchResultsPlaylistList.addAll(data.getResultPlaylists());
+            playlistNextPageToken = data.getNextPageToken();
+            PlaylistsCache.Instance.changeSearchresultPlaylistList(new VideosLoaderMethods.SearchResultPlaylist(searchResultsPlaylistList, playlistNextPageToken));
+            playlistsAdapter.notifyItemRangeInserted(itemCountBeforeAdd, data.getResultPlaylists().size());
+            isLoading = false;
+        }
+
+        @Override
+        public void onLoaderReset(Loader<VideosLoaderMethods.SearchResultPlaylist> loader) {
+
+        }
+    };
+    /**
+     * スクロールが最後近くまで来たときに次のページを読み込むためのリスナー
+     */
+    private RecyclerView.OnScrollListener scrollListener = new RecyclerView.OnScrollListener() {
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            Log.d(TAG, "onScrolled");
+            super.onScrolled(recyclerView, dx, dy);
+
+            int visibleItemCount = recyclerView.getChildCount();
+            LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
+            int firstVisibleItem = manager.findFirstVisibleItemPosition();
+            int lastInScreen = firstVisibleItem + visibleItemCount;
+//            Log.d(TAG,"isLoading : "+String.valueOf(isLoading)+"\nrecyclerView.getAdapter() instanceof VideosAdapter : "+String.valueOf(recyclerView.getAdapter() instanceof VideosAdapter)
+//                    +"\nvideoNextPageToken!=null : "+String.valueOf(videoNextPageToken!=null)+"\nlastInScreen+3 : "+String.valueOf(lastInScreen+3)+"\nvideoListAdapter.getItemCount() : "+String.valueOf(videoListAdapter.getItemCount()));
+            //次のページがあって、今表示しているのが最後の10個の時に次のページの読み込み開始
+            if (!isLoading && recyclerView.getAdapter() instanceof VideosAdapter && videoNextPageToken != null && lastInScreen + 10 == videoListAdapter.getItemCount()) {
+                getLoaderManager().restartLoader(Config.YouTubeVideosNextPageLoader, null, nextVideosLoader).forceLoad();
+            } else if (!isLoading && recyclerView.getAdapter() instanceof PlaylistsAdapter && playlistNextPageToken != null && lastInScreen + 10 == playlistsAdapter.getItemCount()) {
+                getLoaderManager().restartLoader(Config.YouTubePlaylistsNextPageLoader, null, nextPlaylistLoader).forceLoad();
+            }
+
+        }
+    };
 
     public SearchFragment() {
         // Required empty public constructor
@@ -217,6 +309,7 @@ public class SearchFragment extends BaseFragment {
         Log.d(TAG, "tag is : " + String.valueOf(tag));
         View v = inflater.inflate(R.layout.fragment_search, container, false);
         videosFoundListView = (RecyclerView) v.findViewById(R.id.fragment_list_items);
+        videosFoundListView.addOnScrollListener(scrollListener);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         videosFoundListView.setLayoutManager(linearLayoutManager);
         //区切り線追加
@@ -266,6 +359,8 @@ public class SearchFragment extends BaseFragment {
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
+                //video<->playlistに表示を変えたら、次のページの読み込みフラグもリセット
+                isLoading = false;
                 setAdapter();
                 notifyDataSetChanged();
             }
@@ -347,6 +442,9 @@ public class SearchFragment extends BaseFragment {
                 if (data == null)
                     return;
                 PlaylistsCache.Instance.setSearchResultsList(data);
+                //次のページへのtokenがあれば保存
+                videoNextPageToken = data.first.getNextPageToken();
+                playlistNextPageToken = data.second.getNextPageToken();
                 videosFoundListView.smoothScrollToPosition(0);
                 searchResultsVideoList.clear();
                 searchResultsVideoList.addAll(data.first.getResultVideos());

@@ -45,5 +45,7 @@ public final class Config {
     final static public int YouTubePlaylistDetailLoaderId = 3;
     final static public int SuggestionsLoaderId = 4;
     final static public int YouTubeShareVideoGetLoader = 5;
+    final static public int YouTubeVideosNextPageLoader = 6;
+    final static public int YouTubePlaylistsNextPageLoader = 7;
 
 }
