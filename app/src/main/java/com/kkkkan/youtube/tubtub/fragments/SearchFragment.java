@@ -103,8 +103,9 @@ public class SearchFragment extends BaseFragment {
     private OnFavoritesSelected onFavoritesSelected;
     private RadioGroup radioGroup;
     private ProgressDialog progressDialog;
+    private ProgressDialog loadingDialog;
     //次のページを読み込み中か否かのフラグ
-    private boolean isLoading = false;
+    private boolean isNextLoading = false;
     /**
      * videoの検索結果をクリックしたときの動きのためのItemEventsListener
      */
@@ -187,14 +188,14 @@ public class SearchFragment extends BaseFragment {
         @Override
         public Loader<VideosLoaderMethods.SearchResultVideo> onCreateLoader(int id, Bundle args) {
             Log.d(TAG, "onCreateLoader");
-            isLoading = true;
+            isNextLoading = true;
             return new YouTubeVideosNextPageLoader(context, videoNextPageToken, keyword);
         }
 
         @Override
         public void onLoadFinished(Loader<VideosLoaderMethods.SearchResultVideo> loader, VideosLoaderMethods.SearchResultVideo data) {
             if (data == null) {
-                isLoading = false;
+                setIsNextLoadingFalse();
                 return;
             }
             int itemCountBeforeAdd = searchResultsVideoList.size();
@@ -202,7 +203,7 @@ public class SearchFragment extends BaseFragment {
             videoNextPageToken = data.getNextPageToken();
             PlaylistsCache.Instance.changeSearchResultVideosList(new VideosLoaderMethods.SearchResultVideo(searchResultsVideoList, videoNextPageToken, keyword));
             videoListAdapter.notifyItemRangeInserted(itemCountBeforeAdd, data.getResultVideos().size());
-            isLoading = false;
+            setIsNextLoadingFalse();
         }
 
         @Override
@@ -217,14 +218,14 @@ public class SearchFragment extends BaseFragment {
     private LoaderManager.LoaderCallbacks<VideosLoaderMethods.SearchResultPlaylist> nextPlaylistLoader = new LoaderManager.LoaderCallbacks<VideosLoaderMethods.SearchResultPlaylist>() {
         @Override
         public Loader<VideosLoaderMethods.SearchResultPlaylist> onCreateLoader(int id, Bundle args) {
-            isLoading = true;
+            isNextLoading = true;
             return new YouTubePlaylistsNextPageLoader(context, playlistNextPageToken, keyword);
         }
 
         @Override
         public void onLoadFinished(Loader<VideosLoaderMethods.SearchResultPlaylist> loader, VideosLoaderMethods.SearchResultPlaylist data) {
             if (data == null) {
-                isLoading = false;
+                setIsNextLoadingFalse();
                 return;
             }
             int itemCountBeforeAdd = searchResultsPlaylistList.size();
@@ -232,7 +233,7 @@ public class SearchFragment extends BaseFragment {
             playlistNextPageToken = data.getNextPageToken();
             PlaylistsCache.Instance.changeSearchresultPlaylistList(new VideosLoaderMethods.SearchResultPlaylist(searchResultsPlaylistList, playlistNextPageToken, keyword));
             playlistsAdapter.notifyItemRangeInserted(itemCountBeforeAdd, data.getResultPlaylists().size());
-            isLoading = false;
+            setIsNextLoadingFalse();
         }
 
         @Override
@@ -257,10 +258,18 @@ public class SearchFragment extends BaseFragment {
 //            Log.d(TAG,"isLoading : "+String.valueOf(isLoading)+"\nrecyclerView.getAdapter() instanceof VideosAdapter : "+String.valueOf(recyclerView.getAdapter() instanceof VideosAdapter)
 //                    +"\nvideoNextPageToken!=null : "+String.valueOf(videoNextPageToken!=null)+"\nlastInScreen+3 : "+String.valueOf(lastInScreen+3)+"\nvideoListAdapter.getItemCount() : "+String.valueOf(videoListAdapter.getItemCount()));
             //次のページがあって、今表示しているのが最後の10個の時に次のページの読み込み開始
-            if (!isLoading && recyclerView.getAdapter() instanceof VideosAdapter && videoNextPageToken != null && lastInScreen + 10 == videoListAdapter.getItemCount()) {
+            if (!isNextLoading && recyclerView.getAdapter() instanceof VideosAdapter && videoNextPageToken != null && lastInScreen + 10 == videoListAdapter.getItemCount()) {
                 getLoaderManager().restartLoader(Config.YouTubeVideosNextPageLoader, null, nextVideosLoader).forceLoad();
-            } else if (!isLoading && recyclerView.getAdapter() instanceof PlaylistsAdapter && playlistNextPageToken != null && lastInScreen + 10 == playlistsAdapter.getItemCount()) {
+            } else if (!isNextLoading && recyclerView.getAdapter() instanceof PlaylistsAdapter && playlistNextPageToken != null && lastInScreen + 10 == playlistsAdapter.getItemCount()) {
                 getLoaderManager().restartLoader(Config.YouTubePlaylistsNextPageLoader, null, nextPlaylistLoader).forceLoad();
+            } else if (isNextLoading && recyclerView.getAdapter() instanceof VideosAdapter && lastInScreen == videoListAdapter.getItemCount()) {
+                //最後のアイテムまで表示してしまっていてかつ今次のページ読み込み中なら
+                //Loading…ダイアログだす
+                loadingDialog.show();
+            } else if (isNextLoading && recyclerView.getAdapter() instanceof PlaylistsAdapter && lastInScreen == videoListAdapter.getItemCount()) {
+                //最後のアイテムまで表示してしまっていてかつ今次のページ読み込み中なら
+                //Loading…ダイアログだす
+                loadingDialog.show();
             }
 
         }
@@ -329,9 +338,14 @@ public class SearchFragment extends BaseFragment {
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setIndeterminate(true);
         progressDialog.setMessage("Searching…");
+        //Loading…ダイアログのための設定
+        loadingDialog = new ProgressDialog(getActivity());
+        loadingDialog.setIndeterminate(true);
+        loadingDialog.setMessage("Loading…");
         //Make the color of the back of the dialog transparent.
         //ダイアログの裏の色を透明にする。
         progressDialog.getWindow().setFlags(0, WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        loadingDialog.getWindow().setFlags(0, WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 
         //Make the place where the dialog will appear in the middle of playlistDetailFragment.
         //ダイアログの出す場所をplaylistDetailFragmentの真ん中にする。
@@ -353,6 +367,7 @@ public class SearchFragment extends BaseFragment {
         WindowManager.LayoutParams layoutParams = progressDialog.getWindow().getAttributes();
         layoutParams.y = (windowHeight - framelayoutHeight) / 2;
         progressDialog.getWindow().setAttributes(layoutParams);
+        loadingDialog.getWindow().setAttributes(layoutParams);
 
         //検索結果（ビデオ）を表示するための設定
         videoListAdapter = new VideosAdapter(context, searchResultsVideoList);
@@ -368,7 +383,7 @@ public class SearchFragment extends BaseFragment {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 //video<->playlistに表示を変えたら、次のページの読み込みフラグもリセット
-                isLoading = false;
+                setIsNextLoadingFalse();
                 setAdapter();
                 notifyDataSetChanged();
             }
@@ -522,6 +537,16 @@ public class SearchFragment extends BaseFragment {
     private void hideProgressDialog() {
         if (progressDialog.isShowing()) {
             progressDialog.hide();
+        }
+    }
+
+    /**
+     * isNextLoadingをfalseにし、もし読み込み中ダイアログ出ていたら消す
+     */
+    private void setIsNextLoadingFalse() {
+        isNextLoading = false;
+        if (loadingDialog.isShowing()) {
+            loadingDialog.hide();
         }
     }
 
