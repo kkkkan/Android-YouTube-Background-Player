@@ -1,7 +1,8 @@
 package com.kkkkan.youtube.tubtub.youtube
 
-import android.content.AsyncTaskLoader
+
 import android.content.Context
+import android.support.v4.content.AsyncTaskLoader
 import com.google.api.services.youtube.YouTube
 import com.google.api.services.youtube.model.SearchListResponse
 import com.google.api.services.youtube.model.SearchResult
@@ -13,9 +14,8 @@ import java.io.IOException
 /**
  * 検索結果のYoutube PlaylistのnextPageTokenを渡すとそのpageとさらにnextPageTokenをとってきてくれるAsyncLoader
  */
-class YouTubePlaylistsNextPageLoader(context: Context, nextPageToken: String) : AsyncTaskLoader<VideosLoaderMethods.SearchResultPlaylist>(context) {
+class YouTubePlaylistsNextPageLoader(context: Context, private val nextPageToken: String) : AsyncTaskLoader<VideosLoaderMethods.SearchResultPlaylist>(context) {
     private val youtube: YouTube = getYouTube()
-    private val nextPageToken = nextPageToken
     override fun loadInBackground(): VideosLoaderMethods.SearchResultPlaylist {
         var playlistItem: List<YouTubePlaylist> = ArrayList<YouTubePlaylist>()
         var playlistNextPageToken: String? = null
@@ -46,7 +46,7 @@ class YouTubePlaylistsNextPageLoader(context: Context, nextPageToken: String) : 
         searchList.key = Config.YOUTUBE_API_KEY
         searchList.type = "playlist"
         searchList.maxResults = Config.NUMBER_OF_VIDEOS_RETURNED
-        searchList.fields = "items(id/playlistId,snippet/title,snippet/thumbnails/default/url,id/kind)"
+        searchList.fields = "nextPageToken,items(id/playlistId,snippet/title,snippet/thumbnails/default/url,id/kind)"
         searchList.pageToken = nextPageToken
         var searchListResponse = searchList.execute()
         return searchListResponse
