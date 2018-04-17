@@ -2,20 +2,26 @@ buildscript {
     repositories {
         maven { url 'https://maven.fabric.io/public' }
         google()
+        mavenCentral()
+        jcenter()
     }
 
     dependencies {
         classpath 'io.fabric.tools:gradle:1.+'
-        classpath 'com.android.tools.build:gradle:3.0.1'
+        classpath 'com.android.tools.build:gradle:3.1.0'
     }
 }
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'io.fabric'
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }
     mavenCentral()
+    google()
+    jcenter()
+
 }
 
 // Create a variable called keystorePropertiesFile, and initialize it to your

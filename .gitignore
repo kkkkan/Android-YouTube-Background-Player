@@ -12,3 +12,5 @@ keystore.properties
 .idea/modules.xml
 app/release/com.kkkkan.youtube-release.apk
 app/release/output.json
+.idea/codeStyles/Project.xml
+.idea/caches/build_file_checksums.ser
