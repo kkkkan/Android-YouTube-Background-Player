@@ -477,7 +477,7 @@ public class MediaPlayerService extends Service implements MediaController.Media
                     YouTubeSqlDb.getInstance().videos(YouTubeSqlDb.VIDEOS_TYPE.RECENTLY_WATCHED).createIfNotMatchWithTopVideo(video);
 
                     String videoDownloadUrl = ytFiles.get(tagVideo).getUrl();
-                    Log.d(TAG, "VideoURL:" + videoDownloadUrl);
+                    Log.d(TAG, "VideoID : "+videoMeta.getVideoId()+"\nVideoURL:" + videoDownloadUrl);
 
                     //ポーズから戻ったときのためMovieUrlも変えとく
                     videoUrl = videoDownloadUrl;
