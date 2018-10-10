@@ -44,13 +44,15 @@ public fun getVideoList(videoList: YouTube.Videos.List, searchResults: List<Sear
     // YouTube.Videos.Listはとってきた50個のうち削除されたビデオはスルーして、userにデータは返してくれないようだ
     //（つまり50個中1個削除されたビデオがあったら、searchResults.size()は50,videoResults.size()は49）
 
-    var j: Int = 0
+    // videoList用のindex
+    var videoIndex: Int = 0
     //kotlin:for(i in 0 until 5) -> java:for(int i=0 ;i<5;i++)
-    for (i in 0 until searchResults.size) {
+    // searchList用のindex
+    for (searchIndex in 0 until searchResults.size) {
         val youTubeVideo: YouTubeVideo = YouTubeVideo()
 
-        val searchResult: SearchResult = searchResults[i]
-        val videoResult: Video = videoResults[i]
+        val searchResult: SearchResult = searchResults[searchIndex]
+        val videoResult: Video = videoResults[videoIndex]
 
 
         youTubeVideo.title = searchResult.snippet.title
@@ -58,9 +60,9 @@ public fun getVideoList(videoList: YouTube.Videos.List, searchResults: List<Sear
 
         if (searchResult.id.videoId.equals(videoResult.id)) {
             //削除されたビデオではないとき
-            //jをインクリメント
+            //videoIndexをインクリメント
 
-            j++
+            videoIndex++
 
             //thumbnailDetailsのurlをセット
             youTubeVideo.thumbnailURL = searchResult.snippet.thumbnails.default.url
