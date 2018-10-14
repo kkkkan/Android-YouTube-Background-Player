@@ -15,20 +15,20 @@ import java.io.IOException
 class YouTubeVideosNextPageLoader(context: Context, private val nextPageToken: String, val keyword: String) : AsyncTaskLoader<VideosLoaderMethods.SearchResultVideo>(context) {
     private val youtube: YouTube = getYouTube()
     override fun loadInBackground(): VideosLoaderMethods.SearchResultVideo {
-        var videoItem: List<YouTubeVideo> = ArrayList<YouTubeVideo>()
+        var videoItem: List<YouTubeVideo> = ArrayList()
         var videosNextToken: String? = null
 
         try {
-            var searchList: YouTube.Search.List = youtube.search().list("id,snippet")
-            var videoList: YouTube.Videos.List = youtube.videos().list("id,contentDetails,statistics")
+            val searchList = youtube.search().list("id,snippet")
+            val videoList = youtube.videos().list("id,contentDetails,statistics")
 
-            //わたってきたTokenのページをとってくる
-            var searchVideoResponse: SearchListResponse = searchVideo(searchList)
-            //取ってきたページ情報のうちvideo部分のみを取得
-            var searchVideoResults = searchVideoResponse.items
-            //それらのvideoについてさらに細かい情報を取得
+            // わたってきたTokenのページをとってくる
+            val searchVideoResponse = searchVideo(searchList)
+            // 取ってきたページ情報のうちvideo部分のみを取得
+            val searchVideoResults = searchVideoResponse.items
+            // それらのvideoについてさらに細かい情報を取得
             videoItem = getVideoList(videoList, searchVideoResults)
-            //次のページへのTokenを取得
+            // 次のページへのTokenを取得
             videosNextToken = searchVideoResponse.nextPageToken
         } catch (e: IOException) {
             e.printStackTrace()
@@ -46,7 +46,7 @@ class YouTubeVideosNextPageLoader(context: Context, private val nextPageToken: S
         searchList.fields = "nextPageToken,items(id/videoId,snippet/title,snippet/thumbnails/default/url)"
         searchList.q = keyword
         searchList.pageToken = nextPageToken
-        var searchListResponse = searchList.execute()
+        val searchListResponse = searchList.execute()
         return searchListResponse
     }
 }
